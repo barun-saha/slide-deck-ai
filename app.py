@@ -150,7 +150,7 @@ def process_slides_contents(text: str, progress_bar: st.progress):
         output_file_name = f'{session_id}_{timestamp}.pptx'
 
         pptx_helper.generate_powerpoint_presentation(json_str, as_yaml=False, output_file_name=output_file_name)
-        st.progress(100, text='Done!')
+        progress_bar.progress(100, text='Done!')
 
         # st.download_button('Download file', binary_contents)  # Defaults to 'application/octet-stream'
 
