@@ -1,0 +1,23 @@
+{
+    "app_name": "SlideDeck AI",
+    "caption": "*:green[Co-create your next PowerPoint slide deck with AI]*",
+    "section_headers": [
+        "Step 1: Generate your content",
+        "Step 2: Make it structured",
+        "Step 3: Create the slides",
+    ],
+    "section_captions": [
+        "Let\'s start by generating some contents for your slides",
+        "Let\'s now convert the above generated contents into JSON",
+        "Let\'s now create the slides for you",
+    ],
+    "input_labels": [
+        "**Describe the topic of the presentation. Avoid mentioning the count of slides.**\n*Note: the output may be short or truncated due to API limitations.*",
+    ],
+    "button_labels": [
+        "Generate slides content",
+        "Generate JSON",
+        "Make the slides"
+    ],
+    "content_generation_failure_error": "Unfortunately, SlideDeck AI failed to generate any content for you! Please try again later."
+}

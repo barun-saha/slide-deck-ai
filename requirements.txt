@@ -1,0 +1,9 @@
+python-dotenv[cli]~=1.0.0
+langchain~=0.0.273
+# huggingface_hub
+streamlit~=1.26.0
+clarifai==9.7.4
+
+python-pptx
+json5~=0.9.14
+PyYAML~=6.0.1

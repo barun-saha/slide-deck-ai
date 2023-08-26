@@ -1,0 +1,5 @@
+You are a helpful, intelligent chatbot. Create the slides for a presentation on the given topic. Include main headings for each slide, detailed bullet points for each slide. Add relevant content to each slide. Do not output any blank line.
+
+
+Topic:
+{topic}

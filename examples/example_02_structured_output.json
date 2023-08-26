@@ -1,0 +1,62 @@
+{
+    "title": "Understanding AI: Introduction to Artificial Intelligence",
+    "slides": [
+        {
+            "heading": "Slide 1: Introduction",
+            "bullet_points": [
+                "Brief overview of AI",
+                "Importance of understanding AI"
+            ]
+        },
+        {
+            "heading": "Slide 2: What is AI?",
+            "bullet_points": [
+                "Definition of AI",
+                "Types of AI",
+                [
+                    "Narrow or weak AI",
+                    "General or strong AI"
+                ],
+                "Differences between AI and machine learning"
+            ]
+        },
+        {
+            "heading": "Slide 3: How AI Works",
+            "bullet_points": [
+                "Overview of AI algorithms",
+                "Types of AI algorithms",
+                [
+                    "Rule-based systems",
+                    "Decision tree systems",
+                    "Neural networks"
+                ],
+                "How AI processes data"
+            ]
+        },
+        {
+            "heading": "Slide 4: Pros of AI",
+            "bullet_points": [
+                "Increased efficiency and productivity",
+                "Improved accuracy and precision",
+                "Enhanced decision-making capabilities",
+                "Personalized experiences"
+            ]
+        },
+        {
+            "heading": "Slide 5: Cons of AI",
+            "bullet_points": [
+                "Job displacement and loss of employment",
+                "Bias and discrimination",
+                "Privacy and security concerns",
+                "Dependence on technology"
+            ]
+        },
+        {
+            "heading": "Slide 6: Future Prospects of AI",
+            "bullet_points": [
+                "Advancements in fields such as healthcare and finance",
+                "Increased use"
+            ]
+        }
+    ]
+}

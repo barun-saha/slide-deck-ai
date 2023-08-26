@@ -1,0 +1,44 @@
+{
+    "title": "Introduction to Python Programming",
+    "slides": [
+        {
+            "heading": "Slide 1: Introduction",
+            "bullet_points": [
+                "Brief overview of Python and its importance",
+                "Purpose of the tutorial"
+            ]
+        },
+        {
+            "heading": "Slide 2: Basic Data Types",
+            "bullet_points": [
+                "Strings (e.g. \"hello\")",
+                "Integers (e.g. 42)",
+                "Floats (e.g. 3.14)",
+                "Booleans (e.g. True/False)",
+                "Lists (e.g. [1, 2, 3])",
+                "Tuples (e.g. (1, 2, 3))"
+            ]
+        },
+        {
+            "heading": "Slide 3: Strings",
+            "bullet_points": [
+                "String literals (e.g. \"hello\")",
+                "String concatenation (e.g. \"hello\" + \" world\")",
+                "String slicing (e.g. \"hello\"[0] = h)"
+            ]
+        },
+        {
+            "heading": "Slide 4: Integers",
+            "bullet_points": [
+                "Integer literals (e.g. 42)",
+                "Arithmetic operations (e.g. 2 + 3 = 5)"
+            ]
+        },
+        {
+            "heading": "Slide 5: Floats",
+            "bullet_points": [
+                "Floating-point literals (e.g."
+            ]
+        }
+    ]
+}
