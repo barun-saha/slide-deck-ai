@@ -28,3 +28,18 @@ class GlobalConfig:
     PRELOAD_DATA_FILE = 'examples/example_02.json'
     SLIDES_TEMPLATE_FILE = 'langchain_templates/template_07.txt'
 
+    PPTX_TEMPLATE_FILES = {
+        'Blank': {
+            'file': 'pptx_templates/Blank.pptx',
+            'caption': 'Good for starting'
+        },
+        'Ion Boardroom': {
+            'file': 'pptx_templates/Ion_Boardroom.pptx',
+            'caption': 'Choose some bold colors'
+        },
+        'Urban Monochrome': {
+            'file': 'pptx_templates/Urban_monochrome.pptx',
+            'caption': 'Bring in some elegance'
+        }
+    }
+

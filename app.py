@@ -31,6 +31,7 @@ def build_ui():
     except (FileExistsError, FileNotFoundError):
         preload_data = {'topic': '', 'audience': ''}
 
+    # with st.form('describe-topic-form'):
     topic = st.text_area(
         APP_TEXT['input_labels'][0],
         value=preload_data['topic']
@@ -38,8 +39,14 @@ def build_ui():
 
     # Button with callback function
     st.button(APP_TEXT['button_labels'][0], on_click=button_clicked, args=[0])
+    # desc_topic_btn_submitted = st.form_submit_button(
+    #     APP_TEXT['button_labels'][0],
+    #     on_click=button_clicked,
+    #     args=[0]
+    # )
 
     if st.session_state.clicked[0]:
+        # if desc_topic_btn_submitted:
         progress_text = 'Generating your presentation slides...give it a moment'
         progress_bar = st.progress(0, text=progress_text)
 
@@ -59,7 +66,7 @@ def process_topic_inputs(topic: str, progress_bar):
     topic_length = len(topic)
     print(f'Input length:: topic: {topic_length}')
 
-    if topic_length > 10:
+    if topic_length >= 10:
         print(
             f'Topic: {topic}\n'
         )
@@ -139,9 +146,22 @@ def process_slides_contents(text: str, progress_bar: st.progress):
     st.header(APP_TEXT['section_headers'][2])
     st.caption(APP_TEXT['section_captions'][2])
 
+    texts = list(GlobalConfig.PPTX_TEMPLATE_FILES.keys())
+    captions = [GlobalConfig.PPTX_TEMPLATE_FILES[x]['caption'] for x in texts]
+
+    # with st.form('create-slides-form'):
+    pptx_template = st.radio(
+        'Select a presentation template:',
+        texts,
+        captions=captions,
+        horizontal=True
+    )
+
     st.button(APP_TEXT['button_labels'][2], on_click=button_clicked, args=[2])
+    # create_slides_btn_submitted = st.form_submit_button(APP_TEXT['button_labels'][2])
 
     if st.session_state.clicked[2]:
+        # if create_slides_btn_submitted:
         progress_text = 'Creating the slide deck...give it a moment'
         progress_bar = st.progress(0, text=progress_text)
 
@@ -154,6 +174,7 @@ def process_slides_contents(text: str, progress_bar: st.progress):
         all_headers = pptx_helper.generate_powerpoint_presentation(
             json_str,
             as_yaml=False,
+            slides_template=pptx_template,
             output_file_name=output_file_name
         )
         progress_bar.progress(100, text='Done!')

@@ -1,7 +1,7 @@
 client_secret.json
 credentials.json
 token.json
-*.pptx
+/*.pptx
 
 
 ### Python template

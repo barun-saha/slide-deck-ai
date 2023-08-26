@@ -4,7 +4,7 @@ import pptx
 import re
 import yaml
 
-from pptx.dml.color import RGBColor
+from global_config import GlobalConfig
 
 
 PATTERN = re.compile(r"^slide[ ]+\d+:", re.IGNORECASE)
@@ -24,12 +24,18 @@ def remove_slide_number_from_heading(header: str) -> str:
     return header
 
 
-def generate_powerpoint_presentation(structured_data: str, as_yaml: bool, output_file_name: str) -> List:
+def generate_powerpoint_presentation(
+        structured_data: str,
+        as_yaml: bool,
+        slides_template: str,
+        output_file_name: str
+) -> List:
     """
     Create and save a PowerPoint presentation file containing the contents in JSON or YAML format.
 
     :param structured_data: The presentation contents as "JSON" (may contain trailing commas) or YAML
     :param as_yaml: True if the input data is in YAML format; False if it is in JSON format
+    :param slides_template: The PPTX template to use
     :param output_file_name: The name of the PPTX file to save as
     :return A list of presentation title and slides headers
     """
@@ -45,7 +51,8 @@ def generate_powerpoint_presentation(structured_data: str, as_yaml: bool, output
         # The structured "JSON" might contain trailing commas, so using json5
         parsed_data = json5.loads(structured_data)
 
-    presentation = pptx.Presentation()
+    print(f"*** Using PPTX template: {GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file']}")
+    presentation = pptx.Presentation(GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file'])
 
     # The title slide
     title_slide_layout = presentation.slide_layouts[0]
@@ -57,10 +64,10 @@ def generate_powerpoint_presentation(structured_data: str, as_yaml: bool, output
     subtitle.text = 'by Myself and SlideDeck AI :)'
     all_headers = [title.text, ]
 
-    background = slide.background
-    background.fill.solid()
-    background.fill.fore_color.rgb = RGBColor.from_string('C0C0C0')  # Silver
-    title.text_frame.paragraphs[0].font.color.rgb = RGBColor(0, 0, 128)  # Navy blue
+    # background = slide.background
+    # background.fill.solid()
+    # background.fill.fore_color.rgb = RGBColor.from_string('C0C0C0')  # Silver
+    # title.text_frame.paragraphs[0].font.color.rgb = RGBColor(0, 0, 128)  # Navy blue
 
     # Add contents in a loop
     for a_slide in parsed_data['slides']:
@@ -89,9 +96,9 @@ def generate_powerpoint_presentation(structured_data: str, as_yaml: bool, output
                         paragraph.text = sub_item
                         paragraph.level = 1
 
-        background = slide.background
-        background.fill.gradient()
-        background.fill.gradient_angle = -225.0
+        # background = slide.background
+        # background.fill.gradient()
+        # background.fill.gradient_angle = -225.0
 
     # The thank-you slide
     last_slide_layout = presentation.slide_layouts[0]
