@@ -1,3 +1,4 @@
+from typing import List
 import json5
 import pptx
 import re
@@ -5,10 +6,17 @@ import yaml
 
 from pptx.dml.color import RGBColor
 
+
 PATTERN = re.compile(r"^slide[ ]+\d+:", re.IGNORECASE)
 
 
 def remove_slide_number_from_heading(header: str) -> str:
+    """
+    Remove the slide number from a given slide header.
+
+    :param header: The header of a slide
+    """
+
     if PATTERN.match(header):
         idx = header.find(':')
         header = header[idx + 1:]
@@ -16,13 +24,14 @@ def remove_slide_number_from_heading(header: str) -> str:
     return header
 
 
-def generate_powerpoint_presentation(structured_data: str, as_yaml: bool, output_file_name: str):
+def generate_powerpoint_presentation(structured_data: str, as_yaml: bool, output_file_name: str) -> List:
     """
     Create and save a PowerPoint presentation file containing the contents in JSON or YAML format.
 
     :param structured_data: The presentation contents as "JSON" (may contain trailing commas) or YAML
     :param as_yaml: True if the input data is in YAML format; False if it is in JSON format
     :param output_file_name: The name of the PPTX file to save as
+    :return A list of presentation title and slides headers
     """
 
     if as_yaml:
@@ -46,6 +55,7 @@ def generate_powerpoint_presentation(structured_data: str, as_yaml: bool, output
     title.text = parsed_data['title']
     print(f'Title is: {title.text}')
     subtitle.text = 'by Myself and SlideDeck AI :)'
+    all_headers = [title.text, ]
 
     background = slide.background
     background.fill.solid()
@@ -61,6 +71,7 @@ def generate_powerpoint_presentation(structured_data: str, as_yaml: bool, output
         title_shape = shapes.title
         body_shape = shapes.placeholders[1]
         title_shape.text = remove_slide_number_from_heading(a_slide['heading'])
+        all_headers.append(title_shape.text)
         text_frame = body_shape.text_frame
 
         for an_item in a_slide['bullet_points']:
@@ -89,6 +100,8 @@ def generate_powerpoint_presentation(structured_data: str, as_yaml: bool, output
     title.text = 'Thank you!'
 
     presentation.save(output_file_name)
+
+    return all_headers
 
 
 if __name__ == '__main__':

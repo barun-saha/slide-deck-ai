@@ -5,19 +5,24 @@
         "Step 1: Generate your content",
         "Step 2: Make it structured",
         "Step 3: Create the slides",
+        "Bonus Materials"
     ],
     "section_captions": [
-        "Let\'s start by generating some contents for your slides",
-        "Let\'s now convert the above generated contents into JSON",
-        "Let\'s now create the slides for you",
+        "Let's start by generating some contents for your slides",
+        "Let's now convert the above generated contents into JSON",
+        "Let's now create the slides for you",
+        "Wait, there's some more good stuff for you!"
     ],
     "input_labels": [
-        "**Describe the topic of the presentation. Avoid mentioning the count of slides.**\n*Note: the output may be short or truncated due to API limitations.*",
+        "**Describe the topic of the presentation. Avoid mentioning the count of slides.**\n*Note: the output may be short or truncated due to API limitations.*"
     ],
     "button_labels": [
         "Generate slides content",
         "Generate JSON",
         "Make the slides"
     ],
-    "content_generation_failure_error": "Unfortunately, SlideDeck AI failed to generate any content for you! Please try again later."
+    "urls_info": "Here is a list of some online resources that you can consult for further information on this topic:",
+    "content_generation_failure_error": "Unfortunately, SlideDeck AI failed to generate any content for you! Please try again later.",
+    "tos": "SlideDeck AI is an experimental prototype, and it has its limitations.\nPlease carefully review any and all AI-generated content.",
+    "tos2": "By using SlideDeck AI, you agree to fair and responsible usage.\nNo liability assumed by any party."
 }

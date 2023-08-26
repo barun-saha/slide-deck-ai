@@ -1,3 +1,5 @@
+from typing import List
+
 import json5
 import time
 import streamlit as st
@@ -149,13 +151,44 @@ def process_slides_contents(text: str, progress_bar: st.progress):
         timestamp = time.time()
         output_file_name = f'{session_id}_{timestamp}.pptx'
 
-        pptx_helper.generate_powerpoint_presentation(json_str, as_yaml=False, output_file_name=output_file_name)
+        all_headers = pptx_helper.generate_powerpoint_presentation(
+            json_str,
+            as_yaml=False,
+            output_file_name=output_file_name
+        )
         progress_bar.progress(100, text='Done!')
 
         # st.download_button('Download file', binary_contents)  # Defaults to 'application/octet-stream'
 
         with open(output_file_name, 'rb') as f:
             st.download_button('Download PPTX file', f, file_name=output_file_name)
+
+        show_bonus_stuff(all_headers)
+
+        st.divider()
+        st.text(APP_TEXT['tos'])
+        st.text(APP_TEXT['tos2'])
+
+
+def show_bonus_stuff(ppt_headers: List):
+    """
+    Show relevant links and images for the presentation topic.
+
+    :param ppt_headers: A list of all slide headers
+    """
+
+    st.divider()
+    st.header(APP_TEXT['section_headers'][3])
+    st.caption(APP_TEXT['section_captions'][3])
+
+    st.write(APP_TEXT['urls_info'])
+
+    # Use the presentation title and the slides headers to find relevant info online
+    ppt_text = ' '.join(ppt_headers)
+    search_results = llm_helper.get_related_websites(ppt_text)
+
+    for a_result in search_results.results:
+        st.markdown(f'[{a_result.title}]({a_result.url})')
 
 
 def button_clicked(button):

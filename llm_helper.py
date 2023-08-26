@@ -1,3 +1,4 @@
+import metaphor_python as metaphor
 from langchain import PromptTemplate
 from langchain.llms import Clarifai
 
@@ -7,6 +8,7 @@ from global_config import GlobalConfig
 prompt = None
 llm_contents = None
 llm_yaml = None
+metaphor_client = None
 
 
 def get_llm(use_gpt: bool) -> Clarifai:
@@ -192,6 +194,18 @@ Output:
     return output
 
 
+def get_related_websites(query: str) -> metaphor.api.SearchResponse:
+    global metaphor_client
+
+    if not metaphor_client:
+        metaphor_client = metaphor.Metaphor(api_key=GlobalConfig.METAPHOR_API_KEY)
+
+    return metaphor_client.search(query, use_autoprompt=True, num_results=5)
+
+
 if __name__ == '__main__':
-    pass
+    results = get_related_websites('5G AI WiFi 6')
+
+    for a_result in results.results:
+        print(a_result.title, a_result.url, a_result.extract)
 

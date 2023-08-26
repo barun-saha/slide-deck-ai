@@ -22,6 +22,8 @@ class GlobalConfig:
     LLM_MODEL_MAX_OUTPUT_LENGTH: int = 2000
     LLM_MODEL_MAX_INPUT_LENGTH: int = 1000
 
+    METAPHOR_API_KEY = os.environ.get('METAPHOR_API_KEY', '')
+
     APP_STRINGS_FILE = 'strings.json'
     PRELOAD_DATA_FILE = 'examples/example_02.json'
     SLIDES_TEMPLATE_FILE = 'langchain_templates/template_07.txt'
