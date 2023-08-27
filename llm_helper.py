@@ -171,7 +171,7 @@ def get_related_websites(query: str) -> metaphor.api.SearchResponse:
     :param query: The query text
     :return: The search results object
     """
-    
+
     global metaphor_client
 
     if not metaphor_client:

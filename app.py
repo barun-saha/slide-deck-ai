@@ -150,13 +150,13 @@ def process_topic_inputs(topic: str, progress_bar):
             # Apparently, "nested button click" needs to be handled differently
             # https://playground.streamlit.app/?q=triple-button
 
-            st.button(APP_TEXT['button_labels'][1], on_click=button_clicked, args=[1])
+            # st.button(APP_TEXT['button_labels'][1], on_click=button_clicked, args=[1])
 
-            if st.session_state.clicked[1]:
-                progress_text = 'Converting...give it a moment'
-                progress_bar = st.progress(0, text=progress_text)
+            # if st.session_state.clicked[1]:
+            progress_text = 'Converting...give it a moment'
+            progress_bar = st.progress(0, text=progress_text)
 
-                process_slides_contents(slides_content, progress_bar)
+            process_slides_contents(slides_content, progress_bar)
         except ValueError as ve:
             st.error(f'Unfortunately, an error occurred: {ve}! '
                      f'Please change the text, try again later, or report it, sharing your inputs.')
