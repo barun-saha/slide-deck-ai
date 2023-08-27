@@ -1,0 +1,1 @@
+Build a slide deck for a hackathon pitch. The idea is to use AI to generate presentation slides based on a topic. The contents are generated using an LLM, converted to JSON, and then the slides are generated based on structured data.
