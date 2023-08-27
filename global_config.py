@@ -32,7 +32,7 @@ class GlobalConfig:
     APP_STRINGS_FILE = 'strings.json'
     PRELOAD_DATA_FILE = 'examples/example_02.json'
     SLIDES_TEMPLATE_FILE = 'langchain_templates/template_07.txt'
-    JSON_TEMPLATE_FILE = 'langchain_templates/text_to_json_template.txt'
+    JSON_TEMPLATE_FILE = 'langchain_templates/text_to_json_template_02.txt'
 
     PPTX_TEMPLATE_FILES = {
         'Blank': {

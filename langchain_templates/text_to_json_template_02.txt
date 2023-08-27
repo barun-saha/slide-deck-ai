@@ -1,0 +1,40 @@
+Convert the given slide deck text into structured JSON output. Also, generate and add an engaging presentation title. The output should be only correct and valid JSON.
+
+Desired JSON output format:
+
+{
+    "title": "Presentation Title",
+    "slides": [
+        {
+            "heading": "Heading for the First Slide",
+            "bullet_points": [
+                "First bullet point",
+                [
+                    "Sub-bullet point 1",
+                    "Sub-bullet point 1"
+                ],
+                "Second bullet point"
+            ]
+        },
+        {
+            "heading": "Heading for the Second Slide",
+            "bullet_points": [
+                "First bullet point",             
+                "Second bullet item",
+                "Third bullet point"
+            ]
+        }
+    ]
+}
+
+
+=====
+Text:
+
+<REPLACE_PLACEHOLDER>
+=====
+
+In the output JSON, the `heading` field should contain the heading of each slide. Each slide object has a `bullet_points` array containing the slide's contents. 
+
+Output:
+```json
