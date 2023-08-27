@@ -31,9 +31,8 @@ Text:
 In the output JSON, the `heading` field should contain the heading of each slide,
 Each slide object has a `bullet_points` array containing the slide's contents. 
 The `bullet_points` array can contain strings or array of strings.
-The sub-bullets for each slide from the input text should appear as an array of strings inside `bullet_points`.
+The indented sub-bullets for each slide from the input text should appear as an array of strings inside `bullet_points`.
 The `bullet_points` field must not contain any object.
-The output JSON must contain everything from the input text, do not lose anything.
 
 Output:
 ```json
