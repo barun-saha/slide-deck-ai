@@ -5,15 +5,6 @@ from global_config import GlobalConfig
 # the text we want as an input. Change these strings to run your own example.
 ######################################################################################################
 
-# Your PAT (Personal Access Token) can be found in the portal under Authentification
-PAT = '7244fc3df026429d819f9df31309ab9d'
-# Specify the correct user_id/app_id pairings
-# Since you're making inferences outside your app's scope
-USER_ID = 'meta'
-APP_ID = 'Llama-2'
-# Change these to whatever model and text URL you want to use
-MODEL_ID = 'llama2-13b-chat'
-MODEL_VERSION_ID = '79a1af31aa8249a99602fc05687e8f40'
 TEXT_FILE_URL = 'https://samples.clarifai.com/negative_sentence_12.txt'
 
 ############################################################################
