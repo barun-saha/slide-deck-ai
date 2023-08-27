@@ -8,3 +8,5 @@ python-pptx
 metaphor-python
 json5~=0.9.14
 PyYAML~=6.0.1
+# curlify
+requests~=2.31.0

@@ -8,10 +8,10 @@
         "Bonus Materials"
     ],
     "section_captions": [
-        "Let's start by generating some contents for your slides",
-        "Let's now convert the above generated contents into JSON",
-        "Let's now create the slides for you",
-        "Wait, there's some more good stuff for you!"
+        "Let's start by generating some contents for your slides.",
+        "Let's now convert the above generated contents into JSON.",
+        "Let's now create the slides for you.",
+        "Since you have come this far, we have unlocked some more good stuff for you!"
     ],
     "input_labels": [
         "**Describe the topic of the presentation. Avoid mentioning the count of slides.**\n*Note: the output may be short or truncated due to API limitations.*"
@@ -22,6 +22,7 @@
         "Make the slides"
     ],
     "urls_info": "Here is a list of some online resources that you can consult for further information on this topic:",
+    "image_info": "Got some more minutes? We are also trying to deliver an AI-generated art on the presentation topic, fresh off the studio, just for you!",
     "content_generation_failure_error": "Unfortunately, SlideDeck AI failed to generate any content for you! Please try again later.",
     "tos": "SlideDeck AI is an experimental prototype, and it has its limitations.\nPlease carefully review any and all AI-generated content.",
     "tos2": "By using SlideDeck AI, you agree to fair and responsible usage.\nNo liability assumed by any party."

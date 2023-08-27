@@ -1,9 +1,9 @@
-from typing import List, Tuple
-
+import base64
 import json5
 import time
 import streamlit as st
 import streamlit.runtime.scriptrunner as st_sr
+from typing import List, Tuple
 
 import llm_helper
 import pptx_helper
@@ -55,6 +55,18 @@ def get_web_search_results_wrapper(text: str) -> List[Tuple[str, str]]:
     return results
 
 
+@st.cache_data
+def get_ai_image_wrapper(text: str) -> str:
+    """
+    Fetch and cache a Base 64-encoded image by calling an external API.
+
+    :param text: The image prompt
+    :return: The Base 64-encoded image
+    """
+
+    return llm_helper.get_ai_image(text)
+
+
 def build_ui():
     """
     Display the input elements for content generation. Only covers the first step.
@@ -89,7 +101,7 @@ def build_ui():
 
     if st.session_state.clicked[0]:
         # if desc_topic_btn_submitted:
-        progress_text = 'Generating your presentation slides...give it a moment'
+        progress_text = 'Generating contents for your slides...give it a moment'
         progress_bar = st.progress(0, text=progress_text)
 
         topic_txt = topic.strip()
@@ -150,13 +162,13 @@ def process_topic_inputs(topic: str, progress_bar):
             # Apparently, "nested button click" needs to be handled differently
             # https://playground.streamlit.app/?q=triple-button
 
-            # st.button(APP_TEXT['button_labels'][1], on_click=button_clicked, args=[1])
+            st.button(APP_TEXT['button_labels'][1], on_click=button_clicked, args=[1])
 
-            # if st.session_state.clicked[1]:
-            progress_text = 'Converting...give it a moment'
-            progress_bar = st.progress(0, text=progress_text)
+            if st.session_state.clicked[1]:
+                progress_text = 'Converting...give it a moment'
+                progress_bar = st.progress(0, text=progress_text)
 
-            process_slides_contents(slides_content, progress_bar)
+                process_slides_contents(slides_content, progress_bar)
         except ValueError as ve:
             st.error(f'Unfortunately, an error occurred: {ve}! '
                      f'Please change the text, try again later, or report it, sharing your inputs.')
@@ -252,6 +264,15 @@ def show_bonus_stuff(ppt_headers: List):
 
     for (title, link) in search_results:
         st.markdown(f'[{title}]({link})')
+
+    st.write('')
+    st.write(APP_TEXT['image_info'])
+    image = get_ai_image_wrapper(ppt_text)
+
+    if len(image) > 0:
+        image = base64.b64decode(image)
+        st.image(image, caption=ppt_text)
+        st.info('Tip: Right-click on the image to save it.', icon="ℹ️")
 
 
 def button_clicked(button):

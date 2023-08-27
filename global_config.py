@@ -17,6 +17,11 @@ class GlobalConfig:
     CLARIFAI_APP_ID_GPT = 'chat-completion'
     CLARIFAI_MODEL_ID_GPT = 'GPT-3_5-turbo'
 
+    CLARIFAI_USER_ID_SD = 'stability-ai'
+    CLARIFAI_APP_ID_SD = 'stable-diffusion-2'
+    CLARIFAI_MODEL_ID_SD = 'stable-diffusion-xl'
+    CLARIFAI_MODEL_VERSION_ID_SD = '0c919cc1edfc455dbc96207753f178d7'
+
     # LLM_MODEL_TEMPERATURE: float = 0.5
     LLM_MODEL_MIN_OUTPUT_LENGTH: int = 50
     LLM_MODEL_MAX_OUTPUT_LENGTH: int = 2000
@@ -32,15 +37,15 @@ class GlobalConfig:
     PPTX_TEMPLATE_FILES = {
         'Blank': {
             'file': 'pptx_templates/Blank.pptx',
-            'caption': 'Good for starting'
+            'caption': 'A good start'
         },
         'Ion Boardroom': {
             'file': 'pptx_templates/Ion_Boardroom.pptx',
-            'caption': 'Choose some bold colors'
+            'caption': 'Make some bold decisions'
         },
         'Urban Monochrome': {
             'file': 'pptx_templates/Urban_monochrome.pptx',
-            'caption': 'Bring in some elegance'
+            'caption': 'Marvel in a monochrome dream'
         }
     }
 
