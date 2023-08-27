@@ -7,7 +7,7 @@ from global_config import GlobalConfig
 
 prompt = None
 llm_contents = None
-llm_yaml = None
+llm_json = None
 metaphor_client = None
 
 
@@ -77,53 +77,23 @@ def text_to_json(content: str) -> str:
     :return: JSON string
     """
 
-    global llm_yaml
+    global llm_json
 
     content = content.replace('```', '')
 
     # f-string is not used in order to prevent interpreting the brackets
-    text = '''
-Convert the given slide deck text into structured JSON output.
-Also, generate and add an engaging presentation title. 
-The output should be only correct and valid JSON having the following structure:
-
-{
-    "title": "...",
-    "slides": [
-        {
-            "heading": "...",
-            "bullet_points": [
-                "...",
-                [
-                    "...",
-                    "..."
-                ]
-            ]
-        },
-        {
-            ...
-        },
-    ]
-}
-
-
-Text:
-'''
-    text += content
-    text += '''
-
-
-Output:
-```json
-'''
+    with open(GlobalConfig.JSON_TEMPLATE_FILE, 'r') as in_file:
+        text = in_file.read()
+        # Insert the actual text contents
+        text = text.replace('<REPLACE_PLACEHOLDER>', content)
 
     text = text.strip()
     print(text)
 
-    if llm_yaml is None:
-        llm_yaml = get_llm(use_gpt=True)
+    if llm_json is None:
+        llm_json = get_llm(use_gpt=True)
 
-    output = llm_yaml(text, verbose=True)
+    output = llm_json(text, verbose=True)
     output = output.strip()
 
     first_index = max(0, output.find('{'))
@@ -141,7 +111,7 @@ def text_to_yaml(content: str) -> str:
     :return: JSON string
     """
 
-    global llm_yaml
+    global llm_json
 
     content = content.replace('```', '')
 
@@ -181,10 +151,10 @@ Output:
     text = text.strip()
     print(text)
 
-    if llm_yaml is None:
-        llm_yaml = get_llm(use_gpt=True)
+    if llm_json is None:
+        llm_json = get_llm(use_gpt=True)
 
-    output = llm_yaml(text, verbose=True)
+    output = llm_json(text, verbose=True)
     output = output.strip()
 
     # first_index = max(0, output.find('{'))
@@ -195,6 +165,13 @@ Output:
 
 
 def get_related_websites(query: str) -> metaphor.api.SearchResponse:
+    """
+    Fetch Web search results for a given query.
+
+    :param query: The query text
+    :return: The search results object
+    """
+    
     global metaphor_client
 
     if not metaphor_client:

@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 import json5
 import time
@@ -11,6 +11,48 @@ from global_config import GlobalConfig
 
 
 APP_TEXT = json5.loads(open(GlobalConfig.APP_STRINGS_FILE, 'r').read())
+
+
+@st.cache_data
+def get_contents_wrapper(text: str) -> str:
+    """
+    Fetch and cache the slide deck contents on a topic by calling an external API.
+
+    :param text: The presentation topic
+    :return: The slide deck contents or outline
+    """
+
+    return llm_helper.generate_slides_content(text).strip()
+
+
+@st.cache_data
+def get_json_wrapper(text: str) -> str:
+    """
+    Fetch and cache the JSON-formatted slide deck contents by calling an external API.
+
+    :param text: The slide deck contents or outline
+    :return: The JSON-formatted contents
+    """
+
+    return llm_helper.text_to_json(text)
+
+
+@st.cache_data
+def get_web_search_results_wrapper(text: str) -> List[Tuple[str, str]]:
+    """
+    Fetch and cache the Web search results on a given topic.
+
+    :param text: The topic
+    :return: A list of (title, link) tuples
+    """
+
+    results = []
+    search_results = llm_helper.get_related_websites(text)
+
+    for a_result in search_results.results:
+        results.append((a_result.title, a_result.url))
+
+    return results
 
 
 def build_ui():
@@ -75,7 +117,7 @@ def process_topic_inputs(topic: str, progress_bar):
         target_length = min(topic_length, GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH)
 
         try:
-            slides_content = llm_helper.generate_slides_content(topic[:target_length]).strip()
+            slides_content = get_contents_wrapper(topic[:target_length])
             content_length = len(slides_content)
 
             print('=' * 20)
@@ -132,7 +174,7 @@ def process_slides_contents(text: str, progress_bar: st.progress):
     """
 
     print('JSON button clicked')
-    json_str = llm_helper.text_to_json(text)
+    json_str = get_json_wrapper(text)
     # yaml_str = llm_helper.text_to_yaml(text)
     print('=' * 20)
     print(f'JSON:\n{json_str}')
@@ -206,10 +248,10 @@ def show_bonus_stuff(ppt_headers: List):
 
     # Use the presentation title and the slides headers to find relevant info online
     ppt_text = ' '.join(ppt_headers)
-    search_results = llm_helper.get_related_websites(ppt_text)
+    search_results = get_web_search_results_wrapper(ppt_text)
 
-    for a_result in search_results.results:
-        st.markdown(f'[{a_result.title}]({a_result.url})')
+    for (title, link) in search_results:
+        st.markdown(f'[{title}]({link})')
 
 
 def button_clicked(button):
