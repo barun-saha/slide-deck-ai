@@ -9,7 +9,6 @@ import llm_helper
 import pptx_helper
 from global_config import GlobalConfig
 
-
 APP_TEXT = json5.loads(open(GlobalConfig.APP_STRINGS_FILE, 'r').read())
 
 
@@ -186,14 +185,28 @@ def process_slides_contents(text: str, progress_bar: st.progress):
     """
 
     print('JSON button clicked')
-    json_str = get_json_wrapper(text)
+    json_str = ''
+
+    try:
+        json_str = get_json_wrapper(text)
+    except Exception as ex:
+        st.error(f'An exception occurred while trying to convert to JSON.'
+                 f' It could be because of heavy traffic or something else.'
+                 f' Try doing it again or try again later.\n'
+                 f' Error message: {ex}')
+        # st.stop()
+
     # yaml_str = llm_helper.text_to_yaml(text)
     print('=' * 20)
     print(f'JSON:\n{json_str}')
     print('=' * 20)
     st.code(json_str, language='json')
 
-    progress_bar.progress(100, text='Done!')
+    if len(json_str) > 0:
+        progress_bar.progress(100, text='Done!')
+    else:
+        st.error('Unfortunately, JSON generation failed, so the next steps would lead to nowhere.'
+                 ' Try again or come back later.')
 
     # Now, step 3
     st.divider()
@@ -238,41 +251,82 @@ def process_slides_contents(text: str, progress_bar: st.progress):
         with open(output_file_name, 'rb') as f:
             st.download_button('Download PPTX file', f, file_name=output_file_name)
 
-        show_bonus_stuff(all_headers)
+        bonus_divider = st.empty()
+        bonus_header = st.empty()
+        bonus_caption = st.empty()
+
+        urls_text = st.empty()
+        urls_list = st.empty()
+
+        img_empty = st.empty()
+        img_text = st.empty()
+        img_contents = st.empty()
+        img_tip = st.empty()
 
         st.divider()
         st.text(APP_TEXT['tos'])
         st.text(APP_TEXT['tos2'])
 
+        show_bonus_stuff(
+            all_headers,
+            bonus_divider,
+            bonus_header,
+            bonus_caption,
+            urls_text,
+            urls_list,
+            img_empty,
+            img_text,
+            img_contents,
+            img_tip
+        )
 
-def show_bonus_stuff(ppt_headers: List):
+
+def show_bonus_stuff(
+        ppt_headers: List,
+        *st_placeholders
+):
     """
     Show relevant links and images for the presentation topic.
 
     :param ppt_headers: A list of all slide headers
     """
 
-    st.divider()
-    st.header(APP_TEXT['section_headers'][3])
-    st.caption(APP_TEXT['section_captions'][3])
+    (
+        bonus_divider,
+        bonus_header,
+        bonus_caption,
+        urls_text,
+        urls_list,
+        img_empty,
+        img_text,
+        img_contents,
+        img_tip
+    ) = st_placeholders
 
-    st.write(APP_TEXT['urls_info'])
+    bonus_divider.divider()
+    bonus_header.header(APP_TEXT['section_headers'][3])
+    bonus_caption.caption(APP_TEXT['section_captions'][3])
+
+    urls_text.write(APP_TEXT['urls_info'])
 
     # Use the presentation title and the slides headers to find relevant info online
     ppt_text = ' '.join(ppt_headers)
     search_results = get_web_search_results_wrapper(ppt_text)
+    md_text_items = []
 
     for (title, link) in search_results:
-        st.markdown(f'[{title}]({link})')
+        md_text_items.append(f'[{title}]({link})')
 
-    st.write('')
-    st.write(APP_TEXT['image_info'])
+    urls_list.markdown('\n\n'.join(md_text_items))
+
+    img_empty.write('')
+    img_text.write(APP_TEXT['image_info'])
     image = get_ai_image_wrapper(ppt_text)
 
     if len(image) > 0:
         image = base64.b64decode(image)
-        st.image(image, caption=ppt_text)
-        st.info('Tip: Right-click on the image to save it.', icon="ℹ️")
+        img_contents.image(image, caption=ppt_text)
+        img_tip.info('Tip: Right-click on the image to save it.', icon="ℹ️")
 
 
 def button_clicked(button):
