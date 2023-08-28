@@ -144,9 +144,8 @@ def process_topic_inputs(topic: str, progress_bar):
 
             st.info(
                 'The generated content doesn\'t look so great?'
-                ' Need alternatives? Just change your description text and try again.'
-                ' For example, you can start describing like "Create a slide deck on..."',
-                icon="ℹ️"
+                ' Need alternatives? Just change your description text and try again.',
+                icon="💡️"
             )
 
             # Move on to step 2
@@ -204,6 +203,14 @@ def process_slides_contents(text: str, progress_bar: st.progress):
 
     if len(json_str) > 0:
         progress_bar.progress(100, text='Done!')
+        st.info(
+            'Tip: In some scenarios, the JSON creates a deeper nesting of the bullet points'
+            ' than what is expected. You can try to regenerate the JSON'
+            ' by making a minor change in the topic description in the previous step, e.g.,'
+            ' by adding or removing a character. Alternatively, you can edit this in the slide'
+            ' deck that would be generated in the next step.',
+            icon="💡️"
+        )
     else:
         st.error('Unfortunately, JSON generation failed, so the next steps would lead to nowhere.'
                  ' Try again or come back later.')
@@ -326,7 +333,7 @@ def show_bonus_stuff(
     if len(image) > 0:
         image = base64.b64decode(image)
         img_contents.image(image, caption=ppt_text)
-        img_tip.info('Tip: Right-click on the image to save it.', icon="ℹ️")
+        img_tip.info('Tip: Right-click on the image to save it.', icon="💡️")
 
 
 def button_clicked(button):
