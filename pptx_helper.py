@@ -1,5 +1,6 @@
 from typing import List, Tuple
 import json5
+import logging
 import pptx
 import re
 import yaml
@@ -8,6 +9,11 @@ from global_config import GlobalConfig
 
 
 PATTERN = re.compile(r"^slide[ ]+\d+:", re.IGNORECASE)
+
+logging.basicConfig(
+    level=GlobalConfig.LOG_LEVEL,
+    format='%(asctime)s - %(message)s',
+)
 
 
 def remove_slide_number_from_heading(header: str) -> str:
@@ -45,13 +51,13 @@ def generate_powerpoint_presentation(
         try:
             parsed_data = yaml.safe_load(structured_data)
         except yaml.parser.ParserError as ype:
-            print(f'*** YAML parse error: {ype}')
+            logging.error(f'*** YAML parse error: {ype}')
             parsed_data = {'title': '', 'slides': []}
     else:
         # The structured "JSON" might contain trailing commas, so using json5
         parsed_data = json5.loads(structured_data)
 
-    print(f"*** Using PPTX template: {GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file']}")
+    logging.debug(f"*** Using PPTX template: {GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file']}")
     presentation = pptx.Presentation(GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file'])
 
     # The title slide
@@ -60,7 +66,7 @@ def generate_powerpoint_presentation(
     title = slide.shapes.title
     subtitle = slide.placeholders[1]
     title.text = parsed_data['title']
-    print(f'Title is: {title.text}')
+    logging.debug(f'Title is: {title.text}')
     subtitle.text = 'by Myself and SlideDeck AI :)'
     all_headers = [title.text, ]
 

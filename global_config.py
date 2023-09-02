@@ -29,6 +29,7 @@ class GlobalConfig:
 
     METAPHOR_API_KEY = os.environ.get('METAPHOR_API_KEY', '')
 
+    LOG_LEVEL = 'INFO'
     APP_STRINGS_FILE = 'strings.json'
     PRELOAD_DATA_FILE = 'examples/example_02.json'
     SLIDES_TEMPLATE_FILE = 'langchain_templates/template_07.txt'

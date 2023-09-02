@@ -1,4 +1,5 @@
 import json
+import logging
 import time
 import metaphor_python as metaphor
 import requests
@@ -7,6 +8,11 @@ from langchain.llms import Clarifai
 
 from global_config import GlobalConfig
 
+
+logging.basicConfig(
+    level=GlobalConfig.LOG_LEVEL,
+    format='%(asctime)s - %(message)s',
+)
 
 prompt = None
 llm_contents = None
@@ -39,7 +45,7 @@ def get_llm(use_gpt: bool) -> Clarifai:
             verbose=True,
             # temperature=0.1,
         )
-    print(llm)
+    # print(llm)
 
     return llm
 
@@ -62,7 +68,7 @@ def generate_slides_content(topic: str) -> str:
         prompt = PromptTemplate.from_template(template_txt)
 
     formatted_prompt = prompt.format(topic=topic)
-    print(f'formatted_prompt:\n{formatted_prompt}')
+    # print(f'formatted_prompt:\n{formatted_prompt}')
 
     if llm_contents is None:
         llm_contents = get_llm(use_gpt=False)
@@ -91,7 +97,7 @@ def text_to_json(content: str) -> str:
         text = text.replace('<REPLACE_PLACEHOLDER>', content)
 
     text = text.strip()
-    print(text)
+    # print(text)
 
     if llm_json is None:
         llm_json = get_llm(use_gpt=True)
@@ -152,7 +158,7 @@ Output:
 '''
 
     text = text.strip()
-    print(text)
+    # print(text)
 
     if llm_json is None:
         llm_json = get_llm(use_gpt=True)
@@ -208,8 +214,8 @@ def get_ai_image(text: str) -> str:
         ]
     }
 
-    print('*** AI image generator...')
-    print(url)
+    # print('*** AI image generator...')
+    # print(url)
 
     start = time.time()
     response = requests.post(
@@ -219,16 +225,16 @@ def get_ai_image(text: str) -> str:
     )
     stop = time.time()
 
-    print('Response:', response, response.status_code)
-    print('Image generation took', stop - start, 'seconds')
+    # print('Response:', response, response.status_code)
+    logging.debug('Image generation took', stop - start, 'seconds')
     img_data = ''
 
     if response.ok:
-        print('*** Clarifai SDXL request: Response OK')
+        # print('*** Clarifai SDXL request: Response OK')
         json_data = json.loads(response.text)
         img_data = json_data['outputs'][0]['data']['image']['base64']
     else:
-        print('Image generation failed:', response.text)
+        logging.error('*** Image generation failed:', response.text)
 
     return img_data
 

@@ -1,6 +1,7 @@
 import base64
 import os
 import json5
+import logging
 import shutil
 import time
 import streamlit as st
@@ -14,6 +15,12 @@ from global_config import GlobalConfig
 
 APP_TEXT = json5.loads(open(GlobalConfig.APP_STRINGS_FILE, 'r').read())
 GB_CONVERTER = 2 ** 30
+
+
+logging.basicConfig(
+    level=GlobalConfig.LOG_LEVEL,
+    format='%(asctime)s - %(message)s',
+)
 
 
 @st.cache_data
@@ -82,11 +89,12 @@ def get_disk_used_percentage() -> float:
     used = used // GB_CONVERTER
     free = free // GB_CONVERTER
     used_perc = 100.0 * used / total
-    print(f'Total: {total} GB\n'
-          f'Used: {used} GB\n'
-          f'Free: {free} GB')
 
-    print('\n'.join(os.listdir()))
+    logging.debug(f'Total: {total} GB\n'
+                  f'Used: {used} GB\n'
+                  f'Free: {free} GB')
+
+    logging.debug('\n'.join(os.listdir()))
 
     return used_perc
 
@@ -147,24 +155,25 @@ def process_topic_inputs(topic: str, progress_bar):
     """
 
     topic_length = len(topic)
-    print(f'Input length:: topic: {topic_length}')
+    logging.debug(f'Input length:: topic: {topic_length}')
 
     if topic_length >= 10:
-        print(
+        logging.debug(
             f'Topic: {topic}\n'
         )
-        print('=' * 20)
+        logging.debug('=' * 20)
 
         target_length = min(topic_length, GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH)
 
         try:
+            logging.info('Calling LLM for content generation...')
             slides_content = get_contents_wrapper(topic[:target_length])
             content_length = len(slides_content)
 
-            print('=' * 20)
-            print(f'Slides content:\n{slides_content}')
-            print(f'Content length: {content_length}')
-            print('=' * 20)
+            logging.debug('=' * 20)
+            logging.debug(f'Slides content:\n{slides_content}')
+            logging.debug(f'Content length: {content_length}')
+            logging.debug('=' * 20)
             st.write(f'''Slides content:\n{slides_content}''')
             progress_bar.progress(100, text='Done!')
 
@@ -213,10 +222,11 @@ def process_slides_contents(text: str, progress_bar: st.progress):
     :param progress_bar: Progress bar for this step
     """
 
-    print('JSON button clicked')
+    logging.debug('JSON button clicked')
     json_str = ''
 
     try:
+        logging.info('Calling LLM for conversion...')
         json_str = get_json_wrapper(text)
     except Exception as ex:
         st.error(f'An exception occurred while trying to convert to JSON.'
@@ -226,9 +236,9 @@ def process_slides_contents(text: str, progress_bar: st.progress):
         # st.stop()
 
     # yaml_str = llm_helper.text_to_yaml(text)
-    print('=' * 20)
-    print(f'JSON:\n{json_str}')
-    print('=' * 20)
+    logging.debug('=' * 20)
+    logging.debug(f'JSON:\n{json_str}')
+    logging.debug('=' * 20)
     st.code(json_str, language='json')
 
     if len(json_str) > 0:
@@ -275,6 +285,7 @@ def process_slides_contents(text: str, progress_bar: st.progress):
         timestamp = time.time()
         output_file_name = f'{session_id}_{timestamp}.pptx'
 
+        logging.info('Creating PPTX file...')
         all_headers = pptx_helper.generate_powerpoint_presentation(
             json_str,
             as_yaml=False,
@@ -347,6 +358,7 @@ def show_bonus_stuff(
     urls_text.write(APP_TEXT['urls_info'])
 
     # Use the presentation title and the slides headers to find relevant info online
+    logging.info('Using Metaphor search...')
     ppt_text = ' '.join(ppt_headers)
     search_results = get_web_search_results_wrapper(ppt_text)
     md_text_items = []
@@ -356,6 +368,7 @@ def show_bonus_stuff(
 
     urls_list.markdown('\n\n'.join(md_text_items))
 
+    logging.info('Calling SDXL for image generation...')
     img_empty.write('')
     img_text.write(APP_TEXT['image_info'])
     image = get_ai_image_wrapper(ppt_text)
