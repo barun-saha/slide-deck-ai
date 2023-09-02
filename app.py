@@ -73,6 +73,9 @@ def build_ui():
 
     st.title(APP_TEXT['app_name'])
     st.subheader(APP_TEXT['caption'])
+    st.markdown(
+        '![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fhuggingface.co%2Fspaces%2Fbarunsaha%2Fslide-deck-ai&countColor=%23263759)'
+    )
     st.divider()
 
     st.header(APP_TEXT['section_headers'][0])
