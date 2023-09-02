@@ -77,7 +77,7 @@ def get_disk_used_percentage() -> float:
     :return: Percentage of the disk space currently used
     """
 
-    total, used, free = shutil.disk_usage('/')
+    total, used, free = shutil.disk_usage(__file__)
     total = total // GB_CONVERTER
     used = used // GB_CONVERTER
     free = free // GB_CONVERTER
