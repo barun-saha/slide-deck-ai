@@ -14,7 +14,7 @@
         "Since you have come this far, we have unlocked some more good stuff for you!"
     ],
     "input_labels": [
-        "**Describe the topic of the presentation. Avoid mentioning the count of slides.**\n*Note: the output may be truncated due to API limitations.*"
+        "**Describe the topic of the presentation using 10 to 250 characters. Avoid mentioning the count of slides.**"
     ],
     "button_labels": [
         "Generate contents",

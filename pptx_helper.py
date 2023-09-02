@@ -9,6 +9,22 @@ from global_config import GlobalConfig
 
 
 PATTERN = re.compile(r"^slide[ ]+\d+:", re.IGNORECASE)
+SAMPLE_JSON_FOR_PPTX = '''
+{
+    "title": "Understanding AI",
+    "slides": [
+        {
+            "heading": "Introduction",
+            "bullet_points": [
+                "Brief overview of AI",
+                [
+                    "Importance of understanding AI"
+                ]
+            ]
+        }
+    ]
+}
+'''
 
 logging.basicConfig(
     level=GlobalConfig.LOG_LEVEL,

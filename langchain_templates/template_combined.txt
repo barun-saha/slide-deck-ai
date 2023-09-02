@@ -1,0 +1,37 @@
+You are a helpful, intelligent chatbot. Create the slides for a presentation on the given topic. Include main headings for each slide, detailed bullet points for each slide. Add relevant content to each slide.
+
+
+Topic:
+<REPLACE_PLACEHOLDER>
+
+
+Desired JSON output format:
+
+{
+    "title": "Presentation Title",
+    "slides": [
+        {
+            "heading": "Heading for the First Slide",
+            "bullet_points": [
+                "First bullet point",
+                [
+                    "Sub-bullet point 1",
+                    "Sub-bullet point 1"
+                ],
+                "Second bullet point"
+            ]
+        },
+        {
+            "heading": "Heading for the Second Slide",
+            "bullet_points": [
+                "First bullet point",             
+                "Second bullet item",
+                "Third bullet point"
+            ]
+        }
+    ]
+}
+
+
+Output:
+```json
