@@ -1,5 +1,7 @@
 import base64
+import os
 import json5
+import shutil
 import time
 import streamlit as st
 import streamlit.runtime.scriptrunner as st_sr
@@ -9,7 +11,9 @@ import llm_helper
 import pptx_helper
 from global_config import GlobalConfig
 
+
 APP_TEXT = json5.loads(open(GlobalConfig.APP_STRINGS_FILE, 'r').read())
+GB_CONVERTER = 2 ** 30
 
 
 @st.cache_data
@@ -66,16 +70,39 @@ def get_ai_image_wrapper(text: str) -> str:
     return llm_helper.get_ai_image(text)
 
 
+def get_disk_used_percentage() -> float:
+    """
+    Compute the disk usage.
+
+    :return: Percentage of the disk space currently used
+    """
+
+    total, used, free = shutil.disk_usage('/')
+    total = total // GB_CONVERTER
+    used = used // GB_CONVERTER
+    free = free // GB_CONVERTER
+    used_perc = 100.0 * used / total
+    print(f'Total: {total} GB\n'
+          f'Used: {used} GB\n'
+          f'Free: {free} GB')
+
+    print('\n'.join(os.listdir()))
+
+    return used_perc
+
+
 def build_ui():
     """
     Display the input elements for content generation. Only covers the first step.
     """
 
+    get_disk_used_percentage()
+
     st.title(APP_TEXT['app_name'])
     st.subheader(APP_TEXT['caption'])
-    st.markdown(
-        '![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fhuggingface.co%2Fspaces%2Fbarunsaha%2Fslide-deck-ai&countColor=%23263759)'
-    )
+    # st.markdown(
+    #     '![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fhuggingface.co%2Fspaces%2Fbarunsaha%2Fslide-deck-ai&countColor=%23263759)'
+    # )
     st.divider()
 
     st.header(APP_TEXT['section_headers'][0])
