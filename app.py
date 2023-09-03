@@ -1,4 +1,5 @@
 import os
+import pathlib
 import json5
 import logging
 import shutil
@@ -7,6 +8,7 @@ import streamlit as st
 import streamlit.runtime.scriptrunner as st_sr
 from typing import List, Tuple
 import metaphor_python as metaphor
+import tempfile
 
 import llm_helper
 import pptx_helper
@@ -248,23 +250,26 @@ def generate_slide_deck(json_str: str, pptx_template: str, progress_bar) -> List
     progress_text = 'Creating the slide deck...give it a moment'
     progress_bar.progress(75, text=progress_text)
 
-    # Get a unique name for the file to save -- use the session ID
-    ctx = st_sr.get_script_run_ctx()
-    session_id = ctx.session_id
-    timestamp = time.time()
-    output_file_name = f'{session_id}_{timestamp}.pptx'
+    # # Get a unique name for the file to save -- use the session ID
+    # ctx = st_sr.get_script_run_ctx()
+    # session_id = ctx.session_id
+    # timestamp = time.time()
+    # output_file_name = f'{session_id}_{timestamp}.pptx'
+
+    temp = tempfile.NamedTemporaryFile(delete=False, suffix='.pptx')
+    path = pathlib.Path(temp.name)
 
     logging.info('Creating PPTX file...')
     all_headers = pptx_helper.generate_powerpoint_presentation(
         json_str,
         as_yaml=False,
         slides_template=pptx_template,
-        output_file_name=output_file_name
+        output_file_path=path
     )
     progress_bar.progress(100, text='Done!')
 
-    with open(output_file_name, 'rb') as f:
-        st.download_button('Download PPTX file', f, file_name=output_file_name)
+    with open(path, 'rb') as f:
+        st.download_button('Download PPTX file', f, file_name='Presentation.pptx')
 
     return all_headers
 

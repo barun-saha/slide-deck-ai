@@ -1,3 +1,5 @@
+import pathlib
+import tempfile
 from typing import List, Tuple
 import json5
 import logging
@@ -50,7 +52,7 @@ def generate_powerpoint_presentation(
         structured_data: str,
         as_yaml: bool,
         slides_template: str,
-        output_file_name: str
+        output_file_path: pathlib.Path
 ) -> List:
     """
     Create and save a PowerPoint presentation file containing the contents in JSON or YAML format.
@@ -58,7 +60,7 @@ def generate_powerpoint_presentation(
     :param structured_data: The presentation contents as "JSON" (may contain trailing commas) or YAML
     :param as_yaml: True if the input data is in YAML format; False if it is in JSON format
     :param slides_template: The PPTX template to use
-    :param output_file_name: The name of the PPTX file to save as
+    :param output_file_path: The path of the PPTX file to save as
     :return A list of presentation title and slides headers
     """
 
@@ -120,7 +122,7 @@ def generate_powerpoint_presentation(
     title = slide.shapes.title
     title.text = 'Thank you!'
 
-    presentation.save(output_file_name)
+    presentation.save(output_file_path)
 
     return all_headers
 
@@ -235,9 +237,13 @@ if __name__ == '__main__':
         }
     ]
 }'''
+
+    temp = tempfile.NamedTemporaryFile(delete=False, suffix='.pptx')
+    path = pathlib.Path(temp.name)
+
     generate_powerpoint_presentation(
         json5.loads(json_data),
         as_yaml=False,
-        output_file_name='test.pptx',
+        output_file_path=path,
         slides_template='Blank'
     )
