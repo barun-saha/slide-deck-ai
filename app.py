@@ -1,3 +1,4 @@
+import base64
 import os
 import pathlib
 import json5
@@ -281,7 +282,7 @@ def show_bonus_stuff(ppt_headers: List[str]):
     :param ppt_headers: A list of the slide headings.
     """
 
-    # Use the presentation title and the slides headers to find relevant info online
+    # Use the presentation title and the slide headers to find relevant info online
     logging.info('Calling Metaphor search...')
     ppt_text = ' '.join(ppt_headers)
     search_results = get_web_search_results_wrapper(ppt_text)
@@ -294,6 +295,17 @@ def show_bonus_stuff(ppt_headers: List[str]):
         st.markdown('\n\n'.join(md_text_items))
 
     # Avoid image generation. It costs time and an API call, so just limit to the text generation.
+    with st.expander('AI-generated image on the presentation topic'):
+        logging.info('Calling SDXL for image generation...')
+        # img_empty.write('')
+        # img_text.write(APP_TEXT['image_info'])
+        image = get_ai_image_wrapper(ppt_text)
+
+        if len(image) > 0:
+            image = base64.b64decode(image)
+            st.image(image, caption=ppt_text)
+            st.info('Tip: Right-click on the image to save it.', icon="💡️")
+            logging.info('Image added')
 
 
 def main():

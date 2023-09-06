@@ -9,9 +9,9 @@ load_dotenv()
 @dataclass(frozen=True)
 class GlobalConfig:
     CLARIFAI_PAT = os.environ.get('CLARIFAI_PAT', '')
-    CLARIFAI_USER_ID = 'meta'
-    CLARIFAI_APP_ID = 'Llama-2'
-    CLARIFAI_MODEL_ID = 'llama2-13b-chat'
+    CLARIFAI_USER_ID = 'clarifai'
+    CLARIFAI_APP_ID = 'ml'
+    CLARIFAI_MODEL_ID = 'llama2-13b-alternative-4k'
 
     CLARIFAI_USER_ID_GPT = 'openai'
     CLARIFAI_APP_ID_GPT = 'chat-completion'
@@ -25,7 +25,7 @@ class GlobalConfig:
     # LLM_MODEL_TEMPERATURE: float = 0.5
     LLM_MODEL_MIN_OUTPUT_LENGTH: int = 50
     LLM_MODEL_MAX_OUTPUT_LENGTH: int = 2000
-    LLM_MODEL_MAX_INPUT_LENGTH: int = 250
+    LLM_MODEL_MAX_INPUT_LENGTH: int = 1500
 
     METAPHOR_API_KEY = os.environ.get('METAPHOR_API_KEY', '')
 
