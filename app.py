@@ -144,6 +144,10 @@ def build_ui():
 
     if submit:
         # st.write(f'Clicked {time.time()}')
+        st.session_state.submitted = True
+
+    # https://github.com/streamlit/streamlit/issues/3832#issuecomment-1138994421
+    if 'submitted' in st.session_state:
         progress_text = 'Generating the slides...give it a moment'
         progress_bar = st.progress(0, text=progress_text)
 

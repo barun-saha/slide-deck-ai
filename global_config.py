@@ -25,7 +25,7 @@ class GlobalConfig:
     # LLM_MODEL_TEMPERATURE: float = 0.5
     LLM_MODEL_MIN_OUTPUT_LENGTH: int = 50
     LLM_MODEL_MAX_OUTPUT_LENGTH: int = 2000
-    LLM_MODEL_MAX_INPUT_LENGTH: int = 1500
+    LLM_MODEL_MAX_INPUT_LENGTH: int = 300
 
     METAPHOR_API_KEY = os.environ.get('METAPHOR_API_KEY', '')
 

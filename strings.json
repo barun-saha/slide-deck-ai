@@ -14,7 +14,7 @@
         "Since you have come this far, we have unlocked some more good stuff for you!"
     ],
     "input_labels": [
-        "**Describe the topic of the presentation using 10 to 1500 characters. Avoid mentioning the count of slides.**"
+        "**Describe the topic of the presentation using 10 to 300 characters. Avoid mentioning the count of slides.**"
     ],
     "button_labels": [
         "Generate contents",
