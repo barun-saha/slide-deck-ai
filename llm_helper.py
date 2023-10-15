@@ -62,6 +62,7 @@ def generate_slides_content(topic: str) -> str:
 
     if llm is None:
         llm = get_llm(use_gpt=True)
+        print(llm)
 
     slides_content = llm(template_txt, verbose=True)
 

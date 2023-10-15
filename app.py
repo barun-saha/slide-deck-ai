@@ -115,6 +115,8 @@ def build_ui():
 
     st.title(APP_TEXT['app_name'])
     st.subheader(APP_TEXT['caption'])
+    st.markdown('*Running on GPT-4 at the moment. Image generation has been disabled. '
+                'Will run as long as the community plan supports* :)')
 
     with st.form('my_form'):
         # Topic input
@@ -298,18 +300,18 @@ def show_bonus_stuff(ppt_headers: List[str]):
     with st.expander('Related Web references'):
         st.markdown('\n\n'.join(md_text_items))
 
-    # Avoid image generation. It costs time and an API call, so just limit to the text generation.
-    with st.expander('AI-generated image on the presentation topic'):
-        logging.info('Calling SDXL for image generation...')
-        # img_empty.write('')
-        # img_text.write(APP_TEXT['image_info'])
-        image = get_ai_image_wrapper(ppt_text)
-
-        if len(image) > 0:
-            image = base64.b64decode(image)
-            st.image(image, caption=ppt_text)
-            st.info('Tip: Right-click on the image to save it.', icon="💡️")
-            logging.info('Image added')
+    # # Avoid image generation. It costs time and an API call, so just limit to the text generation.
+    # with st.expander('AI-generated image on the presentation topic'):
+    #     logging.info('Calling SDXL for image generation...')
+    #     # img_empty.write('')
+    #     # img_text.write(APP_TEXT['image_info'])
+    #     image = get_ai_image_wrapper(ppt_text)
+    #
+    #     if len(image) > 0:
+    #         image = base64.b64decode(image)
+    #         st.image(image, caption=ppt_text)
+    #         st.info('Tip: Right-click on the image to save it.', icon="💡️")
+    #         logging.info('Image added')
 
 
 def main():

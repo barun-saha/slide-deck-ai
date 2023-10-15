@@ -9,13 +9,13 @@ load_dotenv()
 @dataclass(frozen=True)
 class GlobalConfig:
     CLARIFAI_PAT = os.environ.get('CLARIFAI_PAT', '')
-    CLARIFAI_USER_ID = 'clarifai'
-    CLARIFAI_APP_ID = 'ml'
-    CLARIFAI_MODEL_ID = 'llama2-13b-alternative-4k'
+    CLARIFAI_USER_ID = 'meta'
+    CLARIFAI_APP_ID = 'Llama-2'
+    CLARIFAI_MODEL_ID = 'llama2-13b-chat'
 
     CLARIFAI_USER_ID_GPT = 'openai'
     CLARIFAI_APP_ID_GPT = 'chat-completion'
-    CLARIFAI_MODEL_ID_GPT = 'GPT-3_5-turbo'
+    CLARIFAI_MODEL_ID_GPT = 'GPT-4'  # 'GPT-3_5-turbo'
 
     CLARIFAI_USER_ID_SD = 'stability-ai'
     CLARIFAI_APP_ID_SD = 'stable-diffusion-2'
