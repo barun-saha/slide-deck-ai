@@ -7,17 +7,20 @@ from langchain.llms import Clarifai
 from global_config import GlobalConfig
 
 
+HF_API_URL = f"https://api-inference.huggingface.co/models/{GlobalConfig.HF_LLM_MODEL_NAME}"
+HF_API_HEADERS = {"Authorization": f"Bearer {GlobalConfig.HUGGINGFACEHUB_API_TOKEN}"}
+
 logging.basicConfig(
     level=GlobalConfig.LOG_LEVEL,
     format='%(asctime)s - %(message)s',
 )
 
-llm = None
+# llm = None
 
 
 def get_llm(use_gpt: bool) -> Clarifai:
     """
-    Get a large language model.
+    Get a large language model (hosted by Clarifai).
 
     :param use_gpt: True if GPT-3.5 is required; False is Llama 2 is required
     """
@@ -45,28 +48,58 @@ def get_llm(use_gpt: bool) -> Clarifai:
     return _
 
 
+def hf_api_query(payload: dict):
+    """
+    Invoke HF inference end-point API.
+
+    :param payload: The prompt for the LLM and related parameters
+    :return: The output from the LLM
+    """
+
+    logging.debug(f'{payload=}')
+    response = requests.post(HF_API_URL, headers=HF_API_HEADERS, json=payload)
+    return response.json()
+
+
 def generate_slides_content(topic: str) -> str:
     """
     Generate the outline/contents of slides for a presentation on a given topic.
 
-    :param topic: Topic/subject matter/idea on which slides are to be generated
+    :param topic: Topic on which slides are to be generated
     :return: The content in JSON format
     """
-
-    # global prompt
-    global llm
 
     with open(GlobalConfig.SLIDES_TEMPLATE_FILE, 'r') as in_file:
         template_txt = in_file.read().strip()
         template_txt = template_txt.replace('<REPLACE_PLACEHOLDER>', topic)
 
-    if llm is None:
-        llm = get_llm(use_gpt=True)
-        print(llm)
+    output = hf_api_query({
+        "inputs": template_txt,
+        "parameters": {
+            'temperature': GlobalConfig.LLM_MODEL_TEMPERATURE,
+            'min_length': GlobalConfig.LLM_MODEL_MIN_OUTPUT_LENGTH,
+            'max_length': GlobalConfig.LLM_MODEL_MAX_OUTPUT_LENGTH,
+            'max_new_tokens': GlobalConfig.LLM_MODEL_MAX_OUTPUT_LENGTH,
+            'num_return_sequences': 1,
+            'return_full_text': False,
+            # "repetition_penalty": 0.0001
+        },
+        "options": {
+            'wait_for_model': True,
+            'use_cache': True
+        }
+    })
 
-    slides_content = llm(template_txt, verbose=True)
+    output = output[0]['generated_text'].strip()
+    # output = output[len(template_txt):]
+    logging.debug(f'{output=}')
 
-    return slides_content
+    json_end_idx = output.rfind('```')
+    if json_end_idx != -1:
+        # logging.debug(f'{json_end_idx=}')
+        output = output[:json_end_idx]
+
+    return output
 
 
 def get_ai_image(text: str) -> str:

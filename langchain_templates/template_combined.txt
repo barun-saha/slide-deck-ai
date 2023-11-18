@@ -1,4 +1,5 @@
 You are a helpful, intelligent chatbot. Create the slides for a presentation on the given topic. Include main headings for each slide, detailed bullet points for each slide. Add relevant content to each slide.
+If relevant, add one or two examples to illustrate the concept.
 
 
 Topic:
@@ -6,7 +7,6 @@ Topic:
 
 
 Desired JSON output format:
-
 {
     "title": "Presentation Title",
     "slides": [
@@ -16,7 +16,7 @@ Desired JSON output format:
                 "First bullet point",
                 [
                     "Sub-bullet point 1",
-                    "Sub-bullet point 1"
+                    "Sub-bullet point 2"
                 ],
                 "Second bullet point"
             ]

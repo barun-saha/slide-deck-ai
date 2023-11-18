@@ -22,11 +22,13 @@ class GlobalConfig:
     CLARIFAI_MODEL_ID_SD = 'stable-diffusion-xl'
     CLARIFAI_MODEL_VERSION_ID_SD = '0c919cc1edfc455dbc96207753f178d7'
 
-    # LLM_MODEL_TEMPERATURE: float = 0.5
+    HF_LLM_MODEL_NAME = 'mistralai/Mistral-7B-Instruct-v0.1'  # 'HuggingFaceH4/zephyr-7b-beta'
+    LLM_MODEL_TEMPERATURE: float = 0.2  # Mistral and Zephyr require a bit high temperature
     LLM_MODEL_MIN_OUTPUT_LENGTH: int = 50
     LLM_MODEL_MAX_OUTPUT_LENGTH: int = 2000
     LLM_MODEL_MAX_INPUT_LENGTH: int = 300
 
+    HUGGINGFACEHUB_API_TOKEN = os.environ.get('HUGGINGFACEHUB_API_TOKEN', '')
     METAPHOR_API_KEY = os.environ.get('METAPHOR_API_KEY', '')
 
     LOG_LEVEL = 'INFO'

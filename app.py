@@ -84,26 +84,26 @@ def get_ai_image_wrapper(text: str) -> str:
     return llm_helper.get_ai_image(text)
 
 
-def get_disk_used_percentage() -> float:
-    """
-    Compute the disk usage.
-
-    :return: Percentage of the disk space currently used
-    """
-
-    total, used, free = shutil.disk_usage(__file__)
-    total = total // GB_CONVERTER
-    used = used // GB_CONVERTER
-    free = free // GB_CONVERTER
-    used_perc = 100.0 * used / total
-
-    logging.debug(f'Total: {total} GB\n'
-                  f'Used: {used} GB\n'
-                  f'Free: {free} GB')
-
-    logging.debug('\n'.join(os.listdir()))
-
-    return used_perc
+# def get_disk_used_percentage() -> float:
+#     """
+#     Compute the disk usage.
+#
+#     :return: Percentage of the disk space currently used
+#     """
+#
+#     total, used, free = shutil.disk_usage(__file__)
+#     total = total // GB_CONVERTER
+#     used = used // GB_CONVERTER
+#     free = free // GB_CONVERTER
+#     used_perc = 100.0 * used / total
+#
+#     logging.debug(f'Total: {total} GB\n'
+#                   f'Used: {used} GB\n'
+#                   f'Free: {free} GB')
+#
+#     logging.debug('\n'.join(os.listdir()))
+#
+#     return used_perc
 
 
 def build_ui():
@@ -115,8 +115,11 @@ def build_ui():
 
     st.title(APP_TEXT['app_name'])
     st.subheader(APP_TEXT['caption'])
-    st.markdown('*Running on GPT-4 at the moment. Image generation has been disabled. '
-                'Will run as long as the community plan supports* :)')
+    st.markdown('Using [Mistral-7B-Instruct-v0.1](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1).')
+    st.markdown('*If the JSON is generated or parsed incorrectly, try again later by making minor changes '
+                'to the input text.*')
+    st.markdown('~~*Running on GPT-4 at the moment. Image generation has been disabled. '
+                'Will run as long as the community plan supports* :)~~')
 
     with st.form('my_form'):
         # Topic input
@@ -188,6 +191,8 @@ def generate_presentation(topic: str, pptx_template: str, progress_bar):
         try:
             # Step 1: Generate the contents in JSON format using an LLM
             json_str = process_slides_contents(topic[:target_length], progress_bar)
+            logging.debug(f'{topic[:target_length]=}')
+            logging.debug(f'{json_str=}')
 
             # Step 2: Generate the slide deck based on the template specified
             if len(json_str) > 0:
