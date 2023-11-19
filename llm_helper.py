@@ -56,7 +56,7 @@ def hf_api_query(payload: dict):
     :return: The output from the LLM
     """
 
-    logging.debug(f'{payload=}')
+    # logging.debug(f'{payload=}')
     response = requests.post(HF_API_URL, headers=HF_API_HEADERS, json=payload)
     return response.json()
 
@@ -92,12 +92,13 @@ def generate_slides_content(topic: str) -> str:
 
     output = output[0]['generated_text'].strip()
     # output = output[len(template_txt):]
-    logging.debug(f'{output=}')
 
     json_end_idx = output.rfind('```')
     if json_end_idx != -1:
         # logging.debug(f'{json_end_idx=}')
         output = output[:json_end_idx]
+
+    logging.debug(f'{output=}')
 
     return output
 

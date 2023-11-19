@@ -31,7 +31,7 @@ class GlobalConfig:
     HUGGINGFACEHUB_API_TOKEN = os.environ.get('HUGGINGFACEHUB_API_TOKEN', '')
     METAPHOR_API_KEY = os.environ.get('METAPHOR_API_KEY', '')
 
-    LOG_LEVEL = 'INFO'
+    LOG_LEVEL = 'DEBUG'
     APP_STRINGS_FILE = 'strings.json'
     PRELOAD_DATA_FILE = 'examples/example_02.json'
     SLIDES_TEMPLATE_FILE = 'langchain_templates/template_combined.txt'

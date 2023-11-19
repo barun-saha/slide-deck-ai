@@ -190,7 +190,7 @@ def generate_presentation(topic: str, pptx_template: str, progress_bar):
             # Step 1: Generate the contents in JSON format using an LLM
             json_str = process_slides_contents(topic[:target_length], progress_bar)
             logging.debug(f'{topic[:target_length]=}')
-            logging.debug(f'{json_str=}')
+            logging.debug(f'{len(json_str)=}')
 
             # Step 2: Generate the slide deck based on the template specified
             if len(json_str) > 0:
@@ -237,7 +237,7 @@ def process_slides_contents(text: str, progress_bar: st.progress) -> str:
                  f' Try doing it again or try again later.\n'
                  f' Error message: {ex}')
 
-    logging.debug(f'JSON: {json_str}')
+    # logging.debug(f'JSON: {json_str}')
 
     progress_bar.progress(50, text='Contents generated')
 
@@ -302,6 +302,8 @@ def show_bonus_stuff(ppt_headers: List[str]):
 
     with st.expander('Related Web references'):
         st.markdown('\n\n'.join(md_text_items))
+
+    logging.info('Done!')
 
     # # Avoid image generation. It costs time and an API call, so just limit to the text generation.
     # with st.expander('AI-generated image on the presentation topic'):
