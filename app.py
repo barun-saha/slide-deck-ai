@@ -115,11 +115,9 @@ def build_ui():
 
     st.title(APP_TEXT['app_name'])
     st.subheader(APP_TEXT['caption'])
-    st.markdown('Using [Mistral-7B-Instruct-v0.1](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1).')
+    st.markdown('Powered by [Mistral-7B-Instruct-v0.1](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1).')
     st.markdown('*If the JSON is generated or parsed incorrectly, try again later by making minor changes '
                 'to the input text.*')
-    st.markdown('~~*Running on GPT-4 at the moment. Image generation has been disabled. '
-                'Will run as long as the community plan supports* :)~~')
 
     with st.form('my_form'):
         # Topic input
