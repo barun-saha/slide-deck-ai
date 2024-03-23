@@ -1,15 +1,11 @@
-import base64
-import os
 import pathlib
-import json5
 import logging
-import shutil
-import time
-import streamlit as st
-import streamlit.runtime.scriptrunner as st_sr
-from typing import List, Tuple
-import metaphor_python as metaphor
 import tempfile
+from typing import List, Tuple
+
+import json5
+import metaphor_python as metaphor
+import streamlit as st
 
 import llm_helper
 import pptx_helper
@@ -115,7 +111,7 @@ def build_ui():
 
     st.title(APP_TEXT['app_name'])
     st.subheader(APP_TEXT['caption'])
-    st.markdown('Powered by [Mistral-7B-Instruct-v0.1](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1).')
+    st.markdown('Powered by [Mistral-7B-Instruct-v0.2](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1).')
     st.markdown('*If the JSON is generated or parsed incorrectly, try again later by making minor changes '
                 'to the input text.*')
 
