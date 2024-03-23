@@ -1,7 +1,7 @@
 python-dotenv[cli]~=1.0.0
-langchain~=0.0.273
+langchain~=0.1.13
 # huggingface_hub
-streamlit~=1.26.0
+streamlit~=1.32.2
 clarifai==9.7.4
 
 python-pptx

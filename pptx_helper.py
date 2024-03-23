@@ -1,10 +1,11 @@
+import logging
 import pathlib
+import re
 import tempfile
 from typing import List, Tuple
+
 import json5
-import logging
 import pptx
-import re
 import yaml
 
 from global_config import GlobalConfig
@@ -57,7 +58,8 @@ def generate_powerpoint_presentation(
     """
     Create and save a PowerPoint presentation file containing the contents in JSON or YAML format.
 
-    :param structured_data: The presentation contents as "JSON" (may contain trailing commas) or YAML
+    :param structured_data: The presentation contents as "JSON" (may contain trailing commas) or
+    YAML
     :param as_yaml: True if the input data is in YAML format; False if it is in JSON format
     :param slides_template: The PPTX template to use
     :param output_file_path: The path of the PPTX file to save as
@@ -69,13 +71,16 @@ def generate_powerpoint_presentation(
         try:
             parsed_data = yaml.safe_load(structured_data)
         except yaml.parser.ParserError as ype:
-            logging.error(f'*** YAML parse error: {ype}')
+            logging.error('*** YAML parse error: %s', str(ype))
             parsed_data = {'title': '', 'slides': []}
     else:
         # The structured "JSON" might contain trailing commas, so using json5
         parsed_data = json5.loads(structured_data)
 
-    logging.debug(f"*** Using PPTX template: {GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file']}")
+    logging.debug(
+        "*** Using PPTX template: %s",
+        GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file']
+    )
     presentation = pptx.Presentation(GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file'])
 
     # The title slide
@@ -84,7 +89,7 @@ def generate_powerpoint_presentation(
     title = slide.shapes.title
     subtitle = slide.placeholders[1]
     title.text = parsed_data['title']
-    logging.debug(f'Title is: {title.text}')
+    logging.debug('Presentation title is: %s', title.text)
     subtitle.text = 'by Myself and SlideDeck AI :)'
     all_headers = [title.text, ]
 
