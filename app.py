@@ -12,7 +12,7 @@ import pptx_helper
 from global_config import GlobalConfig
 
 
-APP_TEXT = json5.loads(open(GlobalConfig.APP_STRINGS_FILE, 'r').read())
+APP_TEXT = json5.loads(open(GlobalConfig.APP_STRINGS_FILE, 'r', encoding='utf-8').read())
 GB_CONVERTER = 2 ** 30
 
 
@@ -68,18 +68,6 @@ def get_web_search_results_wrapper(text: str) -> List[Tuple[str, str]]:
     return results
 
 
-@st.cache_data
-def get_ai_image_wrapper(text: str) -> str:
-    """
-    Fetch and cache a Base 64-encoded image by calling an external API.
-
-    :param text: The image prompt
-    :return: The Base 64-encoded image
-    """
-
-    return llm_helper.get_ai_image(text)
-
-
 # def get_disk_used_percentage() -> float:
 #     """
 #     Compute the disk usage.
@@ -111,14 +99,19 @@ def build_ui():
 
     st.title(APP_TEXT['app_name'])
     st.subheader(APP_TEXT['caption'])
-    st.markdown('Powered by [Mistral-7B-Instruct-v0.2](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.1).')
-    st.markdown('*If the JSON is generated or parsed incorrectly, try again later by making minor changes '
-                'to the input text.*')
+    st.markdown(
+        'Powered by'
+        ' [Mistral-7B-Instruct-v0.2](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2).'
+    )
+    st.markdown(
+        '*If the JSON is generated or parsed incorrectly, try again later by making minor changes'
+        ' to the input text.*'
+    )
 
     with st.form('my_form'):
         # Topic input
         try:
-            with open(GlobalConfig.PRELOAD_DATA_FILE, 'r') as in_file:
+            with open(GlobalConfig.PRELOAD_DATA_FILE, 'r', encoding='utf-8') as in_file:
                 preload_data = json5.loads(in_file.read())
         except (FileExistsError, FileNotFoundError):
             preload_data = {'topic': '', 'audience': ''}
@@ -158,7 +151,8 @@ def build_ui():
     st.text(APP_TEXT['tos2'])
 
     st.markdown(
-        '![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fhuggingface.co%2Fspaces%2Fbarunsaha%2Fslide-deck-ai&countColor=%23263759)'
+        '![Visitors]'
+        '(https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fhuggingface.co%2Fspaces%2Fbarunsaha%2Fslide-deck-ai&countColor=%23263759)'
     )
 
 
@@ -173,20 +167,17 @@ def generate_presentation(topic: str, pptx_template: str, progress_bar):
     """
 
     topic_length = len(topic)
-    logging.debug(f'Input length:: topic: {topic_length}')
+    logging.debug('Input length:: topic: %s', topic_length)
 
     if topic_length >= 10:
-        logging.debug(
-            f'Topic: {topic}\n'
-        )
-
+        logging.debug('Topic: %s', topic)
         target_length = min(topic_length, GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH)
 
         try:
             # Step 1: Generate the contents in JSON format using an LLM
             json_str = process_slides_contents(topic[:target_length], progress_bar)
-            logging.debug(f'{topic[:target_length]=}')
-            logging.debug(f'{len(json_str)=}')
+            logging.debug('Truncated topic: %s', topic[:target_length])
+            logging.debug('Length of JSON: %d', len(json_str))
 
             # Step 2: Generate the slide deck based on the template specified
             if len(json_str) > 0:
@@ -196,8 +187,10 @@ def generate_presentation(topic: str, pptx_template: str, progress_bar):
                     icon="💡️"
                 )
             else:
-                st.error('Unfortunately, JSON generation failed, so the next steps would lead to nowhere.'
-                         ' Try again or come back later.')
+                st.error(
+                    'Unfortunately, JSON generation failed, so the next steps would lead'
+                    ' to nowhere. Try again or come back later.'
+                )
                 return
 
             all_headers = generate_slide_deck(json_str, pptx_template, progress_bar)
@@ -225,15 +218,14 @@ def process_slides_contents(text: str, progress_bar: st.progress) -> str:
     json_str = ''
 
     try:
-        logging.info(f'Calling LLM for content generation on the topic: {text}')
+        logging.info('Calling LLM for content generation on the topic: %s', text)
         json_str = get_contents_wrapper(text)
     except Exception as ex:
-        st.error(f'An exception occurred while trying to convert to JSON.'
-                 f' It could be because of heavy traffic or something else.'
-                 f' Try doing it again or try again later.\n'
-                 f' Error message: {ex}')
-
-    # logging.debug(f'JSON: {json_str}')
+        st.error(
+            f'An exception occurred while trying to convert to JSON. It could be because of heavy'
+            f' traffic or something else. Try doing it again or try again later.'
+            f'\nError message: {ex}'
+        )
 
     progress_bar.progress(50, text='Contents generated')
 
@@ -316,6 +308,10 @@ def show_bonus_stuff(ppt_headers: List[str]):
 
 
 def main():
+    """
+    Trigger application run.
+    """
+
     build_ui()
 
 
