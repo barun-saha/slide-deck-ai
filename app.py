@@ -260,7 +260,6 @@ def generate_slide_deck(json_str: str, pptx_template: str, progress_bar) -> List
     logging.info('Creating PPTX file...')
     all_headers = pptx_helper.generate_powerpoint_presentation(
         json_str,
-        as_yaml=False,
         slides_template=pptx_template,
         output_file_path=path
     )
