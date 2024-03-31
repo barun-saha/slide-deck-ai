@@ -6,7 +6,6 @@ from typing import List, Tuple
 
 import json5
 import pptx
-import yaml
 
 from global_config import GlobalConfig
 
@@ -51,31 +50,20 @@ def remove_slide_number_from_heading(header: str) -> str:
 
 def generate_powerpoint_presentation(
         structured_data: str,
-        as_yaml: bool,
         slides_template: str,
         output_file_path: pathlib.Path
 ) -> List:
     """
-    Create and save a PowerPoint presentation file containing the contents in JSON or YAML format.
+    Create and save a PowerPoint presentation file containing the content in JSON format.
 
-    :param structured_data: The presentation contents as "JSON" (may contain trailing commas) or
-    YAML
-    :param as_yaml: True if the input data is in YAML format; False if it is in JSON format
+    :param structured_data: The presentation contents as "JSON" (may contain trailing commas)
     :param slides_template: The PPTX template to use
     :param output_file_path: The path of the PPTX file to save as
     :return A list of presentation title and slides headers
     """
 
-    if as_yaml:
-        # Avoid YAML mode: nested bullets can lead to incorrect YAML generation
-        try:
-            parsed_data = yaml.safe_load(structured_data)
-        except yaml.parser.ParserError as ype:
-            logging.error('*** YAML parse error: %s', str(ype))
-            parsed_data = {'title': '', 'slides': []}
-    else:
-        # The structured "JSON" might contain trailing commas, so using json5
-        parsed_data = json5.loads(structured_data)
+    # The structured "JSON" might contain trailing commas, so using json5
+    parsed_data = json5.loads(structured_data)
 
     logging.debug(
         "*** Using PPTX template: %s",
@@ -134,7 +122,8 @@ def generate_powerpoint_presentation(
 
 def get_flat_list_of_contents(items: list, level: int) -> List[Tuple]:
     """
-    Flatten a (hierarchical) list of bullet points to a single list containing each item and its level.
+    Flatten a (hierarchical) list of bullet points to a single list containing each item and
+    its level.
 
     :param items: A bullet point (string or list)
     :param level: The current level of hierarchy
@@ -248,7 +237,6 @@ if __name__ == '__main__':
 
     generate_powerpoint_presentation(
         json5.loads(json_data),
-        as_yaml=False,
         output_file_path=path,
         slides_template='Blank'
     )

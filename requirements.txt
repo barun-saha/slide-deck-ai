@@ -2,11 +2,8 @@ python-dotenv[cli]~=1.0.0
 langchain~=0.1.13
 # huggingface_hub
 streamlit~=1.32.2
-clarifai==9.7.4
 
 python-pptx
 metaphor-python
 json5~=0.9.14
-PyYAML~=6.0.1
-# curlify
 requests~=2.31.0
