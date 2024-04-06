@@ -1,6 +1,6 @@
 {
-    "app_name": "SlideDeck AI",
-    "caption": "*:green[Co-create your next PowerPoint slide deck with AI]*",
+    "app_name": ":green[SlideDeck AI [Reloaded]]",
+    "caption": "Converse, create, iterate, and improve your PowerPoint slide deck",
     "section_headers": [
         "Step 1: Generate your content",
         "Step 2: Make it structured",
@@ -25,5 +25,12 @@
     "image_info": "Got some more minutes? We are also trying to deliver an AI-generated art on the presentation topic, fresh off the studio, just for you!",
     "content_generation_failure_error": "Unfortunately, SlideDeck AI failed to generate any content for you! Please try again later.",
     "tos": "SlideDeck AI is an experimental prototype, and it has its limitations.\nPlease carefully review any and all AI-generated content.",
-    "tos2": "By using SlideDeck AI, you agree to fair and responsible usage.\nNo liability assumed by any party."
+    "tos2": "By using SlideDeck AI, you agree to fair and responsible usage.\nNo liability assumed by any party.",
+    "ai_greetings": [
+        "How may I help you today?",
+        "Stuck with creating your presentation? Let me help you.",
+        "Looks like you have a looming deadline. Can I help you start with your slide deck?",
+        "Hello! What topic do you have on your mind today?"
+    ],
+    "chat_placeholder": "Write the topic or instructions here"
 }

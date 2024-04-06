@@ -7,3 +7,6 @@ python-pptx
 metaphor-python
 json5~=0.9.14
 requests~=2.31.0
+
+transformers
+langchain-community

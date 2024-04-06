@@ -14,7 +14,7 @@ class GlobalConfig:
     LLM_MODEL_TEMPERATURE: float = 0.2
     LLM_MODEL_MIN_OUTPUT_LENGTH: int = 50
     LLM_MODEL_MAX_OUTPUT_LENGTH: int = 2000
-    LLM_MODEL_MAX_INPUT_LENGTH: int = 300
+    LLM_MODEL_MAX_INPUT_LENGTH: int = 100
 
     HUGGINGFACEHUB_API_TOKEN = os.environ.get('HUGGINGFACEHUB_API_TOKEN', '')
     METAPHOR_API_KEY = os.environ.get('METAPHOR_API_KEY', '')
@@ -39,6 +39,15 @@ class GlobalConfig:
             'caption': 'Marvel in a monochrome dream'
         }
     }
+
+    CHAT_USAGE_INSTRUCTIONS = (
+        'Briefly describe your topic of presentation in the textbox provided below.'
+        ' Subsequently, you can add follow-up instructions, e.g., "Can you add a slide on GPUs?"'
+        ' You can also ask AI to refine any particular slide, e.g., "Make the slide with title'
+        ' \'Examples of AI\' a bit more descriptive."'
+        '\n\n'
+        'SlideDeck AI generates only text content. It does not have access to the Internet.'
+    )
 
 
 logging.basicConfig(
