@@ -41,13 +41,18 @@ class GlobalConfig:
         }
     }
 
+    # This is a long text, so not incorporated as a string in `strings.json`
     CHAT_USAGE_INSTRUCTIONS = (
         'Briefly describe your topic of presentation in the textbox provided below.'
         ' Subsequently, you can add follow-up instructions, e.g., "Can you add a slide on GPUs?"'
-        ' You can also ask AI to refine any particular slide, e.g., "Make the slide with title'
+        ' You can also ask it to refine any particular slide, e.g., "Make the slide with title'
         ' \'Examples of AI\' a bit more descriptive."'
         '\n\n'
         'SlideDeck AI generates only text content. It does not have access to the Internet.'
+        '\n\n'
+        'If you like SlideDeck AI, please consider leaving a heart on the'
+        ' [Hugging Face Space](https://huggingface.co/spaces/barunsaha/slide-deck-ai/) or'
+        ' a star on [GitHub](https://github.com/barun-saha/slide-deck-ai).'
     )
 
 
