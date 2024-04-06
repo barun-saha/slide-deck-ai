@@ -24,6 +24,7 @@ class GlobalConfig:
     PRELOAD_DATA_FILE = 'examples/example_02.json'
     SLIDES_TEMPLATE_FILE = 'langchain_templates/template_combined.txt'
     JSON_TEMPLATE_FILE = 'langchain_templates/text_to_json_template_02.txt'
+    CHAT_TEMPLATE_FILE = 'langchain_templates/template_combined_chat_history.txt'
 
     PPTX_TEMPLATE_FILES = {
         'Blank': {

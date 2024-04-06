@@ -39,7 +39,7 @@ def display_page_footer_content():
     Display content in the page footer.
     """
 
-    st.text(APP_TEXT['tos'] + '\n' + APP_TEXT['tos2'])
+    st.text(APP_TEXT['tos'] + '\n\n' + APP_TEXT['tos2'])
     # st.markdown(
     #     '![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fhuggingface.co%2Fspaces%2Fbarunsaha%2Fslide-deck-ai&countColor=%23263759)'  # noqa: E501
     # )
@@ -67,11 +67,7 @@ def set_up_chat_ui():
     history = StreamlitChatMessageHistory(key='chat_messages')
     llm = llm_helper.get_hf_endpoint()
 
-    with open(
-            'langchain_templates/template_combined_chat_history.txt',
-            'r',
-            encoding='utf-8'
-    ) as in_file:
+    with open(GlobalConfig.CHAT_TEMPLATE_FILE, 'r', encoding='utf-8') as in_file:
         template = in_file.read()
 
     prompt = ChatPromptTemplate.from_template(template)
@@ -92,8 +88,8 @@ def set_up_chat_ui():
         random.choice(APP_TEXT['ai_greetings'])
     )
 
-    # for msg in history.messages:
-    #     st.chat_message(msg.type).write(msg.content)
+    for msg in history.messages:
+        st.chat_message(msg.type).markdown(msg.content)
 
     progress_bar.progress(100, text='Done!')
     progress_bar.empty()
