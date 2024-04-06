@@ -17,7 +17,18 @@ from global_config import GlobalConfig
 from helpers import llm_helper, pptx_helper
 
 
-APP_TEXT = json5.loads(open(GlobalConfig.APP_STRINGS_FILE, 'r', encoding='utf-8').read())
+@st.cache_data
+def _load_strings() -> dict:
+    """
+    Load various strings to be displayed in the app.
+    :return: The dictionary of strings.
+    """
+
+    with open(GlobalConfig.APP_STRINGS_FILE, 'r', encoding='utf-8') as in_file:
+        return json5.loads(in_file.read())
+
+
+APP_TEXT = _load_strings()
 DOWNLOAD_FILE_KEY = 'download_file_name'
 # langchain.debug = True
 # langchain.verbose = True
@@ -117,7 +128,7 @@ def set_up_chat_ui():
         placeholder=APP_TEXT['chat_placeholder'],
         max_chars=GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH
     ):
-        logger.debug('User input: %s', prompt)
+        logger.info('User input: %s', prompt)
         st.chat_message('user').write(prompt)
 
         progress_bar_pptx = st.progress(0, 'Calling LLM...')
