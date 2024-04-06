@@ -22,6 +22,15 @@ APP_TEXT = json5.loads(open(GlobalConfig.APP_STRINGS_FILE, 'r', encoding='utf-8'
 logger = logging.getLogger(__name__)
 progress_bar = st.progress(0, text='Setting up SlideDeck AI...')
 
+texts = list(GlobalConfig.PPTX_TEMPLATE_FILES.keys())
+captions = [GlobalConfig.PPTX_TEMPLATE_FILES[x]['caption'] for x in texts]
+pptx_template = st.sidebar.radio(
+    'Select a presentation template:',
+    texts,
+    captions=captions,
+    horizontal=True
+)
+
 
 def display_page_header_content():
     """
@@ -138,16 +147,15 @@ def set_up_chat_ui():
 
         # Now create the PPT file
         progress_bar_pptx.progress(75, 'Creating the slide deck...give it a moment')
-        generate_slide_deck(response_cleaned, pptx_template='Blank')
+        generate_slide_deck(response_cleaned)
         progress_bar_pptx.progress(100, text='Done!')
 
 
-def generate_slide_deck(json_str: str, pptx_template: str) -> List:
+def generate_slide_deck(json_str: str) -> List:
     """
     Create a slide deck.
 
     :param json_str: The content in *valid* JSON format.
-    :param pptx_template: The PPTX template name.
     :return: A list of all slide headers and the title.
     """
 
