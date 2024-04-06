@@ -139,12 +139,11 @@ def set_up_chat_ui():
         progress_bar_pptx.progress(100, text='Done!')
 
 
-def generate_slide_deck(json_str: str) -> List:
+def generate_slide_deck(json_str: str):
     """
     Create a slide deck.
 
     :param json_str: The content in *valid* JSON format.
-    :return: A list of all slide headers and the title.
     """
 
     if DOWNLOAD_FILE_KEY in st.session_state:
@@ -157,15 +156,22 @@ def generate_slide_deck(json_str: str) -> List:
         logger.debug('DOWNLOAD_FILE_KEY not found in session')
 
     logger.debug('Creating PPTX file: %s...', st.session_state[DOWNLOAD_FILE_KEY])
-    all_headers = pptx_helper.generate_powerpoint_presentation(
-        json_str,
-        slides_template=pptx_template,
-        output_file_path=path
-    )
 
-    _display_download_button(path)
+    try:
+        pptx_helper.generate_powerpoint_presentation(
+            json_str,
+            slides_template=pptx_template,
+            output_file_path=path
+        )
 
-    return all_headers
+        _display_download_button(path)
+    except ValueError as ve:
+        st.error(APP_TEXT['json_parsing_error'])
+        logger.error('%s', APP_TEXT['json_parsing_error'])
+        logger.error('Additional error info: %s', str(ve))
+    except Exception as ex:
+        st.error(APP_TEXT['content_generation_error'])
+        logger.error('Caught a generic exception: %s', str(ex))
 
 
 def _clean_json(json_str: str) -> str:

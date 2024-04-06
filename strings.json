@@ -1,6 +1,6 @@
 {
     "app_name": ":green[SlideDeck AI $^{[Reloaded]}$]",
-    "caption": "Converse, create, iterate, and improve your next PowerPoint slide deck",
+    "caption": "*Converse, create, iterate, and improve your next PowerPoint slide deck*",
     "section_headers": [
         "Step 1: Generate your content",
         "Step 2: Make it structured",
@@ -23,13 +23,14 @@
     ],
     "urls_info": "Here is a list of some online resources that you can consult for further information on this topic:",
     "image_info": "Got some more minutes? We are also trying to deliver an AI-generated art on the presentation topic, fresh off the studio, just for you!",
-    "content_generation_failure_error": "Unfortunately, SlideDeck AI failed to generate any content for you! Please try again later.",
+    "content_generation_error": "Unfortunately, SlideDeck AI failed to generate any content for you! Please try again later.",
+    "json_parsing_error": "Unfortunately, SlideDeck AI failed to parse the response from LLM! Please try again by rephrasing the query or refreshing the page.",
     "tos": "SlideDeck AI is an experimental prototype, and it has its limitations.\nPlease carefully review any and all AI-generated content.",
     "tos2": "By using SlideDeck AI, you agree to fair and responsible usage.\nNo liability assumed by any party.",
     "ai_greetings": [
         "How may I help you today?",
         "Stuck with creating your presentation? Let me help you.",
-        "Looks like you have a looming deadline. Can I help you start with your slide deck?",
+        "Looks like you have a looming deadline. Can I help you get started with your slide deck?",
         "Hello! What topic do you have on your mind today?"
     ],
     "chat_placeholder": "Write the topic or instructions here"
