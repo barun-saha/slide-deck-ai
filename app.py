@@ -7,8 +7,7 @@ import json5
 import metaphor_python as metaphor
 import streamlit as st
 
-import llm_helper
-import pptx_helper
+from helpers import llm_helper, pptx_helper
 from global_config import GlobalConfig
 
 
@@ -16,10 +15,7 @@ APP_TEXT = json5.loads(open(GlobalConfig.APP_STRINGS_FILE, 'r', encoding='utf-8'
 GB_CONVERTER = 2 ** 30
 
 
-logging.basicConfig(
-    level=GlobalConfig.LOG_LEVEL,
-    format='%(asctime)s - %(message)s',
-)
+logger = logging.getLogger(__name__)
 
 
 @st.cache_data
@@ -27,11 +23,11 @@ def get_contents_wrapper(text: str) -> str:
     """
     Fetch and cache the slide deck contents on a topic by calling an external API.
 
-    :param text: The presentation topic
-    :return: The slide deck contents or outline in JSON format
+    :param text: The presentation topic.
+    :return: The slide deck contents or outline in JSON format.
     """
 
-    logging.info('LLM call because of cache miss...')
+    logger.info('LLM call because of cache miss...')
     return llm_helper.generate_slides_content(text).strip()
 
 
@@ -40,7 +36,7 @@ def get_metaphor_client_wrapper() -> metaphor.Metaphor:
     """
     Create a Metaphor client for semantic Web search.
 
-    :return: Metaphor instance
+    :return: Metaphor instance.
     """
 
     return metaphor.Metaphor(api_key=GlobalConfig.METAPHOR_API_KEY)
@@ -51,8 +47,8 @@ def get_web_search_results_wrapper(text: str) -> List[Tuple[str, str]]:
     """
     Fetch and cache the Web search results on a given topic.
 
-    :param text: The topic
-    :return: A list of (title, link) tuples
+    :param text: The topic.
+    :return: A list of (title, link) tuples.
     """
 
     results = []
@@ -66,28 +62,6 @@ def get_web_search_results_wrapper(text: str) -> List[Tuple[str, str]]:
         results.append((a_result.title, a_result.url))
 
     return results
-
-
-# def get_disk_used_percentage() -> float:
-#     """
-#     Compute the disk usage.
-#
-#     :return: Percentage of the disk space currently used
-#     """
-#
-#     total, used, free = shutil.disk_usage(__file__)
-#     total = total // GB_CONVERTER
-#     used = used // GB_CONVERTER
-#     free = free // GB_CONVERTER
-#     used_perc = 100.0 * used / total
-#
-#     logging.debug(f'Total: {total} GB\n'
-#                   f'Used: {used} GB\n'
-#                   f'Free: {free} GB')
-#
-#     logging.debug('\n'.join(os.listdir()))
-#
-#     return used_perc
 
 
 def build_ui():
@@ -160,24 +134,23 @@ def generate_presentation(topic: str, pptx_template: str, progress_bar):
     """
     Process the inputs to generate the slides.
 
-    :param topic: The presentation topic based on which contents are to be generated
-    :param pptx_template: The PowerPoint template name to be used
-    :param progress_bar: Progress bar from the page
-    :return:
+    :param topic: The presentation topic based on which contents are to be generated.
+    :param pptx_template: The PowerPoint template name to be used.
+    :param progress_bar: Progress bar from the page.
     """
 
     topic_length = len(topic)
-    logging.debug('Input length:: topic: %s', topic_length)
+    logger.debug('Input length:: topic: %s', topic_length)
 
     if topic_length >= 10:
-        logging.debug('Topic: %s', topic)
+        logger.debug('Topic: %s', topic)
         target_length = min(topic_length, GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH)
 
         try:
             # Step 1: Generate the contents in JSON format using an LLM
             json_str = process_slides_contents(topic[:target_length], progress_bar)
-            logging.debug('Truncated topic: %s', topic[:target_length])
-            logging.debug('Length of JSON: %d', len(json_str))
+            logger.debug('Truncated topic: %s', topic[:target_length])
+            logger.debug('Length of JSON: %d', len(json_str))
 
             # Step 2: Generate the slide deck based on the template specified
             if len(json_str) > 0:
@@ -210,15 +183,15 @@ def process_slides_contents(text: str, progress_bar: st.progress) -> str:
     """
     Convert given text into structured data and display. Update the UI.
 
-    :param text: The topic description for the presentation
-    :param progress_bar: Progress bar for this step
-    :return: The contents as a JSON-formatted string
+    :param text: The topic description for the presentation.
+    :param progress_bar: Progress bar for this step.
+    :return: The contents as a JSON-formatted string.
     """
 
     json_str = ''
 
     try:
-        logging.info('Calling LLM for content generation on the topic: %s', text)
+        logger.info('Calling LLM for content generation on the topic: %s', text)
         json_str = get_contents_wrapper(text)
     except Exception as ex:
         st.error(
@@ -239,10 +212,10 @@ def generate_slide_deck(json_str: str, pptx_template: str, progress_bar) -> List
     """
     Create a slide deck.
 
-    :param json_str: The contents in JSON format
-    :param pptx_template: The PPTX template name
-    :param progress_bar: Progress bar
-    :return: A list of all slide headers and the title
+    :param json_str: The contents in JSON format.
+    :param pptx_template: The PPTX template name.
+    :param progress_bar: Progress bar.
+    :return: A list of all slide headers and the title.
     """
 
     progress_text = 'Creating the slide deck...give it a moment'
@@ -257,7 +230,7 @@ def generate_slide_deck(json_str: str, pptx_template: str, progress_bar) -> List
     temp = tempfile.NamedTemporaryFile(delete=False, suffix='.pptx')
     path = pathlib.Path(temp.name)
 
-    logging.info('Creating PPTX file...')
+    logger.info('Creating PPTX file...')
     all_headers = pptx_helper.generate_powerpoint_presentation(
         json_str,
         slides_template=pptx_template,
@@ -279,7 +252,7 @@ def show_bonus_stuff(ppt_headers: List[str]):
     """
 
     # Use the presentation title and the slide headers to find relevant info online
-    logging.info('Calling Metaphor search...')
+    logger.info('Calling Metaphor search...')
     ppt_text = ' '.join(ppt_headers)
     search_results = get_web_search_results_wrapper(ppt_text)
     md_text_items = []
@@ -290,11 +263,11 @@ def show_bonus_stuff(ppt_headers: List[str]):
     with st.expander('Related Web references'):
         st.markdown('\n\n'.join(md_text_items))
 
-    logging.info('Done!')
+    logger.info('Done!')
 
     # # Avoid image generation. It costs time and an API call, so just limit to the text generation.
     # with st.expander('AI-generated image on the presentation topic'):
-    #     logging.info('Calling SDXL for image generation...')
+    #     logger.info('Calling SDXL for image generation...')
     #     # img_empty.write('')
     #     # img_text.write(APP_TEXT['image_info'])
     #     image = get_ai_image_wrapper(ppt_text)
@@ -303,7 +276,7 @@ def show_bonus_stuff(ppt_headers: List[str]):
     #         image = base64.b64decode(image)
     #         st.image(image, caption=ppt_text)
     #         st.info('Tip: Right-click on the image to save it.', icon="💡️")
-    #         logging.info('Image added')
+    #         logger.info('Image added')
 
 
 def main():
