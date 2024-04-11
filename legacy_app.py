@@ -241,6 +241,9 @@ def generate_slide_deck(json_str: str, pptx_template: str, progress_bar) -> List
     with open(path, 'rb') as f:
         st.download_button('Download PPTX file', f, file_name='Presentation.pptx')
 
+    if temp:
+        temp.close()
+
     return all_headers
 
 

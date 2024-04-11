@@ -241,3 +241,5 @@ if __name__ == '__main__':
         output_file_path=path,
         slides_template='Blank'
     )
+
+    temp.close()

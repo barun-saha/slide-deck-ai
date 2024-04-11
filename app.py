@@ -254,6 +254,9 @@ def generate_slide_deck(json_str: str):
         st.session_state[DOWNLOAD_FILE_KEY] = str(path)
         logger.debug('DOWNLOAD_FILE_KEY not found in session')
 
+        if temp:
+            temp.close()
+
     logger.debug('Creating PPTX file: %s...', st.session_state[DOWNLOAD_FILE_KEY])
 
     try:
