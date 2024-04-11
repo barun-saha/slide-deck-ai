@@ -13,18 +13,20 @@ class GlobalConfig:
     HF_LLM_MODEL_NAME = 'mistralai/Mistral-7B-Instruct-v0.2'
     LLM_MODEL_TEMPERATURE: float = 0.2
     LLM_MODEL_MIN_OUTPUT_LENGTH: int = 50
-    LLM_MODEL_MAX_OUTPUT_LENGTH: int = 2000
-    LLM_MODEL_MAX_INPUT_LENGTH: int = 100
+    LLM_MODEL_MAX_OUTPUT_LENGTH: int = 4096
+    LLM_MODEL_MAX_INPUT_LENGTH: int = 750
 
     HUGGINGFACEHUB_API_TOKEN = os.environ.get('HUGGINGFACEHUB_API_TOKEN', '')
     METAPHOR_API_KEY = os.environ.get('METAPHOR_API_KEY', '')
 
     LOG_LEVEL = 'DEBUG'
+    COUNT_TOKENS = False
     APP_STRINGS_FILE = 'strings.json'
     PRELOAD_DATA_FILE = 'examples/example_02.json'
     SLIDES_TEMPLATE_FILE = 'langchain_templates/template_combined.txt'
     JSON_TEMPLATE_FILE = 'langchain_templates/text_to_json_template_02.txt'
-    CHAT_TEMPLATE_FILE = 'langchain_templates/template_combined_chat_history.txt'
+    INITIAL_PROMPT_TEMPLATE = 'langchain_templates/chat_prompts/initial_template.txt'
+    REFINEMENT_PROMPT_TEMPLATE = 'langchain_templates/chat_prompts/refinement_template.txt'
 
     PPTX_TEMPLATE_FILES = {
         'Blank': {

@@ -1,5 +1,8 @@
 import logging
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
+
 from langchain_community.llms.huggingface_endpoint import HuggingFaceEndpoint
 from langchain_core.language_models import LLM
 
@@ -11,10 +14,22 @@ HF_API_HEADERS = {"Authorization": f"Bearer {GlobalConfig.HUGGINGFACEHUB_API_TOK
 
 logger = logging.getLogger(__name__)
 
+retries = Retry(
+    total=5,
+    backoff_factor=0.25,
+    backoff_jitter=0.3,
+    status_forcelist=[502, 503, 504],
+    allowed_methods={'POST'},
+)
+adapter = HTTPAdapter(max_retries=retries)
+http_session = requests.Session()
+http_session.mount('https://', adapter)
+http_session.mount('http://', adapter)
+
 
 def get_hf_endpoint() -> LLM:
     """
-    Get an LLM via the HuggingFaceEndpoint.
+    Get an LLM via the HuggingFaceEndpoint of LangChain.
 
     :return: The LLM.
     """
@@ -44,11 +59,11 @@ def hf_api_query(payload: dict) -> dict:
     """
 
     try:
-        response = requests.post(HF_API_URL, headers=HF_API_HEADERS, json=payload, timeout=15)
+        response = http_session.post(HF_API_URL, headers=HF_API_HEADERS, json=payload, timeout=15)
         result = response.json()
     except requests.exceptions.Timeout as te:
         logger.error('*** Error: hf_api_query timeout! %s', str(te))
-        result = {}
+        result = []
 
     return result
 

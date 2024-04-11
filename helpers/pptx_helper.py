@@ -64,7 +64,7 @@ def generate_powerpoint_presentation(
     parsed_data = json5.loads(structured_data)
 
     logger.debug(
-        "*** Using PPTX template: %s",
+        '*** Using PPTX template: %s',
         GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file']
     )
     presentation = pptx.Presentation(GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file'])
@@ -75,7 +75,10 @@ def generate_powerpoint_presentation(
     title = slide.shapes.title
     subtitle = slide.placeholders[1]
     title.text = parsed_data['title']
-    logger.debug('Presentation title is: %s', title.text)
+    logger.info(
+        'PPT title: %s | #slides: %d',
+        title.text, len(parsed_data['slides'])
+    )
     subtitle.text = 'by Myself and SlideDeck AI :)'
     all_headers = [title.text, ]
 
