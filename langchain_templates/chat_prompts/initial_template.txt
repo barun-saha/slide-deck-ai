@@ -10,7 +10,7 @@ Unless explicitly specified with the topic, create about 10 slides.
 {question}
 
 
-The output must be valid and syntactically correct JSON adhering to the following schema:
+The output must be only a valid and syntactically correct JSON adhering to the following schema:
 {{
     "title": "Presentation Title",
     "slides": [
