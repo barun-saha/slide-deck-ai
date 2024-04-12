@@ -34,7 +34,6 @@ def get_clean_json(json_str: str) -> str:
     # ```vbnet
     # Please note that the JSON output is in valid format but the content of the "Role of GPUs in AI" slide is just an example and may not be factually accurate. For accurate information, you should consult relevant resources and update the content accordingly.
     # ```
-    str_len = len(json_str)
     response_cleaned = json_str
 
     while True:
@@ -46,7 +45,6 @@ def get_clean_json(json_str: str) -> str:
         # In the ideal scenario, the character before the last ``` should be
         # a new line or a closing bracket }
         prev_char = json_str[idx - 1]
-        print(f'{idx=}, {prev_char=}')
 
         if prev_char == '}':
             response_cleaned = json_str[:idx]
