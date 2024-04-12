@@ -2,6 +2,7 @@ import logging
 import pathlib
 import re
 import tempfile
+
 from typing import List, Tuple
 
 import json5
@@ -28,17 +29,14 @@ SAMPLE_JSON_FOR_PPTX = '''
 }
 '''
 
-logging.basicConfig(
-    level=GlobalConfig.LOG_LEVEL,
-    format='%(asctime)s - %(message)s',
-)
+logger = logging.getLogger(__name__)
 
 
 def remove_slide_number_from_heading(header: str) -> str:
     """
     Remove the slide number from a given slide header.
 
-    :param header: The header of a slide
+    :param header: The header of a slide.
     """
 
     if PATTERN.match(header):
@@ -56,17 +54,17 @@ def generate_powerpoint_presentation(
     """
     Create and save a PowerPoint presentation file containing the content in JSON format.
 
-    :param structured_data: The presentation contents as "JSON" (may contain trailing commas)
-    :param slides_template: The PPTX template to use
-    :param output_file_path: The path of the PPTX file to save as
-    :return A list of presentation title and slides headers
+    :param structured_data: The presentation contents as "JSON" (may contain trailing commas).
+    :param slides_template: The PPTX template to use.
+    :param output_file_path: The path of the PPTX file to save as.
+    :return A list of presentation title and slides headers.
     """
 
     # The structured "JSON" might contain trailing commas, so using json5
     parsed_data = json5.loads(structured_data)
 
-    logging.debug(
-        "*** Using PPTX template: %s",
+    logger.debug(
+        '*** Using PPTX template: %s',
         GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file']
     )
     presentation = pptx.Presentation(GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file'])
@@ -77,7 +75,10 @@ def generate_powerpoint_presentation(
     title = slide.shapes.title
     subtitle = slide.placeholders[1]
     title.text = parsed_data['title']
-    logging.debug('Presentation title is: %s', title.text)
+    logger.info(
+        'PPT title: %s | #slides: %d',
+        title.text, len(parsed_data['slides'])
+    )
     subtitle.text = 'by Myself and SlideDeck AI :)'
     all_headers = [title.text, ]
 
@@ -125,9 +126,9 @@ def get_flat_list_of_contents(items: list, level: int) -> List[Tuple]:
     Flatten a (hierarchical) list of bullet points to a single list containing each item and
     its level.
 
-    :param items: A bullet point (string or list)
-    :param level: The current level of hierarchy
-    :return: A list of (bullet item text, hierarchical level) tuples
+    :param items: A bullet point (string or list).
+    :param level: The current level of hierarchy.
+    :return: A list of (bullet item text, hierarchical level) tuples.
     """
 
     flat_list = []
@@ -240,3 +241,5 @@ if __name__ == '__main__':
         output_file_path=path,
         slides_template='Blank'
     )
+
+    temp.close()
