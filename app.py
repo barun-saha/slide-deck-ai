@@ -164,7 +164,7 @@ def set_up_chat_ui():
         if not _is_valid_prompt(prompt):
             return
 
-        logger.info('User input: %s', prompt)
+        logger.info('User input: %s | #characters: %d', prompt, len(prompt))
         st.chat_message('user').write(prompt)
 
         user_messages = _get_user_messages()
@@ -233,7 +233,7 @@ def set_up_chat_ui():
         response_cleaned = _clean_json(response)
 
         # Now create the PPT file
-        progress_bar_pptx.progress(75, 'Creating the slide deck...give it a moment')
+        progress_bar_pptx.progress(75, 'Creating the slide deck...give it a moment...')
         generate_slide_deck(response_cleaned)
         progress_bar_pptx.progress(100, text='Done!')
 
