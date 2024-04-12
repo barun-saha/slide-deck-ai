@@ -63,7 +63,8 @@ for example, in a `.env` file. Visit the respective websites to obtain the keys.
 
 # Live Demo
 
-[SlideDeck AI](https://huggingface.co/spaces/barunsaha/slide-deck-ai) on Hugging Face Spaces
+- [SlideDeck AI](https://huggingface.co/spaces/barunsaha/slide-deck-ai) on Hugging Face Spaces
+- [Demo video](https://youtu.be/QvAKzNKtk9k) of the chat interface on YouTube
 
 
 # Award

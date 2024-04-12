@@ -46,10 +46,10 @@ class GlobalConfig:
     # This is a long text, so not incorporated as a string in `strings.json`
     CHAT_USAGE_INSTRUCTIONS = (
         'Briefly describe your topic of presentation in the textbox provided below.'
-        ' For example, "Make a slide deck on AI."'
-        ' Subsequently, you can add follow-up instructions, e.g., "Can you add a slide on GPUs?"'
-        ' You can also ask it to refine any particular slide, e.g., "Make the slide with title'
-        ' \'Examples of AI\' a bit more descriptive."'
+        ' For example, "Make a slide deck on AI." Subsequently, you can add follow-up'
+        ' instructions, e.g., "Can you add a slide on GPUs?" You can also ask it to refine any'
+        ' particular slide, e.g., "Make the slide with title \'Examples of AI\' a bit more'
+        ' descriptive." See this [demo video](https://youtu.be/QvAKzNKtk9k).'
         ' As another example, sometimes the formatting of generated Python code can be a bit weird.'
         ' You can try it telling, "Split multi-line codes into multiple lines," and hope for a fix.'
         '\n\n'
