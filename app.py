@@ -12,7 +12,7 @@ from langchain_community.chat_message_histories import (
 )
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
-from transformers import AutoTokenizer
+# from transformers import AutoTokenizer
 
 from global_config import GlobalConfig
 from helpers import llm_helper, pptx_helper
@@ -48,17 +48,17 @@ def _get_prompt_template(is_refinement: bool) -> str:
     return template
 
 
-@st.cache_resource
-def _get_tokenizer() -> AutoTokenizer:
-    """
-    Get Mistral tokenizer for counting tokens.
-
-    :return: The tokenizer.
-    """
-
-    return AutoTokenizer.from_pretrained(
-        pretrained_model_name_or_path=GlobalConfig.HF_LLM_MODEL_NAME
-    )
+# @st.cache_resource
+# def _get_tokenizer() -> AutoTokenizer:
+#     """
+#     Get Mistral tokenizer for counting tokens.
+#
+#     :return: The tokenizer.
+#     """
+#
+#     return AutoTokenizer.from_pretrained(
+#         pretrained_model_name_or_path=GlobalConfig.HF_LLM_MODEL_NAME
+#     )
 
 
 APP_TEXT = _load_strings()
@@ -139,10 +139,8 @@ def set_up_chat_ui():
 
     if _is_it_refinement():
         template = _get_prompt_template(is_refinement=True)
-        logger.debug('Getting refinement template')
     else:
         template = _get_prompt_template(is_refinement=False)
-        logger.debug('Getting initial template')
 
     prompt_template = ChatPromptTemplate.from_template(template)
 
@@ -215,14 +213,14 @@ def set_up_chat_ui():
         history.add_user_message(prompt)
         history.add_ai_message(response)
 
-        if GlobalConfig.COUNT_TOKENS:
-            tokenizer = _get_tokenizer()
-            tokens_count_in = len(tokenizer.tokenize(formatted_template))
-            tokens_count_out = len(tokenizer.tokenize(response))
-            logger.debug(
-                'Tokens count:: input: %d, output: %d',
-                tokens_count_in, tokens_count_out
-            )
+        # if GlobalConfig.COUNT_TOKENS:
+        #     tokenizer = _get_tokenizer()
+        #     tokens_count_in = len(tokenizer.tokenize(formatted_template))
+        #     tokens_count_out = len(tokenizer.tokenize(response))
+        #     logger.debug(
+        #         'Tokens count:: input: %d, output: %d',
+        #         tokens_count_in, tokens_count_out
+        #     )
 
         # _display_messages_history(view_messages)
 
@@ -237,6 +235,11 @@ def set_up_chat_ui():
         generate_slide_deck(response_cleaned)
         progress_bar_pptx.progress(100, text='Done!')
 
+        logger.info(
+            '#messages in history / 2: %d',
+            len(st.session_state[CHAT_MESSAGES]) / 2
+        )
+
 
 def generate_slide_deck(json_str: str):
     """
@@ -247,12 +250,10 @@ def generate_slide_deck(json_str: str):
 
     if DOWNLOAD_FILE_KEY in st.session_state:
         path = pathlib.Path(st.session_state[DOWNLOAD_FILE_KEY])
-        logger.debug('DOWNLOAD_FILE_KEY found in session')
     else:
         temp = tempfile.NamedTemporaryFile(delete=False, suffix='.pptx')
         path = pathlib.Path(temp.name)
         st.session_state[DOWNLOAD_FILE_KEY] = str(path)
-        logger.debug('DOWNLOAD_FILE_KEY not found in session')
 
         if temp:
             temp.close()
@@ -268,7 +269,15 @@ def generate_slide_deck(json_str: str):
 
         _display_download_button(path)
     except ValueError as ve:
-        st.error(APP_TEXT['json_parsing_error'])
+        st.error(
+            f"{APP_TEXT['json_parsing_error']}"
+            f"\n\nAdditional error info: {ve}"
+            f"\n\nHere are some sample instructions that you could try to possibly fix this error;"
+            f"if these don't work, try rephrasing or refreshing:"
+            f"\n\n"
+            "- Regenerate content and fix the JSON error."
+            "\n- Regenerate content and fix the JSON error. Quotes inside quotes should be escaped."
+        )
         logger.error('%s', APP_TEXT['json_parsing_error'])
         logger.error('Additional error info: %s', str(ve))
     except Exception as ex:
@@ -347,34 +356,51 @@ def _display_messages_history(view_messages: st.expander):
 def _clean_json(json_str: str) -> str:
     """
     Attempt to clean a JSON response string from the LLM by removing the trailing ```
-    and any text beyond that. May not be always accurate.
+    and any text beyond that.
+    CAUTION: May not be always accurate.
 
     :param json_str: The input string in JSON format.
     :return: The "cleaned" JSON string.
     """
 
+    # An example of response containing JSON and other text:
+    # {
+    #     "title": "AI and the Future: A Transformative Journey",
+    #     "slides": [
+    #       ...
+    #     ]
+    # }    <<---- This is end of valid JSON content
+    # ```
+    #
+    # ```vbnet
+    # Please note that the JSON output is in valid format but the content of the "Role of GPUs in AI" slide is just an example and may not be factually accurate. For accurate information, you should consult relevant resources and update the content accordingly.
+    # ```
     str_len = len(json_str)
     response_cleaned = json_str
 
-    try:
-        idx = json_str.rindex('```')
-        logger.debug(
-            'Fixing JSON response: str_len: %d, idx of ```: %d',
-            str_len, idx
-        )
+    while True:
+        idx = json_str.rfind('```')  # -1 on failure
 
-        if idx + 3 == str_len:
-            # The response ends with ``` -- most likely the end of JSON response string
+        if idx <= 0:
+            break
+
+        # In the ideal scenario, the character before the last ``` should be
+        # a new line or a closing bracket }
+        prev_char = json_str[idx - 1]
+        print(f'{idx=}, {prev_char=}')
+
+        if prev_char == '}':
             response_cleaned = json_str[:idx]
-        elif idx + 3 < str_len:
-            # Looks like there are some more content beyond the last ```
-            # In the best case, it would be some additional plain-text response from the LLM
-            # and is unlikely to contain } or ] that are present in JSON
-            if '}' not in json_str[idx + 3:]:  # the remainder of the text
-                response_cleaned = json_str[:idx]
-    except ValueError:
-        # No ``` found
-        pass
+        elif prev_char == '\n' and json_str[idx - 2] == '}':
+            response_cleaned = json_str[:idx]
+
+        json_str = json_str[:idx]
+
+    logger.info(
+        'Cleaning JSON response:: original length: %d | cleaned length: %d',
+        str_len, len(response_cleaned)
+    )
+    logger.debug('Cleaned JSON: %s', response_cleaned)
 
     return response_cleaned
 
