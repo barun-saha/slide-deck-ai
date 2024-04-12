@@ -88,9 +88,9 @@ def display_page_header_content():
 
     st.title(APP_TEXT['app_name'])
     st.subheader(APP_TEXT['caption'])
-    # st.markdown(
-    #     '![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fhuggingface.co%2Fspaces%2Fbarunsaha%2Fslide-deck-ai&countColor=%23263759)'  # noqa: E501
-    # )
+    st.markdown(
+        '![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fhuggingface.co%2Fspaces%2Fbarunsaha%2Fslide-deck-ai&countColor=%23263759)'  # noqa: E501
+    )
 
 
 def display_page_footer_content():
@@ -284,7 +284,7 @@ def generate_slide_deck(json_str: str):
             f"{APP_TEXT['json_parsing_error']}"
             f"\n\nAdditional error info: {ve}"
             f"\n\nHere are some sample instructions that you could try to possibly fix this error;"
-            f"if these don't work, try rephrasing or refreshing:"
+            f" if these don't work, try rephrasing or refreshing:"
             f"\n\n"
             "- Regenerate content and fix the JSON error."
             "\n- Regenerate content and fix the JSON error. Quotes inside quotes should be escaped."
