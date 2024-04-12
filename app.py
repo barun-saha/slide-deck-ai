@@ -15,7 +15,7 @@ from langchain_core.prompts import ChatPromptTemplate
 # from transformers import AutoTokenizer
 
 from global_config import GlobalConfig
-from helpers import llm_helper, pptx_helper
+from helpers import llm_helper, pptx_helper, text_helper
 
 
 @st.cache_data
@@ -159,7 +159,12 @@ def set_up_chat_ui():
     ):
 
         progress_bar_pptx = st.progress(0, 'Preparing to run...')
-        if not _is_valid_prompt(prompt):
+        if not text_helper.is_valid_prompt(prompt):
+            st.error(
+                'Not enough information provided!'
+                ' Please be a little more descriptive and type a few words'
+                ' with a few characters :)'
+            )
             return
 
         logger.info('User input: %s | #characters: %d', prompt, len(prompt))
@@ -228,7 +233,13 @@ def set_up_chat_ui():
         # There maybe trailing ``` at the end of the response -- remove them
         # To be careful: ``` may be part of the content as well when code is generated
         progress_bar_pptx.progress(50, 'Analyzing response...')
-        response_cleaned = _clean_json(response)
+        response_cleaned = text_helper.get_clean_json(response)
+
+        logger.info(
+            'Cleaned JSON response:: original length: %d | cleaned length: %d',
+            len(response), len(response_cleaned)
+        )
+        logger.debug('Cleaned JSON: %s', response_cleaned)
 
         # Now create the PPT file
         progress_bar_pptx.progress(75, 'Creating the slide deck...give it a moment...')
@@ -285,24 +296,6 @@ def generate_slide_deck(json_str: str):
         logger.error('Caught a generic exception: %s', str(ex))
 
 
-def _is_valid_prompt(prompt: str) -> bool:
-    """
-    Verify whether user input satisfies the concerned constraints.
-
-    :param prompt: The user input text.
-    :return: True if all criteria are satisfied; False otherwise.
-    """
-
-    if len(prompt) < 5 or ' ' not in prompt:
-        st.error(
-            'Not enough information provided!'
-            ' Please be a little more descriptive and type a few words with a few characters :)'
-        )
-        return False
-
-    return True
-
-
 def _is_it_refinement() -> bool:
     """
     Whether it is the initial prompt or a refinement.
@@ -352,57 +345,6 @@ def _display_messages_history(view_messages: st.expander):
 
     with view_messages:
         view_messages.json(st.session_state[CHAT_MESSAGES])
-
-def _clean_json(json_str: str) -> str:
-    """
-    Attempt to clean a JSON response string from the LLM by removing the trailing ```
-    and any text beyond that.
-    CAUTION: May not be always accurate.
-
-    :param json_str: The input string in JSON format.
-    :return: The "cleaned" JSON string.
-    """
-
-    # An example of response containing JSON and other text:
-    # {
-    #     "title": "AI and the Future: A Transformative Journey",
-    #     "slides": [
-    #       ...
-    #     ]
-    # }    <<---- This is end of valid JSON content
-    # ```
-    #
-    # ```vbnet
-    # Please note that the JSON output is in valid format but the content of the "Role of GPUs in AI" slide is just an example and may not be factually accurate. For accurate information, you should consult relevant resources and update the content accordingly.
-    # ```
-    str_len = len(json_str)
-    response_cleaned = json_str
-
-    while True:
-        idx = json_str.rfind('```')  # -1 on failure
-
-        if idx <= 0:
-            break
-
-        # In the ideal scenario, the character before the last ``` should be
-        # a new line or a closing bracket }
-        prev_char = json_str[idx - 1]
-        print(f'{idx=}, {prev_char=}')
-
-        if prev_char == '}':
-            response_cleaned = json_str[:idx]
-        elif prev_char == '\n' and json_str[idx - 2] == '}':
-            response_cleaned = json_str[:idx]
-
-        json_str = json_str[:idx]
-
-    logger.info(
-        'Cleaning JSON response:: original length: %d | cleaned length: %d',
-        str_len, len(response_cleaned)
-    )
-    logger.debug('Cleaned JSON: %s', response_cleaned)
-
-    return response_cleaned
 
 
 def _display_download_button(file_path: pathlib.Path):
