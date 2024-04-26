@@ -49,9 +49,9 @@ The output must be only a valid and syntactically correct JSON adhering to the f
         {{
             "heading": "A slide that describes a step-by-step/sequential process",
             "bullet_points": [
-                ">> Step 1 of the process (begins with special marker >>)",
-                ">> Step 2 of the process (begins with >>)",
-                ">> Step 3 of the process",
+                ">> The first step of the process (begins with special marker >>)",
+                ">> A second step 2 (begins with >>)",
+                ">> Third step",
             ],
             "key_message": ""
         }}
