@@ -374,7 +374,7 @@ if __name__ == '__main__':
     generate_powerpoint_presentation(
         json5.loads(_JSON_DATA),
         output_file_path=path,
-        slides_template='Blank'
+        slides_template='Basic'
     )
     print(f'File path: {path}')
 

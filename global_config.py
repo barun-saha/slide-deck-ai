@@ -29,7 +29,7 @@ class GlobalConfig:
     REFINEMENT_PROMPT_TEMPLATE = 'langchain_templates/chat_prompts/refinement_template_v2_steps.txt'
 
     PPTX_TEMPLATE_FILES = {
-        'Blank': {
+        'Basic': {
             'file': 'pptx_templates/Blank.pptx',
             'caption': 'A good start'
         },
