@@ -1,4 +1,5 @@
 import logging
+import os.path
 import pathlib
 import re
 import tempfile
@@ -7,9 +8,13 @@ from typing import List, Tuple
 
 import json5
 import pptx
+from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
 
 from global_config import GlobalConfig
 
+
+# English Metric Unit (used by PowerPoint) to inches
+EMU_TO_INCH_SCALING_FACTOR = 1.0 / 914400
 
 PATTERN = re.compile(r"^slide[ ]+\d+:", re.IGNORECASE)
 SAMPLE_JSON_FOR_PPTX = '''
@@ -64,10 +69,15 @@ def generate_powerpoint_presentation(
     parsed_data = json5.loads(structured_data)
 
     logger.debug(
-        '*** Using PPTX template: %s',
-        GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file']
+        '*** Using PPTX template: %s (exists = %s)',
+        GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file'],
+        os.path.exists(GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file'])
     )
     presentation = pptx.Presentation(GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file'])
+
+    slide_width_inch = EMU_TO_INCH_SCALING_FACTOR * presentation.slide_width
+    slide_height_inch = EMU_TO_INCH_SCALING_FACTOR * presentation.slide_height
+    logger.debug('Slide width: %f, height: %f', slide_width_inch, slide_height_inch)
 
     # The title slide
     title_slide_layout = presentation.slide_layouts[0]
@@ -110,6 +120,13 @@ def generate_powerpoint_presentation(
             paragraph.text = an_item[0]
             paragraph.level = an_item[1]
 
+        _handle_key_message(
+            slide=slide,
+            slide_json=a_slide,
+            slide_width_inch=slide_width_inch,
+            slide_height_inch=slide_height_inch,
+        )
+
     # The thank-you slide
     last_slide_layout = presentation.slide_layouts[0]
     slide = presentation.slides.add_slide(last_slide_layout)
@@ -140,6 +157,40 @@ def get_flat_list_of_contents(items: list, level: int) -> List[Tuple]:
             flat_list = flat_list + get_flat_list_of_contents(item, level + 1)
 
     return flat_list
+
+
+def _handle_key_message(
+        slide: pptx.slide.Slide,
+        slide_json: dict,
+        slide_width_inch: float,
+        slide_height_inch: float
+):
+    """
+    Add a shape to display the key message in the slide, if available.
+
+    :param slide: The slide to be processed.
+    :param slide_json: The content of the slide as JSON data.
+    :param slide_width_inch: The width of the slide in inches.
+    :param slide_height_inch: The height of the slide in inches.
+    """
+
+    if 'key_message' in slide_json and slide_json['key_message']:
+        height = pptx.util.Inches(1.6)
+        width = pptx.util.Inches(slide_width_inch / 2.3)
+        top = pptx.util.Inches(slide_height_inch - height.inches - 0.1)
+        left = pptx.util.Inches((slide_width_inch - width.inches) / 2)
+        logger.debug(
+            '_handle_key_message shape:: left: %.2f, top: %.2f, width: %.2f, height: %.2f',
+            left, top, width, height
+        )
+        shape = slide.shapes.add_shape(
+            MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE,
+            left=left,
+            top=top,
+            width=width,
+            height=height
+        )
+        shape.text = slide_json['key_message']
 
 
 if __name__ == '__main__':
@@ -174,7 +225,8 @@ if __name__ == '__main__':
                 [
                     "Importance of understanding AI"
                 ]
-            ]
+            ],
+            "key_message": ""
         },
         {
             "heading": "What is AI?",
@@ -188,7 +240,8 @@ if __name__ == '__main__':
                     ]
                 ],
                 "Differences between AI and machine learning"
-            ]
+            ],
+            "key_message": ""
         },
         {
             "heading": "How AI Works",
@@ -203,7 +256,8 @@ if __name__ == '__main__':
                     ]
                 ],
                 "How AI processes data"
-            ]
+            ],
+            "key_message": ""
         },
         {
             "heading": "Pros of AI",
@@ -212,7 +266,8 @@ if __name__ == '__main__':
                 "Improved accuracy and precision",
                 "Enhanced decision-making capabilities",
                 "Personalized experiences"
-            ]
+            ],
+            "key_message": "AI can be used for many different purposes"
         },
         {
             "heading": "Cons of AI",
@@ -221,14 +276,16 @@ if __name__ == '__main__':
                 "Bias and discrimination",
                 "Privacy and security concerns",
                 "Dependence on technology"
-            ]
+            ],
+            "key_message": ""
         },
         {
             "heading": "Future Prospects of AI",
             "bullet_points": [
                 "Advancements in fields such as healthcare and finance",
                 "Increased use"
-            ]
+            ],
+            "key_message": ""
         }
     ]
 }'''
@@ -241,5 +298,6 @@ if __name__ == '__main__':
         output_file_path=path,
         slides_template='Blank'
     )
+    print(f'File path: {path}')
 
     temp.close()
