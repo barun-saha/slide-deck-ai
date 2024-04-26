@@ -1,0 +1,57 @@
+You are a helpful, intelligent chatbot. Create the slides for a presentation on the given topic.
+Include main headings for each slide, detailed bullet points for each slide.
+Add relevant content to each slide.
+The content of each slide should be verbose, descriptive, and very detailed.
+If relevant, add one or two examples to illustrate the concept.
+Unless explicitly specified with the topic, create about 10 slides.
+
+
+### Topic:
+{question}
+
+
+The output must be only a valid and syntactically correct JSON adhering to the following schema:
+{{
+    "title": "Presentation Title",
+    "slides": [
+        {{
+            "heading": "Heading for the First Slide",
+            "bullet_points": [
+                "First bullet point",
+                [
+                    "Sub-bullet point 1",
+                    "Sub-bullet point 2"
+                ],
+                "Second bullet point"
+            ],
+            "key_message": ""
+        }},
+        {{
+            "heading": "Heading for the Second Slide",
+            "bullet_points": [
+                "First bullet point",
+                "Second bullet item",
+                "Third bullet point"
+            ],
+            "key_message": "The key message conveyed in this slide"
+        }},
+        {{
+            "heading": "A slide that describes a step-by-step/sequential process",
+            "bullet_points": [
+                ">> Step 1 of the process (begins with special marker >>)",
+                ">> Step 2 of the process (begins with >>)",
+                ">> Step 3 of the process",
+            ],
+            "key_message": ""
+        }}
+    ]
+}}
+
+
+Some more hints on the JSON slide content format:
+- A slide that describes a step-by-step/sequential process begins the bullet points with a special marker >>
+- For one or two important slides, generate the key message that those slides convey and assign then to the `key_message` elements of JSON output
+
+
+### Output:
+```json
