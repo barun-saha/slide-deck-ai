@@ -31,7 +31,7 @@ class GlobalConfig:
     PPTX_TEMPLATE_FILES = {
         'Basic': {
             'file': 'pptx_templates/Blank.pptx',
-            'caption': 'A good start'
+            'caption': 'A good start (Uses [photos](https://unsplash.com/photos/AFZ-qBPEceA) by [cetteup](https://unsplash.com/@cetteup?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash) on [Unsplash](https://unsplash.com/photos/a-foggy-forest-filled-with-lots-of-trees-d3ci37Gcgxg?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash))'
         },
         'Ion Boardroom': {
             'file': 'pptx_templates/Ion_Boardroom.pptx',
