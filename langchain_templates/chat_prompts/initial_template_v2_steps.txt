@@ -39,7 +39,7 @@ The output must be only a valid and syntactically correct JSON adhering to the f
             "heading": "A slide that describes a step-by-step/sequential process",
             "bullet_points": [
                 ">> The first step of the process (begins with special marker >>)",
-                ">> A second step 2 (begins with >>)",
+                ">> A second step (begins with >>)",
                 ">> Third step",
             ],
             "key_message": ""
@@ -48,9 +48,11 @@ The output must be only a valid and syntactically correct JSON adhering to the f
 }}
 
 
-Some more hints on the JSON slide content format:
-- A slide that describes a step-by-step/sequential process begins the bullet points with a special marker >>
-- For one or two important slides, generate the key message that those slides convey and assign then to the `key_message` elements of JSON output
+### Some more hints on the slide content and JSON output format:
+- For two or three important slides, generate the key message that those slides convey and assign
+them to the `key_message` elements of JSON output.
+- Identify if a slide describes a step-by-step/sequential process, then begin the bullet points
+with a special marker >>. Limit this to max two or three slides.
 
 
 ### Output:
