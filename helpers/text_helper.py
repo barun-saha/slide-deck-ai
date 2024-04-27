@@ -1,3 +1,6 @@
+import json_repair as jr
+
+
 def is_valid_prompt(prompt: str) -> bool:
     """
     Verify whether user input satisfies the concerned constraints.
@@ -46,11 +49,41 @@ def get_clean_json(json_str: str) -> str:
         # a new line or a closing bracket }
         prev_char = json_str[idx - 1]
 
-        if prev_char == '}':
-            response_cleaned = json_str[:idx]
-        elif prev_char == '\n' and json_str[idx - 2] == '}':
+        if (prev_char == '}') or (prev_char == '\n' and json_str[idx - 2] == '}'):
             response_cleaned = json_str[:idx]
 
         json_str = json_str[:idx]
 
     return response_cleaned
+
+
+def fix_malformed_json(json_str: str) -> str:
+    """
+    Try and fix the syntax error(s) in a JSON string.
+
+    :param json_str: The input JSON string.
+    :return: The fixed JSOn string.
+    """
+
+    return jr.repair_json(json_str, skip_json_loads=True)
+
+
+if __name__ == '__main__':
+    json1 = '''{
+    "key": "value"
+    }
+    '''
+    json2 = '''["Reason": "Regular updates help protect against known vulnerabilities."]'''
+    json3 = '''["Reason" Regular updates help protect against known vulnerabilities."]'''
+    json4 = '''
+    {"bullet_points": [
+        ">> Write without stopping or editing",
+        >> Set daily writing goals and stick to them,
+        ">> Allow yourself to make mistakes"
+    ],}
+    '''
+
+    print(fix_malformed_json(json1))
+    print(fix_malformed_json(json2))
+    print(fix_malformed_json(json3))
+    print(fix_malformed_json(json4))

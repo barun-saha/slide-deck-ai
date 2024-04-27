@@ -277,20 +277,32 @@ def generate_slide_deck(json_str: str):
             slides_template=pptx_template,
             output_file_path=path
         )
-
         _display_download_button(path)
-    except ValueError as ve:
-        st.error(
-            f"{APP_TEXT['json_parsing_error']}"
-            f"\n\nAdditional error info: {ve}"
-            f"\n\nHere are some sample instructions that you could try to possibly fix this error;"
-            f" if these don't work, try rephrasing or refreshing:"
-            f"\n\n"
-            "- Regenerate content and fix the JSON error."
-            "\n- Regenerate content and fix the JSON error. Quotes inside quotes should be escaped."
+    except ValueError:
+        # st.error(
+        #     f"{APP_TEXT['json_parsing_error']}"
+        #     f"\n\nAdditional error info: {ve}"
+        #     f"\n\nHere are some sample instructions that you could try to possibly fix this error;"
+        #     f" if these don't work, try rephrasing or refreshing:"
+        #     f"\n\n"
+        #     "- Regenerate content and fix the JSON error."
+        #     "\n- Regenerate content and fix the JSON error. Quotes inside quotes should be escaped."
+        # )
+        # logger.error('%s', APP_TEXT['json_parsing_error'])
+        # logger.error('Additional error info: %s', str(ve))
+        st.info(
+            'Encountered error while parsing JSON...will fix it and retry'
         )
-        logger.error('%s', APP_TEXT['json_parsing_error'])
-        logger.error('Additional error info: %s', str(ve))
+        logger.debug(
+            'Caught ValueError: trying again after repairing JSON...'
+        )
+
+        pptx_helper.generate_powerpoint_presentation(
+            text_helper.fix_malformed_json(json_str),
+            slides_template=pptx_template,
+            output_file_path=path
+        )
+        _display_download_button(path)
     except Exception as ex:
         st.error(APP_TEXT['content_generation_error'])
         logger.error('Caught a generic exception: %s', str(ex))
