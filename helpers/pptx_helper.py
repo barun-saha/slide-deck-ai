@@ -1,4 +1,5 @@
 import logging
+import os.path
 import pathlib
 import re
 import tempfile
@@ -7,9 +8,20 @@ from typing import List, Tuple
 
 import json5
 import pptx
+from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
 
 from global_config import GlobalConfig
 
+
+# English Metric Unit (used by PowerPoint) to inches
+EMU_TO_INCH_SCALING_FACTOR = 1.0 / 914400
+INCHES_1_5 = pptx.util.Inches(1.5)
+INCHES_1 = pptx.util.Inches(1)
+INCHES_0_5 = pptx.util.Inches(0.5)
+INCHES_0_4 = pptx.util.Inches(0.4)
+INCHES_0_3 = pptx.util.Inches(0.3)
+
+STEP_BY_STEP_PROCESS_MARKER = '>> '
 
 PATTERN = re.compile(r"^slide[ ]+\d+:", re.IGNORECASE)
 SAMPLE_JSON_FOR_PPTX = '''
@@ -64,10 +76,15 @@ def generate_powerpoint_presentation(
     parsed_data = json5.loads(structured_data)
 
     logger.debug(
-        '*** Using PPTX template: %s',
-        GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file']
+        '*** Using PPTX template: %s (exists = %s)',
+        GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file'],
+        os.path.exists(GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file'])
     )
     presentation = pptx.Presentation(GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file'])
+
+    slide_width_inch = EMU_TO_INCH_SCALING_FACTOR * presentation.slide_width
+    slide_height_inch = EMU_TO_INCH_SCALING_FACTOR * presentation.slide_height
+    logger.debug('Slide width: %f, height: %f', slide_width_inch, slide_height_inch)
 
     # The title slide
     title_slide_layout = presentation.slide_layouts[0]
@@ -91,24 +108,21 @@ def generate_powerpoint_presentation(
     for a_slide in parsed_data['slides']:
         bullet_slide_layout = presentation.slide_layouts[1]
         slide = presentation.slides.add_slide(bullet_slide_layout)
-        shapes = slide.shapes
 
-        title_shape = shapes.title
-        body_shape = shapes.placeholders[1]
-        title_shape.text = remove_slide_number_from_heading(a_slide['heading'])
-        all_headers.append(title_shape.text)
-        text_frame = body_shape.text_frame
+        if not _handle_step_by_step_process(
+            slide=slide,
+            slide_json=a_slide,
+            slide_width_inch=slide_width_inch,
+            slide_height_inch=slide_height_inch,
+        ):
+            _handle_default_display(slide, a_slide)
 
-        # The bullet_points may contain a nested hierarchy of JSON arrays
-        # In some scenarios, it may contain objects (dictionaries) because the LLM generated so
-        #  ^ The second scenario is not covered
-
-        flat_items_list = get_flat_list_of_contents(a_slide['bullet_points'], level=0)
-
-        for an_item in flat_items_list:
-            paragraph = text_frame.add_paragraph()
-            paragraph.text = an_item[0]
-            paragraph.level = an_item[1]
+        _handle_key_message(
+            slide=slide,
+            slide_json=a_slide,
+            slide_width_inch=slide_width_inch,
+            slide_height_inch=slide_height_inch,
+        )
 
     # The thank-you slide
     last_slide_layout = presentation.slide_layouts[0]
@@ -142,28 +156,132 @@ def get_flat_list_of_contents(items: list, level: int) -> List[Tuple]:
     return flat_list
 
 
+def _handle_default_display(
+        slide: pptx.slide.Slide,
+        slide_json: dict,
+):
+    """
+    Display a list of text in a slide.
+
+    :param slide: The slide to be processed.
+    :param slide_json: The content of the slide as JSON data.
+    """
+
+    shapes = slide.shapes
+    title_shape = shapes.title
+    body_shape = shapes.placeholders[1]
+    title_shape.text = remove_slide_number_from_heading(slide_json['heading'])
+    text_frame = body_shape.text_frame
+
+    # The bullet_points may contain a nested hierarchy of JSON arrays
+    # In some scenarios, it may contain objects (dictionaries) because the LLM generated so
+    #  ^ The second scenario is not covered
+
+    flat_items_list = get_flat_list_of_contents(slide_json['bullet_points'], level=0)
+
+    for an_item in flat_items_list:
+        paragraph = text_frame.add_paragraph()
+        paragraph.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
+        paragraph.level = an_item[1]
+
+
+def _handle_step_by_step_process(
+        slide: pptx.slide.Slide,
+        slide_json: dict,
+        slide_width_inch: float,
+        slide_height_inch: float
+) -> bool:
+    """
+    Add shapes to display a step-by-step process in the slide, if available.
+
+    :param slide: The slide to be processed.
+    :param slide_json: The content of the slide as JSON data.
+    :param slide_width_inch: The width of the slide in inches.
+    :param slide_height_inch: The height of the slide in inches.
+    :return True is this slide has a step-by-step process depiction; False otherwise.
+    """
+
+    if 'bullet_points' in slide_json and slide_json['bullet_points']:
+        steps = slide_json['bullet_points']
+
+        # Ensure that it is a single list of strings without any sub-list
+        for step in steps:
+            if not isinstance(step, str):
+                return False
+
+            if not step.startswith(STEP_BY_STEP_PROCESS_MARKER):
+                return False
+
+        shapes = slide.shapes
+        shapes.title.text = remove_slide_number_from_heading(slide_json['heading'])
+        n_steps = len(steps)
+
+        if 3 <= n_steps <= 4:
+            # Horizontal display
+            height = INCHES_1_5
+            width = pptx.util.Inches(slide_width_inch / n_steps - 0.01)
+            top = pptx.util.Inches(slide_height_inch / 2)
+            left = pptx.util.Inches((slide_width_inch - width.inches * n_steps) / 2 + 0.05)
+
+            for step in steps:
+                shape = shapes.add_shape(MSO_AUTO_SHAPE_TYPE.CHEVRON, left, top, width, height)
+                shape.text = step.removeprefix(STEP_BY_STEP_PROCESS_MARKER)
+                left += width - INCHES_0_4
+        elif n_steps > 4:
+            # Vertical display
+            height = pptx.util.Inches(0.65)
+            width = pptx.util.Inches(slide_width_inch * 2/ 3)
+            top = pptx.util.Inches(slide_height_inch / 4)
+            left = INCHES_1  # slide_width_inch - width.inches)
+
+            for step in steps:
+                shape = shapes.add_shape(MSO_AUTO_SHAPE_TYPE.PENTAGON, left, top, width, height)
+                shape.text = step.removeprefix(STEP_BY_STEP_PROCESS_MARKER)
+                top += height + INCHES_0_3
+                left += INCHES_0_5
+        else:
+            # Two steps -- probably not a process
+            return False
+
+    return True
+
+
+def _handle_key_message(
+        slide: pptx.slide.Slide,
+        slide_json: dict,
+        slide_width_inch: float,
+        slide_height_inch: float
+):
+    """
+    Add a shape to display the key message in the slide, if available.
+
+    :param slide: The slide to be processed.
+    :param slide_json: The content of the slide as JSON data.
+    :param slide_width_inch: The width of the slide in inches.
+    :param slide_height_inch: The height of the slide in inches.
+    """
+
+    if 'key_message' in slide_json and slide_json['key_message']:
+        height = pptx.util.Inches(1.6)
+        width = pptx.util.Inches(slide_width_inch / 2.3)
+        top = pptx.util.Inches(slide_height_inch - height.inches - 0.1)
+        left = pptx.util.Inches((slide_width_inch - width.inches) / 2)
+        logger.debug(
+            '_handle_key_message shape:: left: %.2f, top: %.2f, width: %.2f, height: %.2f',
+            left, top, width, height
+        )
+        shape = slide.shapes.add_shape(
+            MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE,
+            left=left,
+            top=top,
+            width=width,
+            height=height
+        )
+        shape.text = slide_json['key_message']
+
+
 if __name__ == '__main__':
-    # bullets = [
-    #     'Description',
-    #     'Types',
-    #     [
-    #         'Type A',
-    #         'Type B'
-    #     ],
-    #     'Grand parent',
-    #     [
-    #         'Parent',
-    #         [
-    #             'Grand child'
-    #         ]
-    #     ]
-    # ]
-
-    # output = get_flat_list_of_contents(bullets, level=0)
-    # for x in output:
-    #     print(x)
-
-    json_data = '''
+    _JSON_DATA = '''
     {
     "title": "Understanding AI",
     "slides": [
@@ -174,7 +292,8 @@ if __name__ == '__main__':
                 [
                     "Importance of understanding AI"
                 ]
-            ]
+            ],
+            "key_message": ""
         },
         {
             "heading": "What is AI?",
@@ -188,7 +307,8 @@ if __name__ == '__main__':
                     ]
                 ],
                 "Differences between AI and machine learning"
-            ]
+            ],
+            "key_message": ""
         },
         {
             "heading": "How AI Works",
@@ -203,7 +323,19 @@ if __name__ == '__main__':
                     ]
                 ],
                 "How AI processes data"
-            ]
+            ],
+            "key_message": ""
+        },
+        {
+            "heading": "Building AI Models",
+            "bullet_points": [
+                ">> Collect data",
+                ">> Select model or architecture to use",
+                ">> Set appropriate parameters",
+                ">> Train model with data",
+                ">> Run inference",
+            ],
+            "key_message": ""
         },
         {
             "heading": "Pros of AI",
@@ -212,7 +344,8 @@ if __name__ == '__main__':
                 "Improved accuracy and precision",
                 "Enhanced decision-making capabilities",
                 "Personalized experiences"
-            ]
+            ],
+            "key_message": "AI can be used for many different purposes"
         },
         {
             "heading": "Cons of AI",
@@ -221,14 +354,16 @@ if __name__ == '__main__':
                 "Bias and discrimination",
                 "Privacy and security concerns",
                 "Dependence on technology"
-            ]
+            ],
+            "key_message": ""
         },
         {
             "heading": "Future Prospects of AI",
             "bullet_points": [
                 "Advancements in fields such as healthcare and finance",
                 "Increased use"
-            ]
+            ],
+            "key_message": ""
         }
     ]
 }'''
@@ -237,9 +372,10 @@ if __name__ == '__main__':
     path = pathlib.Path(temp.name)
 
     generate_powerpoint_presentation(
-        json5.loads(json_data),
+        json5.loads(_JSON_DATA),
         output_file_path=path,
-        slides_template='Blank'
+        slides_template='Basic'
     )
+    print(f'File path: {path}')
 
     temp.close()
