@@ -205,7 +205,6 @@ def set_up_chat_ui():
             },
             'options': {
                 'wait_for_model': True,
-
                 'use_cache': True
             }
         })
@@ -277,7 +276,6 @@ def generate_slide_deck(json_str: str):
             slides_template=pptx_template,
             output_file_path=path
         )
-        _display_download_button(path)
     except ValueError:
         # st.error(
         #     f"{APP_TEXT['json_parsing_error']}"
@@ -290,10 +288,10 @@ def generate_slide_deck(json_str: str):
         # )
         # logger.error('%s', APP_TEXT['json_parsing_error'])
         # logger.error('Additional error info: %s', str(ve))
-        st.info(
+        st.error(
             'Encountered error while parsing JSON...will fix it and retry'
         )
-        logger.debug(
+        logger.error(
             'Caught ValueError: trying again after repairing JSON...'
         )
 
@@ -302,10 +300,11 @@ def generate_slide_deck(json_str: str):
             slides_template=pptx_template,
             output_file_path=path
         )
-        _display_download_button(path)
     except Exception as ex:
         st.error(APP_TEXT['content_generation_error'])
         logger.error('Caught a generic exception: %s', str(ex))
+    finally:
+        _display_download_button(path)
 
 
 def _is_it_refinement() -> bool:
