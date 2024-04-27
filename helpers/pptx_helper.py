@@ -1,4 +1,5 @@
 import logging
+import os.path
 import pathlib
 import re
 import tempfile
@@ -75,8 +76,9 @@ def generate_powerpoint_presentation(
     parsed_data = json5.loads(structured_data)
 
     logger.debug(
-        '*** Using PPTX template: %s',
-        GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file']
+        '*** Using PPTX template: %s (exists = %s)',
+        GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file'],
+        os.path.exists(GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file'])
     )
     presentation = pptx.Presentation(GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file'])
 
