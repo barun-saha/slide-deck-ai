@@ -222,7 +222,10 @@ def _handle_step_by_step_process(
             if not step.startswith(STEP_BY_STEP_PROCESS_MARKER):
                 no_marker_count += 1
 
-        if no_marker_count / n_steps > 0.2:
+        slide_header = slide_json['heading'].lower()
+        if (no_marker_count / n_steps > 0.25) and not (
+                ('step-by-step' in slide_header) or ('step by step' in slide_header)
+        ):
             return False
 
         shapes = slide.shapes
@@ -242,9 +245,23 @@ def _handle_step_by_step_process(
         elif 4 < n_steps <= 6:
             # Vertical display
             height = pptx.util.Inches(0.65)
-            width = pptx.util.Inches(slide_width_inch * 2/ 3)
             top = pptx.util.Inches(slide_height_inch / 4)
             left = INCHES_1  # slide_width_inch - width.inches)
+
+            # Find the close to median width, based on the length of each text, to be set
+            # for the shapes
+            width = pptx.util.Inches(slide_width_inch * 2 / 3)
+            lengths = [len(step) for step in steps]
+            font_size_20pt = pptx.util.Pt(20)
+            widths = sorted(
+                [
+                    min(
+                        pptx.util.Inches(font_size_20pt.inches * a_len),
+                        width
+                    ) for a_len in lengths
+                ]
+            )
+            width = widths[len(widths) // 2]
 
             for step in steps:
                 shape = shapes.add_shape(MSO_AUTO_SHAPE_TYPE.PENTAGON, left, top, width, height)
