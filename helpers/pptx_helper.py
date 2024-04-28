@@ -225,7 +225,7 @@ def _handle_step_by_step_process(
                 shape = shapes.add_shape(MSO_AUTO_SHAPE_TYPE.CHEVRON, left, top, width, height)
                 shape.text = step.removeprefix(STEP_BY_STEP_PROCESS_MARKER)
                 left += width - INCHES_0_4
-        elif n_steps > 4:
+        elif 4 < n_steps <= 6:
             # Vertical display
             height = pptx.util.Inches(0.65)
             width = pptx.util.Inches(slide_width_inch * 2/ 3)
@@ -239,6 +239,7 @@ def _handle_step_by_step_process(
                 left += INCHES_0_5
         else:
             # Two steps -- probably not a process
+            # More than 5--6 steps -- would likely cause a visual clutter
             return False
 
     return True
