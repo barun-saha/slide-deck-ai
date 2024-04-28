@@ -97,11 +97,6 @@ def generate_powerpoint_presentation(
     subtitle.text = 'by Myself and SlideDeck AI :)'
     all_headers = [title.text, ]
 
-    # background = slide.background
-    # background.fill.solid()
-    # background.fill.fore_color.rgb = RGBColor.from_string('C0C0C0')  # Silver
-    # title.text_frame.paragraphs[0].font.color.rgb = RGBColor(0, 0, 128)  # Navy blue
-
     # Add contents in a loop
     for a_slide in parsed_data['slides']:
         bullet_slide_layout = presentation.slide_layouts[1]
@@ -202,17 +197,36 @@ def _handle_step_by_step_process(
     if 'bullet_points' in slide_json and slide_json['bullet_points']:
         steps = slide_json['bullet_points']
 
+        no_marker_count = 0.0
+        n_steps = len(steps)
+
         # Ensure that it is a single list of strings without any sub-list
         for step in steps:
             if not isinstance(step, str):
                 return False
 
+            # In some cases, one or two steps may not begin with >>, e.g.:
+            # {
+            #     "heading": "Step-by-Step Process: Creating a Legacy",
+            #     "bullet_points": [
+            #         "Identify your unique talents and passions",
+            #         ">> Develop your skills and knowledge",
+            #         ">> Create meaningful work",
+            #         ">> Share your work with the world",
+            #         ">> Continuously learn and adapt"
+            #     ],
+            #     "key_message": ""
+            # },
+            #
+            # Use a threshold, e.g., at most 20%
             if not step.startswith(STEP_BY_STEP_PROCESS_MARKER):
-                return False
+                no_marker_count += 1
+
+        if no_marker_count / n_steps > 0.2:
+            return False
 
         shapes = slide.shapes
         shapes.title.text = remove_slide_number_from_heading(slide_json['heading'])
-        n_steps = len(steps)
 
         if 3 <= n_steps <= 4:
             # Horizontal display
