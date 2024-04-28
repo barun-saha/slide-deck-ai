@@ -121,7 +121,7 @@ def set_up_chat_ui():
     """
 
     with st.expander('Usage Instructions'):
-        st.write(GlobalConfig.CHAT_USAGE_INSTRUCTIONS)
+        st.markdown(GlobalConfig.CHAT_USAGE_INSTRUCTIONS)
         st.markdown(
             'SlideDeck AI is powered by'
             ' [Mistral-7B-Instruct-v0.2](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2)'
