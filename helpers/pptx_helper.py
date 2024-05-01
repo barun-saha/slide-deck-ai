@@ -99,15 +99,23 @@ def generate_powerpoint_presentation(
 
     # Add contents in a loop
     for a_slide in parsed_data['slides']:
-        bullet_slide_layout = presentation.slide_layouts[1]
-        slide = presentation.slides.add_slide(bullet_slide_layout)
+        is_processing_done = _handle_double_col_layout(
+            presentation=presentation,
+            slide_json=a_slide
+        )
 
-        if not _handle_step_by_step_process(
-            slide=slide,
-            slide_json=a_slide,
-            slide_width_inch=slide_width_inch,
-            slide_height_inch=slide_height_inch,
-        ):
+        if not is_processing_done:
+            bullet_slide_layout = presentation.slide_layouts[1]
+            slide = presentation.slides.add_slide(bullet_slide_layout)
+
+            is_processing_done = _handle_step_by_step_process(
+                slide=slide,
+                slide_json=a_slide,
+                slide_width_inch=slide_width_inch,
+                slide_height_inch=slide_height_inch,
+            )
+
+        if not is_processing_done:
             _handle_default_display(slide, a_slide)
 
         _handle_key_message(
@@ -178,6 +186,66 @@ def _handle_default_display(
         paragraph.level = an_item[1]
 
 
+def _handle_double_col_layout(
+        presentation: pptx.Presentation(),
+        slide_json: dict
+) -> bool:
+    """
+    Add a slide with a double column layout for comparison.
+
+    :param presentation: The presentation object.
+    :param slide_json: The content of the slide as JSON data.
+    :return: True if double col layout has been added; False otherwise.
+    """
+
+    if 'bullet_points' in slide_json and slide_json['bullet_points']:
+        double_col_content = slide_json['bullet_points']
+
+        if double_col_content and (
+                len(double_col_content) == 2
+        ) and isinstance(double_col_content[0], dict) and isinstance(double_col_content[1], dict):
+            slide = presentation.slide_layouts[4]
+            slide = presentation.slides.add_slide(slide)
+
+            shapes = slide.shapes
+            title_placeholder = shapes.title
+            title_placeholder.text = remove_slide_number_from_heading(slide_json['heading'])
+            for placeholder in shapes.placeholders:
+                print(placeholder.placeholder_format.idx, placeholder.name)
+            # text_frame = body_shape.text_frame
+            left_heading, right_heading = shapes.placeholders[1], shapes.placeholders[3]
+            left_col, right_col = shapes.placeholders[2], shapes.placeholders[4]
+            left_col_frame, right_col_frame = left_col.text_frame, right_col.text_frame
+
+            if 'heading' in double_col_content[0]:
+                left_heading.text = double_col_content[0]['heading']
+            if 'bullet_points' in double_col_content[0]:
+                flat_items_list = get_flat_list_of_contents(
+                    double_col_content[0]['bullet_points'], level=0
+                )
+
+                for an_item in flat_items_list:
+                    paragraph = left_col_frame.add_paragraph()
+                    paragraph.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
+                    paragraph.level = an_item[1]
+
+            if 'heading' in double_col_content[1]:
+                right_heading.text = double_col_content[1]['heading']
+            if 'bullet_points' in double_col_content[1]:
+                flat_items_list = get_flat_list_of_contents(
+                    double_col_content[1]['bullet_points'], level=0
+                )
+
+                for an_item in flat_items_list:
+                    paragraph = right_col_frame.add_paragraph()
+                    paragraph.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
+                    paragraph.level = an_item[1]
+
+            return True
+
+    return False
+
+
 def _handle_step_by_step_process(
         slide: pptx.slide.Slide,
         slide_json: dict,
@@ -191,7 +259,7 @@ def _handle_step_by_step_process(
     :param slide_json: The content of the slide as JSON data.
     :param slide_width_inch: The width of the slide in inches.
     :param slide_height_inch: The height of the slide in inches.
-    :return True is this slide has a step-by-step process depiction; False otherwise.
+    :return True if this slide has a step-by-step process depiction added; False otherwise.
     """
 
     if 'bullet_points' in slide_json and slide_json['bullet_points']:
@@ -360,6 +428,28 @@ if __name__ == '__main__':
                 ">> Set appropriate parameters",
                 ">> Train model with data",
                 ">> Run inference",
+            ],
+            "key_message": ""
+        },
+        {
+            "heading": "Pros and Cons: Deep Learning vs. Classical Machine Learning",
+            "bullet_points": [
+                {
+                    "heading": "Classical Machine Learning",
+                    "bullet_points": [
+                        "Interpretability: Easy to understand the model",
+                        "Faster Training: Quicker to train models",
+                        "Scalability: Can handle large datasets"
+                    ]
+                },
+                {
+                    "heading": "Deep Learning",
+                    "bullet_points": [
+                        "Handling Complex Data: Can learn from raw data",
+                        "Feature Extraction: Automatically learns features",
+                        "Improved Accuracy: Achieves higher accuracy"
+                    ]
+                }
             ],
             "key_message": ""
         },
