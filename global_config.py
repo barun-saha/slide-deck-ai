@@ -25,8 +25,8 @@ class GlobalConfig:
     PRELOAD_DATA_FILE = 'examples/example_02.json'
     SLIDES_TEMPLATE_FILE = 'langchain_templates/template_combined.txt'
     # JSON_TEMPLATE_FILE = 'langchain_templates/text_to_json_template_02.txt'
-    INITIAL_PROMPT_TEMPLATE = 'langchain_templates/chat_prompts/initial_template_v2_steps.txt'
-    REFINEMENT_PROMPT_TEMPLATE = 'langchain_templates/chat_prompts/refinement_template_v2_steps.txt'
+    INITIAL_PROMPT_TEMPLATE = 'langchain_templates/chat_prompts/initial_template_v3_two_cols.txt'
+    REFINEMENT_PROMPT_TEMPLATE = 'langchain_templates/chat_prompts/refinement_template_v3_two_cols.txt'
 
     PPTX_TEMPLATE_FILES = {
         'Basic': {
