@@ -79,10 +79,7 @@ def generate_powerpoint_presentation(
         GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file']
     )
     presentation = pptx.Presentation(GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file'])
-
-    slide_width_inch = EMU_TO_INCH_SCALING_FACTOR * presentation.slide_width
-    slide_height_inch = EMU_TO_INCH_SCALING_FACTOR * presentation.slide_height
-    logger.debug('Slide width: %f, height: %f', slide_width_inch, slide_height_inch)
+    slide_width_inch, slide_height_inch = _get_slide_width_height_inches(presentation)
 
     # The title slide
     title_slide_layout = presentation.slide_layouts[0]
@@ -97,33 +94,30 @@ def generate_powerpoint_presentation(
     subtitle.text = 'by Myself and SlideDeck AI :)'
     all_headers = [title.text, ]
 
-    # Add contents in a loop
+    # Add content in a loop
     for a_slide in parsed_data['slides']:
         is_processing_done = _handle_double_col_layout(
             presentation=presentation,
-            slide_json=a_slide
+            slide_json=a_slide,
+            slide_width_inch=slide_width_inch,
+            slide_height_inch=slide_height_inch
         )
 
         if not is_processing_done:
-            bullet_slide_layout = presentation.slide_layouts[1]
-            slide = presentation.slides.add_slide(bullet_slide_layout)
-
             is_processing_done = _handle_step_by_step_process(
-                slide=slide,
+                presentation=presentation,
                 slide_json=a_slide,
                 slide_width_inch=slide_width_inch,
-                slide_height_inch=slide_height_inch,
+                slide_height_inch=slide_height_inch
             )
 
         if not is_processing_done:
-            _handle_default_display(slide, a_slide)
-
-        _handle_key_message(
-            slide=slide,
-            slide_json=a_slide,
-            slide_width_inch=slide_width_inch,
-            slide_height_inch=slide_height_inch,
-        )
+            _handle_default_display(
+                presentation=presentation,
+                slide_json=a_slide,
+                slide_width_inch=slide_width_inch,
+                slide_height_inch=slide_height_inch
+            )
 
     # The thank-you slide
     last_slide_layout = presentation.slide_layouts[0]
@@ -158,15 +152,22 @@ def get_flat_list_of_contents(items: list, level: int) -> List[Tuple]:
 
 
 def _handle_default_display(
-        slide: pptx.slide.Slide,
+        presentation: pptx.Presentation,
         slide_json: dict,
+        slide_width_inch: float,
+        slide_height_inch: float
 ):
     """
     Display a list of text in a slide.
 
-    :param slide: The slide to be processed.
+    :param presentation: The presentation object.
     :param slide_json: The content of the slide as JSON data.
+    :param slide_width_inch: The width of the slide in inches.
+    :param slide_height_inch: The height of the slide in inches.
     """
+
+    bullet_slide_layout = presentation.slide_layouts[1]
+    slide = presentation.slides.add_slide(bullet_slide_layout)
 
     shapes = slide.shapes
     title_shape = shapes.title
@@ -180,21 +181,35 @@ def _handle_default_display(
 
     flat_items_list = get_flat_list_of_contents(slide_json['bullet_points'], level=0)
 
-    for an_item in flat_items_list:
-        paragraph = text_frame.add_paragraph()
-        paragraph.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
-        paragraph.level = an_item[1]
+    for idx, an_item in enumerate(flat_items_list):
+        if idx == 0:
+            text_frame.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
+        else:
+            paragraph = text_frame.add_paragraph()
+            paragraph.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
+            paragraph.level = an_item[1]
+
+    _handle_key_message(
+        the_slide=slide,
+        slide_json=slide_json,
+        slide_height_inch=slide_height_inch,
+        slide_width_inch=slide_width_inch
+    )
 
 
 def _handle_double_col_layout(
         presentation: pptx.Presentation(),
-        slide_json: dict
+        slide_json: dict,
+        slide_width_inch: float,
+        slide_height_inch: float
 ) -> bool:
     """
     Add a slide with a double column layout for comparison.
 
     :param presentation: The presentation object.
     :param slide_json: The content of the slide as JSON data.
+    :param slide_width_inch: The width of the slide in inches.
+    :param slide_height_inch: The height of the slide in inches.
     :return: True if double col layout has been added; False otherwise.
     """
 
@@ -210,9 +225,7 @@ def _handle_double_col_layout(
             shapes = slide.shapes
             title_placeholder = shapes.title
             title_placeholder.text = remove_slide_number_from_heading(slide_json['heading'])
-            for placeholder in shapes.placeholders:
-                print(placeholder.placeholder_format.idx, placeholder.name)
-            # text_frame = body_shape.text_frame
+
             left_heading, right_heading = shapes.placeholders[1], shapes.placeholders[3]
             left_col, right_col = shapes.placeholders[2], shapes.placeholders[4]
             left_col_frame, right_col_frame = left_col.text_frame, right_col.text_frame
@@ -224,10 +237,13 @@ def _handle_double_col_layout(
                     double_col_content[0]['bullet_points'], level=0
                 )
 
-                for an_item in flat_items_list:
-                    paragraph = left_col_frame.add_paragraph()
-                    paragraph.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
-                    paragraph.level = an_item[1]
+                for idx, an_item in enumerate(flat_items_list):
+                    if idx == 0:
+                        left_col_frame.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
+                    else:
+                        paragraph = left_col_frame.add_paragraph()
+                        paragraph.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
+                        paragraph.level = an_item[1]
 
             if 'heading' in double_col_content[1]:
                 right_heading.text = double_col_content[1]['heading']
@@ -236,10 +252,20 @@ def _handle_double_col_layout(
                     double_col_content[1]['bullet_points'], level=0
                 )
 
-                for an_item in flat_items_list:
-                    paragraph = right_col_frame.add_paragraph()
-                    paragraph.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
-                    paragraph.level = an_item[1]
+                for idx, an_item in enumerate(flat_items_list):
+                    if idx == 0:
+                        right_col_frame.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
+                    else:
+                        paragraph = right_col_frame.add_paragraph()
+                        paragraph.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
+                        paragraph.level = an_item[1]
+
+            _handle_key_message(
+                the_slide=slide,
+                slide_json=slide_json,
+                slide_height_inch=slide_height_inch,
+                slide_width_inch=slide_width_inch
+            )
 
             return True
 
@@ -247,7 +273,7 @@ def _handle_double_col_layout(
 
 
 def _handle_step_by_step_process(
-        slide: pptx.slide.Slide,
+        presentation: pptx.Presentation,
         slide_json: dict,
         slide_width_inch: float,
         slide_height_inch: float
@@ -255,7 +281,7 @@ def _handle_step_by_step_process(
     """
     Add shapes to display a step-by-step process in the slide, if available.
 
-    :param slide: The slide to be processed.
+    :param presentation: The presentation object.
     :param slide_json: The content of the slide as JSON data.
     :param slide_width_inch: The width of the slide in inches.
     :param slide_height_inch: The height of the slide in inches.
@@ -296,6 +322,8 @@ def _handle_step_by_step_process(
         ):
             return False
 
+        bullet_slide_layout = presentation.slide_layouts[1]
+        slide = presentation.slides.add_slide(bullet_slide_layout)
         shapes = slide.shapes
         shapes.title.text = remove_slide_number_from_heading(slide_json['heading'])
 
@@ -345,7 +373,7 @@ def _handle_step_by_step_process(
 
 
 def _handle_key_message(
-        slide: pptx.slide.Slide,
+        the_slide: pptx.slide.Slide,
         slide_json: dict,
         slide_width_inch: float,
         slide_height_inch: float
@@ -353,7 +381,7 @@ def _handle_key_message(
     """
     Add a shape to display the key message in the slide, if available.
 
-    :param slide: The slide to be processed.
+    :param the_slide: The slide to be processed.
     :param slide_json: The content of the slide as JSON data.
     :param slide_width_inch: The width of the slide in inches.
     :param slide_height_inch: The height of the slide in inches.
@@ -364,7 +392,7 @@ def _handle_key_message(
         width = pptx.util.Inches(slide_width_inch / 2.3)
         top = pptx.util.Inches(slide_height_inch - height.inches - 0.1)
         left = pptx.util.Inches((slide_width_inch - width.inches) / 2)
-        shape = slide.shapes.add_shape(
+        shape = the_slide.shapes.add_shape(
             MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE,
             left=left,
             top=top,
@@ -372,6 +400,21 @@ def _handle_key_message(
             height=height
         )
         shape.text = slide_json['key_message']
+
+
+def _get_slide_width_height_inches(presentation: pptx.Presentation) -> Tuple[float, float]:
+    """
+    Get the dimensions of a slide in inches.
+
+    :param presentation: The presentation object.
+    :return: The width and the height.
+    """
+
+    slide_width_inch = EMU_TO_INCH_SCALING_FACTOR * presentation.slide_width
+    slide_height_inch = EMU_TO_INCH_SCALING_FACTOR * presentation.slide_height
+    # logger.debug('Slide width: %f, height: %f', slide_width_inch, slide_height_inch)
+
+    return slide_width_inch, slide_height_inch
 
 
 if __name__ == '__main__':
