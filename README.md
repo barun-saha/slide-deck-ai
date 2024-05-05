@@ -19,7 +19,7 @@ Describe your topic and let SlideDeck AI generate a PowerPoint slide deck for yo
 SlideDeck AI is powered by [Mistral 7B Instruct](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2).
 Originally, it was built using the Llama 2 API provided by Clarifai.
 
-*Update*: Legacy SlideDeck AI allowed one-shot generation of a slide deck based on the inputs. 
+*Update (v4.0)*: Legacy SlideDeck AI allowed one-shot generation of a slide deck based on the inputs. 
 In contrast, SlideDeck AI *Reloaded* enables an iterative workflow with a conversational interface,
 where you can create and improve the presentation.
 
@@ -33,7 +33,7 @@ The output is generated as structured JSON data based on a pre-defined schema.
 2. Subsequently, it uses the `python-pptx` library to generate the slides, 
 based on the JSON data from the previous step. 
 A user can choose from a set of three pre-defined presentation templates.
-3. At this stage onward, a user can provide additional instructions to refine the content.
+3. At this stage onward, a user can provide additional instructions to *refine* the content.
 For example, one can ask to add another slide or modify an existing slide.
 A history of instructions is maintained.
 4. Every time SlideDeck AI generates a PowerPoint presentation, a download button is provided.
@@ -42,9 +42,6 @@ Clicking on the button will download the file.
 
 # Known Issues
 
-- **Incorrect JSON**: Sometimes the JSON generated could be syntactically incorrect. 
-You can try asking SlideDeck AI to regenerate the content and fix the JSON syntax error.
-This, however, is not guaranteed to work. The alternative is to reload the website and try again.
 - **Connection timeout**: Requests sent to the Hugging Face Inference endpoint might time out.
 A maximum of five retries are attempted. If it still does not work, wait for a while and try again.
 
