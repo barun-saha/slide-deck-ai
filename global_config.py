@@ -1,3 +1,6 @@
+"""
+A set of configurations used by the app.
+"""
 import logging
 import os
 
@@ -10,10 +13,14 @@ load_dotenv()
 
 @dataclass(frozen=True)
 class GlobalConfig:
-    HF_LLM_MODEL_NAME = 'mistralai/Mistral-7B-Instruct-v0.2'
+    """
+    A data class holding the configurations.
+    """
+
+    HF_LLM_MODEL_NAME = 'mistralai/Mistral-Nemo-Instruct-2407'
     LLM_MODEL_TEMPERATURE: float = 0.2
-    LLM_MODEL_MIN_OUTPUT_LENGTH: int = 50
-    LLM_MODEL_MAX_OUTPUT_LENGTH: int = 4096
+    LLM_MODEL_MIN_OUTPUT_LENGTH: int = 100
+    LLM_MODEL_MAX_OUTPUT_LENGTH: int = 4 * 4096
     LLM_MODEL_MAX_INPUT_LENGTH: int = 750
 
     HUGGINGFACEHUB_API_TOKEN = os.environ.get('HUGGINGFACEHUB_API_TOKEN', '')
