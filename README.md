@@ -16,7 +16,7 @@ We spend a lot of time on creating the slides and organizing our thoughts for an
 With SlideDeck AI, co-create slide decks on any topic with Generative Artificial Intelligence.
 Describe your topic and let SlideDeck AI generate a PowerPoint slide deck for you—it's as simple as that!
 
-SlideDeck AI is powered by [Mistral 7B Instruct](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2).
+SlideDeck AI is powered by [Mistral-Nemo-Instruct-2407](https://huggingface.co/mistralai/Mistral-Nemo-Instruct-2407).
 Originally, it was built using the Llama 2 API provided by Clarifai.
 
 *Update (v4.0)*: Legacy SlideDeck AI allowed one-shot generation of a slide deck based on the inputs. 
@@ -28,7 +28,7 @@ where you can create and improve the presentation.
 
 SlideDeck AI works in the following way:
 
-1. Given a topic description, it uses Mistral 7B Instruct to generate the *initial* content of the slides. 
+1. Given a topic description, it uses Mistral Nemo Instruct to generate the *initial* content of the slides. 
 The output is generated as structured JSON data based on a pre-defined schema.
 2. Subsequently, it uses the `python-pptx` library to generate the slides, 
 based on the JSON data from the previous step. 
@@ -52,7 +52,7 @@ number of allowed characters in the textbox, pasting would not work.
 
 # Local Development
 
-SlideDeck AI uses [Mistral 7B Instruct](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2) 
+SlideDeck AI uses [Mistral-Nemo-Instruct-2407](https://huggingface.co/mistralai/Mistral-Nemo-Instruct-2407) 
 via the Hugging Face Inference API.
 To run this project by yourself, you need to provide the `HUGGINGFACEHUB_API_TOKEN` API key,
 for example, in a `.env` file. Visit the respective websites to obtain the keys.
