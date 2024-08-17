@@ -4,7 +4,7 @@ Search photos using Pexels API.
 import os
 import random
 from io import BytesIO
-from typing import Union, Tuple, Optional
+from typing import Union, Tuple, Literal
 from urllib.parse import urlparse, parse_qs
 
 import requests
@@ -14,7 +14,11 @@ REQUEST_TIMEOUT = 12
 MAX_PHOTOS = 2
 
 
-def search_pexels(query: str, size: Optional[str] = 'medium', per_page: int = MAX_PHOTOS):
+def search_pexels(
+        query: str,
+        size: Literal['small', 'medium', 'large'] = 'medium',
+        per_page: int = MAX_PHOTOS
+) -> dict:
     """
     Searches for images on Pexels using the provided query.
 
