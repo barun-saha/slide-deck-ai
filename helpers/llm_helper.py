@@ -11,6 +11,7 @@ from global_config import GlobalConfig
 
 HF_API_URL = f"https://api-inference.huggingface.co/models/{GlobalConfig.HF_LLM_MODEL_NAME}"
 HF_API_HEADERS = {"Authorization": f"Bearer {GlobalConfig.HUGGINGFACEHUB_API_TOKEN}"}
+REQUEST_TIMEOUT = 35
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +60,12 @@ def hf_api_query(payload: dict) -> dict:
     """
 
     try:
-        response = http_session.post(HF_API_URL, headers=HF_API_HEADERS, json=payload, timeout=15)
+        response = http_session.post(
+            HF_API_URL,
+            headers=HF_API_HEADERS,
+            json=payload,
+            timeout=REQUEST_TIMEOUT
+        )
         result = response.json()
     except requests.exceptions.Timeout as te:
         logger.error('*** Error: hf_api_query timeout! %s', str(te))
