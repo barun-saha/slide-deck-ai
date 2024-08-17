@@ -156,8 +156,6 @@ def set_up_chat_ui():
         placeholder=APP_TEXT['chat_placeholder'],
         max_chars=GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH
     ):
-
-        progress_bar_pptx = st.progress(0, 'Preparing to run...')
         if not text_helper.is_valid_prompt(prompt):
             st.error(
                 'Not enough information provided!'
@@ -190,64 +188,59 @@ def set_up_chat_ui():
                 }
             )
 
-        progress_bar_pptx.progress(5, 'Calling LLM...will retry if connection times out...')
-        response: dict = llm_helper.hf_api_query({
-            'inputs': formatted_template,
-            'parameters': {
-                'temperature': GlobalConfig.LLM_MODEL_TEMPERATURE,
-                'min_length': GlobalConfig.LLM_MODEL_MIN_OUTPUT_LENGTH,
-                'max_length': GlobalConfig.LLM_MODEL_MAX_OUTPUT_LENGTH,
-                'max_new_tokens': GlobalConfig.LLM_MODEL_MAX_OUTPUT_LENGTH,
-                'num_return_sequences': 1,
-                'return_full_text': False,
-                # "repetition_penalty": 0.0001
-            },
-            'options': {
-                'wait_for_model': True,
-                'use_cache': True
-            }
-        })
+        with st.status(
+                'Calling LLM...will retry if connection times out...',
+                expanded=False
+        ) as status:
+            response: dict = llm_helper.hf_api_query({
+                'inputs': formatted_template,
+                'parameters': {
+                    'temperature': GlobalConfig.LLM_MODEL_TEMPERATURE,
+                    'min_length': GlobalConfig.LLM_MODEL_MIN_OUTPUT_LENGTH,
+                    'max_length': GlobalConfig.LLM_MODEL_MAX_OUTPUT_LENGTH,
+                    'max_new_tokens': GlobalConfig.LLM_MODEL_MAX_OUTPUT_LENGTH,
+                    'num_return_sequences': 1,
+                    'return_full_text': False,
+                    # "repetition_penalty": 0.0001
+                },
+                'options': {
+                    'wait_for_model': True,
+                    'use_cache': True
+                }
+            })
 
-        if len(response) > 0 and 'generated_text' in response[0]:
-            response: str = response[0]['generated_text'].strip()
+            if len(response) > 0 and 'generated_text' in response[0]:
+                response: str = response[0]['generated_text'].strip()
 
-        st.chat_message('ai').code(response, language='json')
+            st.chat_message('ai').code(response, language='json')
 
-        history.add_user_message(prompt)
-        history.add_ai_message(response)
+            history.add_user_message(prompt)
+            history.add_ai_message(response)
 
-        # if GlobalConfig.COUNT_TOKENS:
-        #     tokenizer = _get_tokenizer()
-        #     tokens_count_in = len(tokenizer.tokenize(formatted_template))
-        #     tokens_count_out = len(tokenizer.tokenize(response))
-        #     logger.debug(
-        #         'Tokens count:: input: %d, output: %d',
-        #         tokens_count_in, tokens_count_out
-        #     )
+            # The content has been generated as JSON
+            # There maybe trailing ``` at the end of the response -- remove them
+            # To be careful: ``` may be part of the content as well when code is generated
+            response_cleaned = text_helper.get_clean_json(response)
 
-        # _display_messages_history(view_messages)
+            logger.info(
+                'Cleaned JSON response:: original length: %d | cleaned length: %d',
+                len(response), len(response_cleaned)
+            )
+            logger.debug('Cleaned JSON: %s', response_cleaned)
 
-        # The content has been generated as JSON
-        # There maybe trailing ``` at the end of the response -- remove them
-        # To be careful: ``` may be part of the content as well when code is generated
-        progress_bar_pptx.progress(50, 'Analyzing response...')
-        response_cleaned = text_helper.get_clean_json(response)
+            # Now create the PPT file
+            status.update(
+                label='Searching photos and creating the slide deck...give it a moment...',
+                state='running',
+                expanded=False
+            )
+            generate_slide_deck(response_cleaned)
+            status.update(label='Done!', state='complete', expanded=True)
 
-        logger.info(
-            'Cleaned JSON response:: original length: %d | cleaned length: %d',
-            len(response), len(response_cleaned)
-        )
-        logger.debug('Cleaned JSON: %s', response_cleaned)
-
-        # Now create the PPT file
-        progress_bar_pptx.progress(75, 'Creating the slide deck...give it a moment...')
-        generate_slide_deck(response_cleaned)
-        progress_bar_pptx.progress(100, text='Done!')
-
-        logger.info(
-            '#messages in history / 2: %d',
-            len(st.session_state[CHAT_MESSAGES]) / 2
-        )
+            logger.info(
+                '#messages in history / 2: %d',
+                len(st.session_state[CHAT_MESSAGES]) / 2
+            )
 
 
 def generate_slide_deck(json_str: str):
