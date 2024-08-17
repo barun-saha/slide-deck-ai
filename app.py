@@ -12,7 +12,6 @@ from langchain_community.chat_message_histories import (
 )
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
-# from transformers import AutoTokenizer
 
 from global_config import GlobalConfig
 from helpers import llm_helper, pptx_helper, text_helper
@@ -123,8 +122,8 @@ def set_up_chat_ui():
     with st.expander('Usage Instructions'):
         st.markdown(GlobalConfig.CHAT_USAGE_INSTRUCTIONS)
         st.markdown(
-            'SlideDeck AI is powered by'
-            ' [Mistral-7B-Instruct-v0.2](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2)'
+            'SlideDeck AI is powered by'  # noqa: E501
+            ' [Mistral-Nemo-Instruct-2407](https://huggingface.co/mistralai/Mistral-Nemo-Instruct-2407).'
         )
 
     # view_messages = st.expander('View the messages in the session state')
