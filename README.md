@@ -30,13 +30,14 @@ SlideDeck AI works in the following way:
 
 1. Given a topic description, it uses Mistral Nemo Instruct to generate the *initial* content of the slides. 
 The output is generated as structured JSON data based on a pre-defined schema.
-2. Subsequently, it uses the `python-pptx` library to generate the slides, 
+2. Next, it uses the keywords from the JSON output to search and download a few images with a certain probability.
+3. Subsequently, it uses the `python-pptx` library to generate the slides, 
 based on the JSON data from the previous step. 
 A user can choose from a set of three pre-defined presentation templates.
-3. At this stage onward, a user can provide additional instructions to *refine* the content.
+4. At this stage onward, a user can provide additional instructions to *refine* the content.
 For example, one can ask to add another slide or modify an existing slide.
 A history of instructions is maintained.
-4. Every time SlideDeck AI generates a PowerPoint presentation, a download button is provided.
+5. Every time SlideDeck AI generates a PowerPoint presentation, a download button is provided.
 Clicking on the button will download the file.
 
 
@@ -55,7 +56,8 @@ number of allowed characters in the textbox, pasting would not work.
 SlideDeck AI uses [Mistral-Nemo-Instruct-2407](https://huggingface.co/mistralai/Mistral-Nemo-Instruct-2407) 
 via the Hugging Face Inference API.
 To run this project by yourself, you need to provide the `HUGGINGFACEHUB_API_TOKEN` API key,
-for example, in a `.env` file. Visit the respective websites to obtain the keys.
+for example, in a `.env` file. For image search, the `PEXEL_API_KEY` should be added. 
+Visit the respective websites to obtain the keys.
 
 
 # Live Demo
