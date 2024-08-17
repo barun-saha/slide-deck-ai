@@ -1,15 +1,28 @@
+"""
+A set of functions to create a PowerPoint slide deck.
+"""
 import logging
 import pathlib
+import random
 import re
+import sys
 import tempfile
-
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import json5
 import pptx
+from dotenv import load_dotenv
 from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
+from pptx.shapes.placeholder import PicturePlaceholder, SlidePlaceholder
 
+sys.path.append('..')
+sys.path.append('../..')
+
+import helpers.image_search as ims
 from global_config import GlobalConfig
+
+
+load_dotenv()
 
 
 # English Metric Unit (used by PowerPoint) to inches
@@ -21,24 +34,10 @@ INCHES_0_4 = pptx.util.Inches(0.4)
 INCHES_0_3 = pptx.util.Inches(0.3)
 
 STEP_BY_STEP_PROCESS_MARKER = '>> '
+IMAGE_DISPLAY_PROBABILITY = 0.3
+FOREGROUND_IMAGE_PROBABILITY = 0.75
+SLIDE_NUMBER_REGEX = re.compile(r"^slide[ ]+\d+:", re.IGNORECASE)
 
-PATTERN = re.compile(r"^slide[ ]+\d+:", re.IGNORECASE)
-SAMPLE_JSON_FOR_PPTX = '''
-{
-    "title": "Understanding AI",
-    "slides": [
-        {
-            "heading": "Introduction",
-            "bullet_points": [
-                "Brief overview of AI",
-                [
-                    "Importance of understanding AI"
-                ]
-            ]
-        }
-    ]
-}
-'''
 
 logger = logging.getLogger(__name__)
 
@@ -48,9 +47,10 @@ def remove_slide_number_from_heading(header: str) -> str:
     Remove the slide number from a given slide header.
 
     :param header: The header of a slide.
+    :return: The header without slide number.
     """
 
-    if PATTERN.match(header):
+    if SLIDE_NUMBER_REGEX.match(header):
         idx = header.find(':')
         header = header[idx + 1:]
 
@@ -68,7 +68,7 @@ def generate_powerpoint_presentation(
     :param structured_data: The presentation contents as "JSON" (may contain trailing commas).
     :param slides_template: The PPTX template to use.
     :param output_file_path: The path of the PPTX file to save as.
-    :return A list of presentation title and slides headers.
+    :return: A list of presentation title and slides headers.
     """
 
     # The structured "JSON" might contain trailing commas, so using json5
@@ -166,6 +166,28 @@ def _handle_default_display(
     :param slide_height_inch: The height of the slide in inches.
     """
 
+    status = False
+
+    if random.random() < IMAGE_DISPLAY_PROBABILITY:
+        if random.random() < FOREGROUND_IMAGE_PROBABILITY:
+            status = _handle_display_image__in_foreground(
+                presentation,
+                slide_json,
+                slide_width_inch,
+                slide_height_inch
+            )
+        else:
+            status = _handle_display_image__in_background(
+                presentation,
+                slide_json,
+                slide_width_inch,
+                slide_height_inch
+            )
+
+    if status:
+        return
+
+    # Image display failed, so display only text
     bullet_slide_layout = presentation.slide_layouts[1]
     slide = presentation.slides.add_slide(bullet_slide_layout)
 
@@ -195,6 +217,181 @@ def _handle_default_display(
         slide_height_inch=slide_height_inch,
         slide_width_inch=slide_width_inch
     )
+
+
+def _handle_display_image__in_foreground(
+        presentation: pptx.Presentation(),
+        slide_json: dict,
+        slide_width_inch: float,
+        slide_height_inch: float
+) -> bool:
+    """
+    Create a slide with text and image using a picture placeholder layout.
+
+    :param presentation: The presentation object.
+    :param slide_json: The content of the slide as JSON data.
+    :param slide_width_inch: The width of the slide in inches.
+    :param slide_height_inch: The height of the slide in inches.
+    :return: True if the side has been processed.
+    """
+
+    img_keywords = slide_json['img_keywords'].strip()
+    slide = presentation.slide_layouts[8]  # Picture with Caption
+    slide = presentation.slides.add_slide(slide)
+
+    title_placeholder = slide.shapes.title
+    title_placeholder.text = remove_slide_number_from_heading(slide_json['heading'])
+
+    pic_col: PicturePlaceholder = slide.shapes.placeholders[1]
+    text_col: SlidePlaceholder = slide.shapes.placeholders[2]
+    flat_items_list = get_flat_list_of_contents(slide_json['bullet_points'], level=0)
+
+    for idx, an_item in enumerate(flat_items_list):
+        if idx == 0:
+            text_col.text_frame.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
+        else:
+            paragraph = text_col.text_frame.add_paragraph()
+            paragraph.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
+            paragraph.level = an_item[1]
+
+    if not img_keywords:
+        # No keywords, so no image search and addition
+        return True
+
+    try:
+        photo_url, page_url = ims.get_photo_url_from_api_response(
+            ims.search_pexels(query=img_keywords, size='medium')
+        )
+
+        if photo_url:
+            pic_col.insert_picture(
+                ims.get_image_from_url(photo_url)
+            )
+
+            _add_text_at_bottom(
+                slide=slide,
+                slide_width_inch=slide_width_inch,
+                slide_height_inch=slide_height_inch,
+                text='Photo provided by Pexels',
+                hyperlink=page_url
+            )
+    except Exception as ex:
+        logger.error(
+            '*** Error occurred while running adding image to slide: %s',
+            str(ex)
+        )
+
+    return True
+
+
+def _handle_display_image__in_background(
+        presentation: pptx.Presentation(),
+        slide_json: dict,
+        slide_width_inch: float,
+        slide_height_inch: float
+) -> bool:
+    """
+    Add a slide with text and an image in the background. It works just like
+    `_handle_default_display()` but with a background image added.
+
+    :param presentation: The presentation object.
+    :param slide_json: The content of the slide as JSON data.
+    :param slide_width_inch: The width of the slide in inches.
+    :param slide_height_inch: The height of the slide in inches.
+    :return: True if the slide has been processed.
+    """
+
+    img_keywords = slide_json['img_keywords'].strip()
+
+    # Add a photo in the background, text in the foreground
+    slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+
+    title_shape = slide.shapes.title
+    body_shape = slide.shapes.placeholders[1]
+    title_shape.text = remove_slide_number_from_heading(slide_json['heading'])
+
+    flat_items_list = get_flat_list_of_contents(slide_json['bullet_points'], level=0)
+
+    for idx, an_item in enumerate(flat_items_list):
+        if idx == 0:
+            body_shape.text_frame.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
+        else:
+            paragraph = body_shape.text_frame.add_paragraph()
+            paragraph.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
+            paragraph.level = an_item[1]
+
+    if not img_keywords:
+        # No keywords, so no image search and addition
+        return True
+
+    try:
+        photo_url, page_url = ims.get_photo_url_from_api_response(
+            ims.search_pexels(query=img_keywords, size='large')
+        )
+
+        if photo_url:
+            picture = slide.shapes.add_picture(
+                image_file=ims.get_image_from_url(photo_url),
+                left=0,
+                top=0,
+                width=pptx.util.Inches(slide_width_inch),
+            )
+
+            _add_text_at_bottom(
+                slide=slide,
+                slide_width_inch=slide_width_inch,
+                slide_height_inch=slide_height_inch,
+                text='Photos provided by Pexels',
+                hyperlink=page_url
+            )
+
+            # Move picture to background
+            # https://github.com/scanny/python-pptx/issues/49#issuecomment-137172836
+            slide.shapes._spTree.remove(picture._element)
+            slide.shapes._spTree.insert(2, picture._element)
+    except Exception as ex:
+        logger.error(
+            '*** Error occurred while running adding image to the slide background: %s',
+            str(ex)
+        )
+
+    return True
+
+
+def _add_text_at_bottom(
+        slide: pptx.slide.Slide,
+        slide_width_inch: float,
+        slide_height_inch: float,
+        text: str,
+        hyperlink: Optional[str] = None,
+        target_height: Optional[float] = 0.5
+):
+    """
+    Add arbitrary text to a textbox positioned near the lower left side of a slide.
+
+    :param slide: The slide.
+    :param slide_width_inch: The width of the slide.
+    :param slide_height_inch: The height of the slide.
+    :param target_height: the target height of the box in inches (optional).
+    :param text: The text to be added
+    :param hyperlink: The hyperlink to be added to the text (optional).
+    """
+
+    footer = slide.shapes.add_textbox(
+        left=INCHES_1,
+        top=pptx.util.Inches(slide_height_inch - target_height),
+        width=pptx.util.Inches(slide_width_inch),
+        height=pptx.util.Inches(target_height)
+    )
+
+    paragraph = footer.text_frame.paragraphs[0]
+    run = paragraph.add_run()
+    run.text = text
+    run.font.size = pptx.util.Pt(10)
+    run.font.underline = False
+
+    if hyperlink:
+        run.hyperlink.address = hyperlink
 
 
 def _handle_double_col_layout(
@@ -417,112 +614,150 @@ def _get_slide_width_height_inches(presentation: pptx.Presentation) -> Tuple[flo
     return slide_width_inch, slide_height_inch
 
 
+def print_placeholder_names(slide: pptx.slide.Slide):
+    """
+    Display the placeholder details of a given slide.
+
+    :param slide: The slide.
+    """
+
+    for shape in slide.placeholders:
+        print(f'{shape.placeholder_format.idx=}, {shape.name=}')
+
+
 if __name__ == '__main__':
     _JSON_DATA = '''
     {
-    "title": "Understanding AI",
+    "title": "Mastering PowerPoint Shapes",
     "slides": [
         {
-            "heading": "Introduction",
+            "heading": "Introduction to PowerPoint Shapes",
             "bullet_points": [
-                "Brief overview of AI",
-                [
-                    "Importance of understanding AI"
-                ]
+                "Shapes are fundamental elements in PowerPoint",
+                "Used to create diagrams, flowcharts, and visuals",
+                "Available in various types: lines, rectangles, circles, etc."
             ],
-            "key_message": ""
+            "key_message": "",
+            "img_keywords": "PowerPoint shapes, basic shapes"
         },
         {
-            "heading": "What is AI?",
+            "heading": "Types of Shapes in PowerPoint",
             "bullet_points": [
-                "Definition of AI",
+                "Lines: Connect two points",
+                "Rectangles: Four-sided figures with right angles",
                 [
-                    "Types of AI",
-                    [
-                        "Narrow or weak AI",
-                        "General or strong AI"
-                    ]
+                    "Squares: Special type of rectangle with equal sides",
+                    "Rounded Rectangles: Rectangles with rounded corners"
                 ],
-                "Differences between AI and machine learning"
+                "Circles: Round shapes with no corners",
+                "Ovals: Elliptical shapes"
             ],
-            "key_message": ""
+            "key_message": "",
+            "img_keywords": "PowerPoint shapes, types of shapes"
         },
         {
-            "heading": "How AI Works",
+            "heading": "Creating and Manipulating Shapes",
             "bullet_points": [
-                "Overview of AI algorithms",
-                [
-                    "Types of AI algorithms",
-                    [
-                        "Rule-based systems",
-                        "Decision tree systems",
-                        "Neural networks"
-                    ]
-                ],
-                "How AI processes data"
+                ">> Select the 'Home' tab and click on 'Shapes'",
+                ">> Choose the desired shape",
+                ">> Click and drag to create the shape",
+                ">> Resize, move, or rotate shapes using handles",
+                ">> Change shape color, fill, and outline"
             ],
-            "key_message": ""
+            "key_message": "Demonstrates the process of creating and manipulating shapes",
+            "img_keywords": "PowerPoint shapes, creating shapes, manipulating shapes"
         },
         {
-            "heading": "Building AI Models",
-            "bullet_points": [
-                ">> Collect data",
-                ">> Select model or architecture to use",
-                ">> Set appropriate parameters",
-                ">> Train model with data",
-                ">> Run inference",
-            ],
-            "key_message": ""
-        },
-        {
-            "heading": "Pros and Cons: Deep Learning vs. Classical Machine Learning",
+            "heading": "Advanced Shape Manipulation",
             "bullet_points": [
                 {
-                    "heading": "Classical Machine Learning",
+                    "heading": "Adding Text to Shapes",
                     "bullet_points": [
-                        "Interpretability: Easy to understand the model",
-                        "Faster Training: Quicker to train models",
-                        "Scalability: Can handle large datasets"
+                        "Right-click on the shape and select 'Add Text'",
+                        "Type or paste the desired text"
                     ]
                 },
                 {
-                    "heading": "Deep Learning",
+                    "heading": "Grouping and Ungrouping Shapes",
                     "bullet_points": [
-                        "Handling Complex Data: Can learn from raw data",
-                        "Feature Extraction: Automatically learns features",
-                        "Improved Accuracy: Achieves higher accuracy"
+                        "Select multiple shapes and press 'Ctrl + G' to group",
+                        "Right-click and select 'Ungroup' to separate"
                     ]
                 }
             ],
-            "key_message": ""
+            "key_message": "Explores advanced techniques for working with shapes",
+            "img_keywords": "PowerPoint shapes, advanced manipulation, grouping, text in shapes"
         },
         {
-            "heading": "Pros of AI",
+            "heading": "Using the 'Format' Tab for Shapes",
             "bullet_points": [
-                "Increased efficiency and productivity",
-                "Improved accuracy and precision",
-                "Enhanced decision-making capabilities",
-                "Personalized experiences"
+                "Access advanced shape formatting options",
+                "Change shape fill, outline, and effects",
+                "Adjust shape size and position"
             ],
-            "key_message": "AI can be used for many different purposes"
+            "key_message": "",
+            "img_keywords": "PowerPoint shapes, format tab, advanced formatting"
         },
         {
-            "heading": "Cons of AI",
+            "heading": "Example: Creating a Simple Diagram",
             "bullet_points": [
-                "Job displacement and loss of employment",
-                "Bias and discrimination",
-                "Privacy and security concerns",
-                "Dependence on technology"
+                "Use rectangles to represent blocks",
+                "Use lines to connect blocks",
+                "Add text to shapes to label elements"
             ],
-            "key_message": ""
+            "key_message": "Illustrates the use of shapes to create a simple diagram",
+            "img_keywords": "PowerPoint shapes, diagram example, simple diagram"
         },
         {
-            "heading": "Future Prospects of AI",
+            "heading": "Example: Creating a Flowchart",
             "bullet_points": [
-                "Advancements in fields such as healthcare and finance",
-                "Increased use"
+                "Use different shapes to represent steps, decisions, and inputs/outputs",
+                "Use connectors to link shapes",
+                "Add text to shapes to describe each step"
             ],
-            "key_message": ""
+            "key_message": "Demonstrates the use of shapes to create a flowchart",
+            "img_keywords": "PowerPoint shapes, flowchart example, creating flowchart"
+        },
+        {
+            "heading": "Double Column Layout: Shapes in Older vs. Newer PowerPoint Versions",
+            "bullet_points": [
+                {
+                    "heading": "Older PowerPoint Versions",
+                    "bullet_points": [
+                        "Limited shape types and formatting options",
+                        "Less intuitive shape creation and manipulation"
+                    ]
+                },
+                {
+                    "heading": "Newer PowerPoint Versions",
+                    "bullet_points": [
+                        "Expanded shape library with more types and styles",
+                        "Improved shape formatting and manipulation tools"
+                    ]
+                }
+            ],
+            "key_message": "Compares the use of shapes in older and newer PowerPoint versions",
+            "img_keywords": "PowerPoint shapes, older versions, newer versions, comparison"
+        },
+        {
+            "heading": "Tips for Effective Use of Shapes",
+            "bullet_points": [
+                "Keep shapes simple and uncluttered",
+                "Use consistent colors and styles",
+                "Avoid overusing shapes, maintain balance with text and other elements"
+            ],
+            "key_message": "Provides best practices for using shapes in presentations",
+            "img_keywords": "PowerPoint shapes, best practices, effective use"
+        },
+        {
+            "heading": "Conclusion",
+            "bullet_points": [
+                "Shapes are versatile tools in PowerPoint",
+                "Mastering shapes enhances presentation visuals",
+                "Practice and experimentation are key to improving shape usage"
+            ],
+            "key_message": "Summarizes the importance of shapes in PowerPoint and encourages practice",
+            "img_keywords": "PowerPoint shapes, conclusion, importance"
         }
     ]
 }'''
