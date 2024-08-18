@@ -1,3 +1,6 @@
+"""
+Streamlit app containing the UI and the application logic.
+"""
 import datetime
 import logging
 import pathlib
@@ -7,9 +10,7 @@ from typing import List
 
 import json5
 import streamlit as st
-from langchain_community.chat_message_histories import (
-    StreamlitChatMessageHistory
-)
+from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 
@@ -47,17 +48,9 @@ def _get_prompt_template(is_refinement: bool) -> str:
     return template
 
 
-# @st.cache_resource
-# def _get_tokenizer() -> AutoTokenizer:
-#     """
-#     Get Mistral tokenizer for counting tokens.
-#
-#     :return: The tokenizer.
-#     """
-#
-#     return AutoTokenizer.from_pretrained(
-#         pretrained_model_name_or_path=GlobalConfig.HF_LLM_MODEL_NAME
-#     )
+@st.cache_resource
+def _get_llm():
+    return llm_helper.get_hf_endpoint()
 
 
 APP_TEXT = _load_strings()
@@ -66,9 +59,10 @@ APP_TEXT = _load_strings()
 CHAT_MESSAGES = 'chat_messages'
 DOWNLOAD_FILE_KEY = 'download_file_name'
 IS_IT_REFINEMENT = 'is_it_refinement'
+APPROX_TARGET_LENGTH = GlobalConfig.LLM_MODEL_MAX_OUTPUT_LENGTH / 2
+
 
 logger = logging.getLogger(__name__)
-progress_bar = st.progress(0, text='Setting up SlideDeck AI...')
 
 texts = list(GlobalConfig.PPTX_TEMPLATE_FILES.keys())
 captions = [GlobalConfig.PPTX_TEMPLATE_FILES[x]['caption'] for x in texts]
@@ -110,7 +104,6 @@ def build_ui():
     with st.expander('Usage Policies and Limitations'):
         display_page_footer_content()
 
-    progress_bar.progress(50, text='Setting up chat interface...')
     set_up_chat_ui()
 
 
@@ -131,8 +124,6 @@ def set_up_chat_ui():
     st.chat_message('ai').write(
         random.choice(APP_TEXT['ai_greetings'])
     )
-    progress_bar.progress(100, text='Done!')
-    progress_bar.empty()
 
     history = StreamlitChatMessageHistory(key=CHAT_MESSAGES)
 
@@ -156,8 +147,6 @@ def set_up_chat_ui():
         placeholder=APP_TEXT['chat_placeholder'],
         max_chars=GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH
     ):
-
-        progress_bar_pptx = st.progress(0, 'Preparing to run...')
         if not text_helper.is_valid_prompt(prompt):
             st.error(
                 'Not enough information provided!'
@@ -190,47 +179,22 @@ def set_up_chat_ui():
                 }
             )
 
-        progress_bar_pptx.progress(5, 'Calling LLM...will retry if connection times out...')
-        response: dict = llm_helper.hf_api_query({
-            'inputs': formatted_template,
-            'parameters': {
-                'temperature': GlobalConfig.LLM_MODEL_TEMPERATURE,
-                'min_length': GlobalConfig.LLM_MODEL_MIN_OUTPUT_LENGTH,
-                'max_length': GlobalConfig.LLM_MODEL_MAX_OUTPUT_LENGTH,
-                'max_new_tokens': GlobalConfig.LLM_MODEL_MAX_OUTPUT_LENGTH,
-                'num_return_sequences': 1,
-                'return_full_text': False,
-                # "repetition_penalty": 0.0001
-            },
-            'options': {
-                'wait_for_model': True,
-                'use_cache': True
-            }
-        })
+        progress_bar = st.progress(0, 'Preparing to call LLM...')
+        response = ''
 
-        if len(response) > 0 and 'generated_text' in response[0]:
-            response: str = response[0]['generated_text'].strip()
+        for chunk in _get_llm().stream(formatted_template):
+            response += chunk
 
-        st.chat_message('ai').code(response, language='json')
+            # Update the progress bar
+            progress_percentage = min(len(response) / APPROX_TARGET_LENGTH, 0.95)
+            progress_bar.progress(progress_percentage, text='Streaming content...')
 
         history.add_user_message(prompt)
         history.add_ai_message(response)
 
-        # if GlobalConfig.COUNT_TOKENS:
-        #     tokenizer = _get_tokenizer()
-        #     tokens_count_in = len(tokenizer.tokenize(formatted_template))
-        #     tokens_count_out = len(tokenizer.tokenize(response))
-        #     logger.debug(
-        #         'Tokens count:: input: %d, output: %d',
-        #         tokens_count_in, tokens_count_out
-        #     )
-
-        # _display_messages_history(view_messages)
-
         # The content has been generated as JSON
         # There maybe trailing ``` at the end of the response -- remove them
         # To be careful: ``` may be part of the content as well when code is generated
-        progress_bar_pptx.progress(50, 'Analyzing response...')
         response_cleaned = text_helper.get_clean_json(response)
 
         logger.info(
@@ -240,9 +204,12 @@ def set_up_chat_ui():
         logger.debug('Cleaned JSON: %s', response_cleaned)
 
         # Now create the PPT file
-        progress_bar_pptx.progress(75, 'Creating the slide deck...give it a moment...')
-        generate_slide_deck(response_cleaned)
-        progress_bar_pptx.progress(100, text='Done!')
+        progress_bar.progress(0.95, text='Searching photos and generating the slide deck...')
+        path = generate_slide_deck(response_cleaned)
+        progress_bar.progress(1.0, text='Done!')
+
+        st.chat_message('ai').code(response, language='json')
+        _display_download_button(path)
 
         logger.info(
             '#messages in history / 2: %d',
@@ -250,11 +217,13 @@ def set_up_chat_ui():
         )
 
 
-def generate_slide_deck(json_str: str):
+def generate_slide_deck(json_str: str) -> pathlib.Path:
     """
-    Create a slide deck.
+    Create a slide deck and return the file path. In case there is any error creating the slide
+    deck, the path may be to an empty file.
 
     :param json_str: The content in *valid* JSON format.
+    :return: The file of the .pptx file.
     """
 
     if DOWNLOAD_FILE_KEY in st.session_state:
@@ -276,17 +245,6 @@ def generate_slide_deck(json_str: str):
             output_file_path=path
         )
     except ValueError:
-        # st.error(
-        #     f"{APP_TEXT['json_parsing_error']}"
-        #     f"\n\nAdditional error info: {ve}"
-        #     f"\n\nHere are some sample instructions that you could try to possibly fix this error;"
-        #     f" if these don't work, try rephrasing or refreshing:"
-        #     f"\n\n"
-        #     "- Regenerate content and fix the JSON error."
-        #     "\n- Regenerate content and fix the JSON error. Quotes inside quotes should be escaped."
-        # )
-        # logger.error('%s', APP_TEXT['json_parsing_error'])
-        # logger.error('Additional error info: %s', str(ve))
         st.error(
             'Encountered error while parsing JSON...will fix it and retry'
         )
@@ -302,8 +260,8 @@ def generate_slide_deck(json_str: str):
     except Exception as ex:
         st.error(APP_TEXT['content_generation_error'])
         logger.error('Caught a generic exception: %s', str(ex))
-    finally:
-        _display_download_button(path)
+
+    return path
 
 
 def _is_it_refinement() -> bool:
