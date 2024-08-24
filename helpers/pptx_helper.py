@@ -73,11 +73,6 @@ def generate_powerpoint_presentation(
 
     # The structured "JSON" might contain trailing commas, so using json5
     parsed_data = json5.loads(structured_data)
-
-    logger.debug(
-        '*** Using PPTX template: %s',
-        GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file']
-    )
     presentation = pptx.Presentation(GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file'])
     slide_width_inch, slide_height_inch = _get_slide_width_height_inches(presentation)
 
@@ -88,14 +83,17 @@ def generate_powerpoint_presentation(
     subtitle = slide.placeholders[1]
     title.text = parsed_data['title']
     logger.info(
-        'PPT title: %s | #slides: %d',
-        title.text, len(parsed_data['slides'])
+        'PPT title: %s | #slides: %d | template: %s',
+        title.text, len(parsed_data['slides']),
+        GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file']
     )
     subtitle.text = 'by Myself and SlideDeck AI :)'
     all_headers = [title.text, ]
 
     # Add content in a loop
     for a_slide in parsed_data['slides']:
+        # The loop has a bug:
+        # if any of this functions fail (i.e., returns False), an empty slide would still exist
         is_processing_done = _handle_double_col_layout(
             presentation=presentation,
             slide_json=a_slide,
@@ -151,6 +149,47 @@ def get_flat_list_of_contents(items: list, level: int) -> List[Tuple]:
     return flat_list
 
 
+def get_slide_placeholders(
+        slide: pptx.slide.Slide,
+        layout_number: int,
+        is_debug: bool = False
+) -> List[Tuple[int, str]]:
+    """
+    Return the index and name (lower case) of all placeholders present in a slide, except
+    the title placeholder.
+
+    A placeholder in a slide is a place to add content. Each placeholder has a name and an index.
+    This index is NOT a list index, rather a set of keys used to look up a dict. So, `idx` is
+    non-contiguous. Also, the title placeholder of a slide always has index 0. User-added
+    placeholder get indices assigned starting from 10.
+
+    With user-edited or added placeholders, their index may be difficult to track. This function
+    returns the placeholders name as well, which could be useful to distinguish between the
+    different placeholder.
+
+    :param slide: The slide.
+    :param layout_number: The layout number used by the slide.
+    :param is_debug: Whether to print debugging statements.
+    :return: A list containing placeholders (idx, name) tuples, except the title placeholder.
+    """
+
+    if is_debug:
+        print(
+            f'Slide layout #{layout_number}:'
+            f' # of placeholders: {len(slide.shapes.placeholders)} (including the title)'
+        )
+
+    placeholders = [
+        (shape.placeholder_format.idx, shape.name.lower()) for shape in slide.shapes.placeholders
+    ]
+    placeholders.pop(0)  # Remove the title placeholder
+
+    if is_debug:
+        print(placeholders)
+
+    return placeholders
+
+
 def _handle_default_display(
         presentation: pptx.Presentation,
         slide_json: dict,
@@ -193,7 +232,13 @@ def _handle_default_display(
 
     shapes = slide.shapes
     title_shape = shapes.title
-    body_shape = shapes.placeholders[1]
+
+    try:
+        body_shape = shapes.placeholders[1]
+    except KeyError:
+        placeholders = get_slide_placeholders(slide, layout_number=1)
+        body_shape = shapes.placeholders[placeholders[0][0]]
+
     title_shape.text = remove_slide_number_from_heading(slide_json['heading'])
     text_frame = body_shape.text_frame
 
@@ -238,12 +283,31 @@ def _handle_display_image__in_foreground(
     img_keywords = slide_json['img_keywords'].strip()
     slide = presentation.slide_layouts[8]  # Picture with Caption
     slide = presentation.slides.add_slide(slide)
+    placeholders = None
 
     title_placeholder = slide.shapes.title
     title_placeholder.text = remove_slide_number_from_heading(slide_json['heading'])
 
-    pic_col: PicturePlaceholder = slide.shapes.placeholders[1]
-    text_col: SlidePlaceholder = slide.shapes.placeholders[2]
+    try:
+        pic_col: PicturePlaceholder = slide.shapes.placeholders[1]
+    except KeyError:
+        placeholders = get_slide_placeholders(slide, layout_number=8)
+        pic_col = None
+        for idx, name in placeholders:
+            if 'picture' in name:
+                pic_col: PicturePlaceholder = slide.shapes.placeholders[idx]
+
+    try:
+        text_col: SlidePlaceholder = slide.shapes.placeholders[2]
+    except KeyError:
+        text_col = None
+        if not placeholders:
+            placeholders = get_slide_placeholders(slide, layout_number=8)
+
+        for idx, name in placeholders:
+            if 'content' in name:
+                text_col: SlidePlaceholder = slide.shapes.placeholders[idx]
+
     flat_items_list = get_flat_list_of_contents(slide_json['bullet_points'], level=0)
 
     for idx, an_item in enumerate(flat_items_list):
@@ -305,9 +369,15 @@ def _handle_display_image__in_background(
 
     # Add a photo in the background, text in the foreground
     slide = presentation.slides.add_slide(presentation.slide_layouts[1])
-
     title_shape = slide.shapes.title
-    body_shape = slide.shapes.placeholders[1]
+
+    try:
+        body_shape = slide.shapes.placeholders[1]
+    except KeyError:
+        placeholders = get_slide_placeholders(slide, layout_number=1)
+        # Layout 1 usually has two placeholders, including the title
+        body_shape = slide.shapes.placeholders[placeholders[0][0]]
+
     title_shape.text = remove_slide_number_from_heading(slide_json['heading'])
 
     flat_items_list = get_flat_list_of_contents(slide_json['bullet_points'], level=0)
@@ -418,39 +488,73 @@ def _handle_double_col_layout(
         ) and isinstance(double_col_content[0], dict) and isinstance(double_col_content[1], dict):
             slide = presentation.slide_layouts[4]
             slide = presentation.slides.add_slide(slide)
+            placeholders = None
 
             shapes = slide.shapes
             title_placeholder = shapes.title
             title_placeholder.text = remove_slide_number_from_heading(slide_json['heading'])
 
-            left_heading, right_heading = shapes.placeholders[1], shapes.placeholders[3]
-            left_col, right_col = shapes.placeholders[2], shapes.placeholders[4]
+            try:
+                left_heading, right_heading = shapes.placeholders[1], shapes.placeholders[3]
+            except KeyError:
+                # For manually edited/added master slides, the placeholder idx numbers in the dict
+                # will be different (>= 10)
+                left_heading, right_heading = None, None
+                placeholders = get_slide_placeholders(slide, layout_number=4)
+
+                for idx, name in placeholders:
+                    if 'text placeholder' in name:
+                        if not left_heading:
+                            left_heading = shapes.placeholders[idx]
+                        elif not right_heading:
+                            right_heading = shapes.placeholders[idx]
+
+            try:
+                left_col, right_col = shapes.placeholders[2], shapes.placeholders[4]
+            except KeyError:
+                left_col, right_col = None, None
+                if not placeholders:
+                    placeholders = get_slide_placeholders(slide, layout_number=4)
+
+                for idx, name in placeholders:
+                    if 'content placeholder' in name:
+                        if not left_col:
+                            left_col = shapes.placeholders[idx]
+                        elif not right_col:
+                            right_col = shapes.placeholders[idx]
+
             left_col_frame, right_col_frame = left_col.text_frame, right_col.text_frame
 
-            if 'heading' in double_col_content[0]:
+            if 'heading' in double_col_content[0] and left_heading:
                 left_heading.text = double_col_content[0]['heading']
             if 'bullet_points' in double_col_content[0]:
                 flat_items_list = get_flat_list_of_contents(
                     double_col_content[0]['bullet_points'], level=0
                 )
 
+                if not left_heading:
+                    left_col_frame.text = double_col_content[0]['heading']
+
                 for idx, an_item in enumerate(flat_items_list):
-                    if idx == 0:
+                    if left_heading and idx == 0:
                         left_col_frame.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
                     else:
                         paragraph = left_col_frame.add_paragraph()
                         paragraph.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
                         paragraph.level = an_item[1]
 
-            if 'heading' in double_col_content[1]:
+            if 'heading' in double_col_content[1] and right_heading:
                 right_heading.text = double_col_content[1]['heading']
             if 'bullet_points' in double_col_content[1]:
                 flat_items_list = get_flat_list_of_contents(
                     double_col_content[1]['bullet_points'], level=0
                 )
 
+                if not right_heading:
+                    right_col_frame.text = double_col_content[1]['heading']
+
                 for idx, an_item in enumerate(flat_items_list):
-                    if idx == 0:
+                    if right_col_frame and idx == 0:
                         right_col_frame.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
                     else:
                         paragraph = right_col_frame.add_paragraph()
@@ -614,153 +718,160 @@ def _get_slide_width_height_inches(presentation: pptx.Presentation) -> Tuple[flo
     return slide_width_inch, slide_height_inch
 
 
-def print_placeholder_names(slide: pptx.slide.Slide):
-    """
-    Display the placeholder details of a given slide.
-
-    :param slide: The slide.
-    """
-
-    for shape in slide.placeholders:
-        print(f'{shape.placeholder_format.idx=}, {shape.name=}')
-
-
 if __name__ == '__main__':
     _JSON_DATA = '''
     {
-    "title": "Mastering PowerPoint Shapes",
+    "title": "The Fascinating World of Chess",
     "slides": [
         {
-            "heading": "Introduction to PowerPoint Shapes",
+            "heading": "Introduction to Chess",
             "bullet_points": [
-                "Shapes are fundamental elements in PowerPoint",
-                "Used to create diagrams, flowcharts, and visuals",
-                "Available in various types: lines, rectangles, circles, etc."
-            ],
-            "key_message": "",
-            "img_keywords": "PowerPoint shapes, basic shapes"
-        },
-        {
-            "heading": "Types of Shapes in PowerPoint",
-            "bullet_points": [
-                "Lines: Connect two points",
-                "Rectangles: Four-sided figures with right angles",
+                "Chess is a strategic board game played between two players.",
                 [
-                    "Squares: Special type of rectangle with equal sides",
-                    "Rounded Rectangles: Rectangles with rounded corners"
+                    "Each player begins the game with 16 pieces: one king, one queen, two rooks, two knights, two bishops, and eight pawns.",
+                    "The goal of the game is to checkmate your opponent's king. This means the king is in a position to be captured (in 'check') but has no move to escape (mate)."
                 ],
-                "Circles: Round shapes with no corners",
-                "Ovals: Elliptical shapes"
+                "Chess is believed to have originated in northern India in the 6th century AD."
             ],
-            "key_message": "",
-            "img_keywords": "PowerPoint shapes, types of shapes"
+            "key_message": "Understanding the basics of chess is crucial before delving into strategies.",
+            "img_keywords": "chessboard, chess pieces, king, queen, rook, knight, bishop, pawn"
         },
         {
-            "heading": "Creating and Manipulating Shapes",
+            "heading": "The Chessboard",
             "bullet_points": [
-                ">> Select the 'Home' tab and click on 'Shapes'",
-                ">> Choose the desired shape",
-                ">> Click and drag to create the shape",
-                ">> Resize, move, or rotate shapes using handles",
-                ">> Change shape color, fill, and outline"
+                "The chessboard is made up of 64 squares in an 8x8 grid.",
+                "Each player starts with their pieces on their home rank (row).",
+                "The board is divided into two camps: one for each player."
             ],
-            "key_message": "Demonstrates the process of creating and manipulating shapes",
-            "img_keywords": "PowerPoint shapes, creating shapes, manipulating shapes"
+            "key_message": "Knowing the layout of the chessboard is essential for understanding piece movement.",
+            "img_keywords": "chessboard layout, 8x8 grid, home rank, player camps"
         },
         {
-            "heading": "Advanced Shape Manipulation",
+            "heading": "Movement of Pieces",
+            "bullet_points": [
+                ">> Each piece moves differently. Learning these movements is key to playing chess.",
+                ">> The king moves one square in any direction.",
+                ">> The queen combines the moves of the rook and bishop.",
+                ">> The rook moves horizontally or vertically along a rank or file.",
+                ">> The bishop moves diagonally.",
+                ">> The knight moves in an L-shape: two squares in a horizontal or vertical direction, then one square perpendicular to that.",
+                ">> The pawn moves forward one square, but captures diagonally.",
+                ">> Pawns have the initial option of moving two squares forward on their first move."
+            ],
+            "key_message": "Understanding how each piece moves is fundamental to playing chess.",
+            "img_keywords": "chess piece movements, king, queen, rook, bishop, knight, pawn"
+        },
+        {
+            "heading": "Special Moves",
             "bullet_points": [
                 {
-                    "heading": "Adding Text to Shapes",
+                    "heading": "Castling",
                     "bullet_points": [
-                        "Right-click on the shape and select 'Add Text'",
-                        "Type or paste the desired text"
+                        "Castling is a unique move involving the king and a rook.",
+                        "It involves moving the king two squares towards a rook, then moving that rook to the square the king skipped over."
                     ]
                 },
                 {
-                    "heading": "Grouping and Ungrouping Shapes",
+                    "heading": "En Passant",
                     "bullet_points": [
-                        "Select multiple shapes and press 'Ctrl + G' to group",
-                        "Right-click and select 'Ungroup' to separate"
+                        "En passant is a special pawn capture move.",
+                        "It occurs when a pawn moves two squares forward from its starting position and lands beside an opponent's pawn, which could have captured it if the first pawn had only moved one square forward."
                     ]
                 }
             ],
-            "key_message": "Explores advanced techniques for working with shapes",
-            "img_keywords": "PowerPoint shapes, advanced manipulation, grouping, text in shapes"
+            "key_message": "Understanding these special moves can add depth to your chess strategy.",
+            "img_keywords": "castling, en passant, special chess moves"
         },
         {
-            "heading": "Using the 'Format' Tab for Shapes",
+            "heading": "Chess Notation",
             "bullet_points": [
-                "Access advanced shape formatting options",
-                "Change shape fill, outline, and effects",
-                "Adjust shape size and position"
+                "Chess notation is a system used to record and communicate chess games.",
+                "It uses algebraic notation, where each square on the board is identified by a letter and a number.",
+                "Pieces are identified by their initial letters: K for king, Q for queen, R for rook, B for bishop, N for knight, and P for pawn."
             ],
-            "key_message": "",
-            "img_keywords": "PowerPoint shapes, format tab, advanced formatting"
+            "key_message": "Learning chess notation is helpful for recording, analyzing, and discussing games.",
+            "img_keywords": "chess notation, algebraic notation, chess symbols"
         },
         {
-            "heading": "Example: Creating a Simple Diagram",
+            "heading": "Chess Strategies",
             "bullet_points": [
-                "Use rectangles to represent blocks",
-                "Use lines to connect blocks",
-                "Add text to shapes to label elements"
+                "Develop your pieces quickly and efficiently.",
+                "Control the center of the board.",
+                "Castle early to protect your king.",
+                "Keep your king safe.",
+                "Think ahead and plan your moves."
             ],
-            "key_message": "Illustrates the use of shapes to create a simple diagram",
-            "img_keywords": "PowerPoint shapes, diagram example, simple diagram"
+            "key_message": "Following these strategies can help improve your chess skills.",
+            "img_keywords": "chess strategies, piece development, center control, king safety, planning ahead"
         },
         {
-            "heading": "Example: Creating a Flowchart",
+            "heading": "Chess Tactics",
             "bullet_points": [
-                "Use different shapes to represent steps, decisions, and inputs/outputs",
-                "Use connectors to link shapes",
-                "Add text to shapes to describe each step"
+                "Fork: attacking two enemy pieces with the same move.",
+                "Pin: restricting the movement of an enemy piece.",
+                "Skewer: forcing an enemy piece to move away from a threatened piece.",
+                "Discovered attack: moving a piece to reveal an attack by another piece behind it."
             ],
-            "key_message": "Demonstrates the use of shapes to create a flowchart",
-            "img_keywords": "PowerPoint shapes, flowchart example, creating flowchart"
+            "key_message": "Mastering these tactics can help you gain an advantage in games.",
+            "img_keywords": "chess tactics, fork, pin, skewer, discovered attack"
         },
         {
-            "heading": "Double Column Layout: Shapes in Older vs. Newer PowerPoint Versions",
+            "heading": "Chess Openings",
             "bullet_points": [
                 {
-                    "heading": "Older PowerPoint Versions",
+                    "heading": "Italian Game",
                     "bullet_points": [
-                        "Limited shape types and formatting options",
-                        "Less intuitive shape creation and manipulation"
+                        "1. e4 e5",
+                        "2. Nf3 Nc6",
+                        "3. Bc4 Bc5"
                     ]
                 },
                 {
-                    "heading": "Newer PowerPoint Versions",
+                    "heading": "Ruy Lopez",
                     "bullet_points": [
-                        "Expanded shape library with more types and styles",
-                        "Improved shape formatting and manipulation tools"
+                        "1. e4 e5",
+                        "2. Nf3 Nc6",
+                        "3. Bb5"
                     ]
                 }
             ],
-            "key_message": "Compares the use of shapes in older and newer PowerPoint versions",
-            "img_keywords": "PowerPoint shapes, older versions, newer versions, comparison"
+            "key_message": "Learning popular chess openings can help you start games effectively.",
+            "img_keywords": "chess openings, Italian Game, Ruy Lopez"
         },
         {
-            "heading": "Tips for Effective Use of Shapes",
+            "heading": "Chess Endgames",
             "bullet_points": [
-                "Keep shapes simple and uncluttered",
-                "Use consistent colors and styles",
-                "Avoid overusing shapes, maintain balance with text and other elements"
+                {
+                    "heading": "King and Pawn Endgame",
+                    "bullet_points": [
+                        "This endgame involves a king and one or more pawns against a lone king.",
+                        "The goal is to promote a pawn to a new queen."
+                    ]
+                },
+                {
+                    "heading": "Rook Endgame",
+                    "bullet_points": [
+                        "This endgame involves a rook against a lone king.",
+                        "The goal is to checkmate the opponent's king using the rook."
+                    ]
+                }
             ],
-            "key_message": "Provides best practices for using shapes in presentations",
-            "img_keywords": "PowerPoint shapes, best practices, effective use"
+            "key_message": "Understanding common chess endgames can help you win games.",
+            "img_keywords": "chess endgames, king and pawn endgame, rook endgame"
         },
         {
             "heading": "Conclusion",
             "bullet_points": [
-                "Shapes are versatile tools in PowerPoint",
-                "Mastering shapes enhances presentation visuals",
-                "Practice and experimentation are key to improving shape usage"
+                "Chess is a complex game that requires strategy, tactics, and planning.",
+                "Understanding the rules, piece movements, and common strategies can help improve your chess skills.",
+                "Practice regularly to improve your game."
             ],
-            "key_message": "Summarizes the importance of shapes in PowerPoint and encourages practice",
-            "img_keywords": "PowerPoint shapes, conclusion, importance"
+            "key_message": "To excel at chess, one must understand its fundamentals and practice regularly.",
+            "img_keywords": "chess fundamentals, chess improvement, regular practice"
         }
     ]
-}'''
+}
+'''
 
     temp = tempfile.NamedTemporaryFile(delete=False, suffix='.pptx')
     path = pathlib.Path(temp.name)
@@ -768,7 +879,7 @@ if __name__ == '__main__':
     generate_powerpoint_presentation(
         json5.loads(_JSON_DATA),
         output_file_path=path,
-        slides_template='Basic'
+        slides_template='Minimalist Sales Pitch'
     )
     print(f'File path: {path}')
 
