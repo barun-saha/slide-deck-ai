@@ -1,6 +1,7 @@
 """
 Search photos using Pexels API.
 """
+import logging
 import os
 import random
 from io import BytesIO
@@ -12,6 +13,13 @@ import requests
 
 REQUEST_TIMEOUT = 12
 MAX_PHOTOS = 2
+
+
+# Only show warnings
+logging.getLogger('urllib3').setLevel(logging.WARNING)
+# Disable all child loggers of urllib3, e.g. urllib3.connectionpool
+logging.getLogger('urllib3').propagate = False
+
 
 
 def search_pexels(
