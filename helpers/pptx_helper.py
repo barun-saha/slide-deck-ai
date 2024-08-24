@@ -411,7 +411,7 @@ def _handle_display_image__in_background(
                 slide=slide,
                 slide_width_inch=slide_width_inch,
                 slide_height_inch=slide_height_inch,
-                text='Photos provided by Pexels',
+                text='Photo provided by Pexels',
                 hyperlink=page_url
             )
 
