@@ -92,8 +92,6 @@ def generate_powerpoint_presentation(
 
     # Add content in a loop
     for a_slide in parsed_data['slides']:
-        # The loop has a bug:
-        # if any of this functions fail (i.e., returns False), an empty slide would still exist
         is_processing_done = _handle_double_col_layout(
             presentation=presentation,
             slide_json=a_slide,
@@ -623,6 +621,11 @@ def _handle_step_by_step_process(
         ):
             return False
 
+        if n_steps < 3 or n_steps > 6:
+            # Two steps -- probably not a process
+            # More than 5--6 steps -- would likely cause a visual clutter
+            return False
+
         bullet_slide_layout = presentation.slide_layouts[1]
         slide = presentation.slides.add_slide(bullet_slide_layout)
         shapes = slide.shapes
@@ -665,10 +668,6 @@ def _handle_step_by_step_process(
                 shape.text = step.removeprefix(STEP_BY_STEP_PROCESS_MARKER)
                 top += height + INCHES_0_3
                 left += INCHES_0_5
-        else:
-            # Two steps -- probably not a process
-            # More than 5--6 steps -- would likely cause a visual clutter
-            return False
 
     return True
 
