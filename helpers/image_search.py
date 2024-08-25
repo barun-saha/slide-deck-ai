@@ -12,7 +12,7 @@ import requests
 
 
 REQUEST_TIMEOUT = 12
-MAX_PHOTOS = 2
+MAX_PHOTOS = 3
 
 
 # Only show warnings
