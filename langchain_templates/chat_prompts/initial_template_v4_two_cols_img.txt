@@ -14,18 +14,19 @@ These keywords will be later used to search for images from the Web relevant to 
 
 Create one slide with rich visual experience, containing icons (pictograms) and short texts.
 This particular slide will illustrate some key ideas/aspects/concepts relevant to the topic.
-Here, you will generate 3 TO 5 short lines of text. Each such line will have the name of an icon
-enclosed between [[ and ]]. The name of the icons should be relevant to the aspects described and
-MUST BE chosen from the <Icons> section provided below. You MUST NEVER generate any icon name not present
-in the <Icons> section.
+Here, you will generate 4 TO 6 short lines of text (hence, select 4 TO 6 icon names).
+Each such line will have the name of an icon enclosed between [[ and ]].
+The name of the icons should be relevant to the aspects described and MUST BE chosen from the <ICONS> section provided below.
+You must specify the name of the icon exactly as mentioned in <ICONS>.
+You MUST NEVER generate any icon name not mentioned in the <ICONS> section.
 
 ALWAYS add a concluding slide at the end, containing a list of the key takeaways and an optional call-to-action if relevant to the context.
 Unless explicitly instructed, create 10 TO 12 SLIDES in total.
 
 
-<Icons>
+<ICONS>
 {icons_list}
-</Icons>
+</ICONS>
 
 
 ### Topic:
@@ -63,7 +64,7 @@ The output must be only a valid and syntactically correct JSON adhering to the f
             "heading": "A slide illustrating key ideas/aspects/concepts (Hint: generate an appropriate heading)",
             "bullet_points": [
                 "[[icon_name]] Some short text",
-                "[[icon_another_name]] Some words describing this aspect",
+                "[[another_icon_name]] Some words describing this aspect",
                 "[[icon_other_name]] Another aspect highlighted in a few words",
             ],
             "key_message": "",
