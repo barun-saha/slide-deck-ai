@@ -41,10 +41,16 @@ A history of instructions is maintained.
 Clicking on the button will download the file.
 
 
+# Icons
+
+SlideDeck AI uses a subset of icons from [bootstrap-icons-1.11.3](https://github.com/twbs/icons)
+ (MIT license) in the slides. A few icons from [SVG Repo](https://www.svgrepo.com/collection/future-technology-2/)
+(CC0 license) are also used.
+
+
 # Known Issues
 
-- **Connection timeout**: Requests sent to the Hugging Face Inference endpoint might time out.
-A maximum of five retries are attempted. If it still does not work, wait for a while and try again.
+- **Connection timeout**: Requests sent to the Hugging Face Inference endpoint might time out. If it still does not work, wait for a while and try again.
 
 The following is not an issue but might appear as a strange behavior:
 - **Cannot paste text in the input box**: If the length of the copied text is greater than the maximum
