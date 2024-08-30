@@ -3,6 +3,7 @@ Streamlit app containing the UI and the application logic.
 """
 import datetime
 import logging
+import os
 import pathlib
 import random
 import tempfile
@@ -50,7 +51,29 @@ def _get_prompt_template(is_refinement: bool) -> str:
 
 @st.cache_resource
 def _get_llm():
+    """
+    Get an LLM instance.
+
+    :return: The LLM.
+    """
+
     return llm_helper.get_hf_endpoint()
+
+
+@st.cache_data
+def _get_icons_list() -> List[str]:
+    """
+    Get a list of available icons names without the dir name and file extension.
+
+    :return: A llist of the icons.
+    """
+
+    items = pathlib.Path(GlobalConfig.ICONS_DIR).glob('*.png')
+    items = [
+        os.path.basename(str(item)).removesuffix('.png') for item in items
+    ]
+
+    return items
 
 
 APP_TEXT = _load_strings()
@@ -169,13 +192,15 @@ def set_up_chat_ui():
             formatted_template = prompt_template.format(
                 **{
                     'instructions': list_of_msgs,
-                    'previous_content': _get_last_response()
+                    'previous_content': _get_last_response(),
+                    'icons_list': '\n'.join(_get_icons_list())
                 }
             )
         else:
             formatted_template = prompt_template.format(
                 **{
                     'question': prompt,
+                    'icons_list': '\n'.join(_get_icons_list())
                 }
             )
 
@@ -204,7 +229,10 @@ def set_up_chat_ui():
         logger.debug('Cleaned JSON: %s', response_cleaned)
 
         # Now create the PPT file
-        progress_bar.progress(0.95, text='Searching photos and generating the slide deck...')
+        progress_bar.progress(
+            GlobalConfig.LLM_PROGRESS_MAX,
+            text='Finding photos online and generating the slide deck...'
+        )
         path = generate_slide_deck(response_cleaned)
         progress_bar.progress(1.0, text='Done!')
 
