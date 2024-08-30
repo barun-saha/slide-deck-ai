@@ -551,6 +551,7 @@ def _handle_icons_ideas(
             text_frame = text_box.text_frame
             text_frame.text = accompanying_text
             text_frame.word_wrap = True
+            text_frame.paragraphs[0].alignment = pptx.enum.text.PP_ALIGN.CENTER
 
             # Center the text vertically
             text_frame.vertical_anchor = pptx.enum.text.MSO_ANCHOR.MIDDLE
