@@ -2,6 +2,7 @@
 A set of functions to create a PowerPoint slide deck.
 """
 import logging
+import os
 import pathlib
 import random
 import re
@@ -27,19 +28,41 @@ load_dotenv()
 
 # English Metric Unit (used by PowerPoint) to inches
 EMU_TO_INCH_SCALING_FACTOR = 1.0 / 914400
+INCHES_2 = pptx.util.Inches(2)
 INCHES_1_5 = pptx.util.Inches(1.5)
 INCHES_1 = pptx.util.Inches(1)
+INCHES_0_8 = pptx.util.Inches(0.8)
+INCHES_0_9 = pptx.util.Inches(0.9)
 INCHES_0_5 = pptx.util.Inches(0.5)
 INCHES_0_4 = pptx.util.Inches(0.4)
 INCHES_0_3 = pptx.util.Inches(0.3)
+INCHES_0_2 = pptx.util.Inches(0.2)
 
 STEP_BY_STEP_PROCESS_MARKER = '>> '
+ICON_BEGINNING_MARKER = '[['
+ICON_END_MARKER = ']]'
+
+ICON_SIZE = INCHES_0_8
+ICON_BG_SIZE = INCHES_1
+
 IMAGE_DISPLAY_PROBABILITY = 1 / 3.0
 FOREGROUND_IMAGE_PROBABILITY = 0.8
+
 SLIDE_NUMBER_REGEX = re.compile(r"^slide[ ]+\d+:", re.IGNORECASE)
+ICONS_REGEX = re.compile(r"\[\[(.*?)\]\]\s*(.*)")
+
+ICON_COLORS = [
+    pptx.dml.color.RGBColor.from_string('800000'),  # Maroon
+    pptx.dml.color.RGBColor.from_string('6A5ACD'),  # SlateBlue
+    pptx.dml.color.RGBColor.from_string('556B2F'),  # DarkOliveGreen
+    pptx.dml.color.RGBColor.from_string('2F4F4F'),  # DarkSlateGray
+    pptx.dml.color.RGBColor.from_string('4682B4'),  # SteelBlue
+    pptx.dml.color.RGBColor.from_string('5F9EA0'),  # CadetBlue
+]
 
 
 logger = logging.getLogger(__name__)
+logging.getLogger('PIL.PngImagePlugin').setLevel(logging.ERROR)
 
 
 def remove_slide_number_from_heading(header: str) -> str:
@@ -92,12 +115,20 @@ def generate_powerpoint_presentation(
 
     # Add content in a loop
     for a_slide in parsed_data['slides']:
-        is_processing_done = _handle_double_col_layout(
+        is_processing_done = _handle_icons_ideas(
             presentation=presentation,
             slide_json=a_slide,
             slide_width_inch=slide_width_inch,
             slide_height_inch=slide_height_inch
         )
+
+        if not is_processing_done:
+            is_processing_done = _handle_double_col_layout(
+                presentation=presentation,
+                slide_json=a_slide,
+                slide_width_inch=slide_width_inch,
+                slide_height_inch=slide_height_inch
+            )
 
         if not is_processing_done:
             is_processing_done = _handle_step_by_step_process(
@@ -426,6 +457,117 @@ def _handle_display_image__in_background(
     return True
 
 
+def _handle_icons_ideas(
+        presentation: pptx.Presentation(),
+        slide_json: dict,
+        slide_width_inch: float,
+        slide_height_inch: float
+):
+    """
+    Add a slide with some icons and text.
+    If no suitable icons are found, the step numbers are shown.
+
+    :param presentation: The presentation object.
+    :param slide_json: The content of the slide as JSON data.
+    :param slide_width_inch: The width of the slide in inches.
+    :param slide_height_inch: The height of the slide in inches.
+    :return: True if the slide has been processed.
+    """
+
+    if 'bullet_points' in slide_json and slide_json['bullet_points']:
+        items = slide_json['bullet_points']
+
+        # Ensure that it is a single list of strings without any sub-list
+        for step in items:
+            if not isinstance(step, str) or not step.startswith(ICON_BEGINNING_MARKER):
+                return False
+
+        slide_layout = presentation.slide_layouts[5]
+        slide = presentation.slides.add_slide(slide_layout)
+        slide.shapes.title.text = remove_slide_number_from_heading(slide_json['heading'])
+
+        n_items = len(items)
+        text_box_size = INCHES_2
+
+        # Calculate the total width of all pictures and the spacing
+        total_width = n_items * ICON_SIZE
+        # slide_width = presentation.slide_width
+        spacing = (pptx.util.Inches(slide_width_inch) - total_width) / (n_items + 1)
+
+        for idx, item in enumerate(items):
+            # Extract the icon name and text
+            match = ICONS_REGEX.search(item)
+
+            if not match:
+                print('No icon/text pattern match found...skipping to the next item')
+                continue
+
+            icon_name = match.group(1)
+            accompanying_text = match.group(2)
+            icon_path = f'{GlobalConfig.ICONS_DIR}/{icon_name}.png'
+
+            left = spacing + idx * (ICON_SIZE + spacing)
+            top = pptx.util.Inches(2)  # Adjust the vertical position as needed
+
+            # Calculate the center position for alignment
+            center = left + ICON_SIZE / 2
+
+            # Add a rectangle shape with a fill color (background)
+            # The size of the shape is slightly bigger than the icon, so align the icon position
+            shape = slide.shapes.add_shape(
+                MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE,
+                center - INCHES_0_5,
+                top - (ICON_BG_SIZE - ICON_SIZE) / 2,
+                INCHES_1, INCHES_1
+            )
+            shape.fill.solid()
+
+            # Set the icon's background shape color
+            color = random.choice(ICON_COLORS)
+            shape.fill.fore_color.rgb = color
+            shape.line.color.rgb = color
+
+            # Add the icon image on top of the colored shape
+            try:
+                slide.shapes.add_picture(icon_path, left, top, height=ICON_SIZE)
+            except FileNotFoundError:
+                logger.error(
+                    'Icon %s not found...using generic step number as icon...',
+                    icon_name
+                )
+                step_icon_path = f'{GlobalConfig.ICONS_DIR}/{idx + 1}-circle.png'
+                if os.path.exists(step_icon_path):
+                    slide.shapes.add_picture(step_icon_path, left, top, height=ICON_SIZE)
+
+            # Add a text box below the shape
+            text_top = top + ICON_SIZE + INCHES_0_2
+            text_left = center - text_box_size / 2  # Center the text box horizontally
+            # text_box = slide.shapes.add_textbox(text_left, text_top, text_box_size, text_box_size)
+            text_box = slide.shapes.add_shape(
+                MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE,
+                text_left, text_top,
+                text_box_size, text_box_size
+            )
+            text_frame = text_box.text_frame
+            text_frame.text = accompanying_text
+            text_frame.word_wrap = True
+
+            # Center the text vertically
+            text_frame.vertical_anchor = pptx.enum.text.MSO_ANCHOR.MIDDLE
+            text_box.fill.background()  # No fill
+            text_box.line.fill.background()  # No line
+            text_box.shadow.inherit = False
+
+            # Set the font color based on the theme
+            for paragraph in text_frame.paragraphs:
+                for run in paragraph.runs:
+                    run.font.color.theme_color = pptx.enum.dml.MSO_THEME_COLOR.TEXT_2
+
+        return True
+
+    return False
+
+
 def _add_text_at_bottom(
         slide: pptx.slide.Slide,
         slide_width_inch: float,
@@ -720,157 +862,108 @@ def _get_slide_width_height_inches(presentation: pptx.Presentation) -> Tuple[flo
 if __name__ == '__main__':
     _JSON_DATA = '''
     {
-    "title": "The Fascinating World of Chess",
-    "slides": [
+  "title": "AI Applications: Transforming Industries",
+  "slides": [
+    {
+      "heading": "Introduction to AI Applications",
+      "bullet_points": [
+        "Artificial Intelligence (AI) is transforming various industries",
+        "AI applications range from simple decision-making tools to complex systems",
+        "AI can be categorized into types: Rule-based, Instance-based, and Model-based"
+      ],
+      "key_message": "AI is a broad field with diverse applications and categories",
+      "img_keywords": "AI, transformation, industries, decision-making, categories"
+    },
+    {
+      "heading": "AI in Everyday Life",
+      "bullet_points": [
+        "Virtual assistants like Siri, Alexa, and Google Assistant",
+        "Recommender systems in Netflix, Amazon, and Spotify",
+        "Fraud detection in banking and credit card transactions"
+      ],
+      "key_message": "AI is integrated into our daily lives through various services",
+      "img_keywords": "virtual assistants, recommender systems, fraud detection"
+    },
+    {
+      "heading": "AI in Healthcare",
+      "bullet_points": [
+        "Disease diagnosis and prediction using machine learning algorithms",
+        "Personalized medicine and drug discovery",
+        "AI-powered robotic surgeries and remote patient monitoring"
+      ],
+      "key_message": "AI is revolutionizing healthcare with improved diagnostics and patient care",
+      "img_keywords": "healthcare, disease diagnosis, personalized medicine, robotic surgeries"
+    },
+    {
+      "heading": "AI in Key Industries",
+      "bullet_points": [
         {
-            "heading": "Introduction to Chess",
-            "bullet_points": [
-                "Chess is a strategic board game played between two players.",
-                [
-                    "Each player begins the game with 16 pieces: one king, one queen, two rooks, two knights, two bishops, and eight pawns.",
-                    "The goal of the game is to checkmate your opponent's king. This means the king is in a position to be captured (in 'check') but has no move to escape (mate)."
-                ],
-                "Chess is believed to have originated in northern India in the 6th century AD."
-            ],
-            "key_message": "Understanding the basics of chess is crucial before delving into strategies.",
-            "img_keywords": "chessboard, chess pieces, king, queen, rook, knight, bishop, pawn"
+          "heading": "Retail",
+          "bullet_points": [
+            "Inventory management and demand forecasting",
+            "Customer segmentation and targeted marketing",
+            "AI-driven chatbots for customer service"
+          ]
         },
         {
-            "heading": "The Chessboard",
-            "bullet_points": [
-                "The chessboard is made up of 64 squares in an 8x8 grid.",
-                "Each player starts with their pieces on their home rank (row).",
-                "The board is divided into two camps: one for each player."
-            ],
-            "key_message": "Knowing the layout of the chessboard is essential for understanding piece movement.",
-            "img_keywords": "chessboard layout, 8x8 grid, home rank, player camps"
-        },
-        {
-            "heading": "Movement of Pieces",
-            "bullet_points": [
-                ">> Each piece moves differently. Learning these movements is key to playing chess.",
-                ">> The king moves one square in any direction.",
-                ">> The queen combines the moves of the rook and bishop.",
-                ">> The rook moves horizontally or vertically along a rank or file.",
-                ">> The bishop moves diagonally.",
-                ">> The knight moves in an L-shape: two squares in a horizontal or vertical direction, then one square perpendicular to that.",
-                ">> The pawn moves forward one square, but captures diagonally.",
-                ">> Pawns have the initial option of moving two squares forward on their first move."
-            ],
-            "key_message": "Understanding how each piece moves is fundamental to playing chess.",
-            "img_keywords": "chess piece movements, king, queen, rook, bishop, knight, pawn"
-        },
-        {
-            "heading": "Special Moves",
-            "bullet_points": [
-                {
-                    "heading": "Castling",
-                    "bullet_points": [
-                        "Castling is a unique move involving the king and a rook.",
-                        "It involves moving the king two squares towards a rook, then moving that rook to the square the king skipped over."
-                    ]
-                },
-                {
-                    "heading": "En Passant",
-                    "bullet_points": [
-                        "En passant is a special pawn capture move.",
-                        "It occurs when a pawn moves two squares forward from its starting position and lands beside an opponent's pawn, which could have captured it if the first pawn had only moved one square forward."
-                    ]
-                }
-            ],
-            "key_message": "Understanding these special moves can add depth to your chess strategy.",
-            "img_keywords": "castling, en passant, special chess moves"
-        },
-        {
-            "heading": "Chess Notation",
-            "bullet_points": [
-                "Chess notation is a system used to record and communicate chess games.",
-                "It uses algebraic notation, where each square on the board is identified by a letter and a number.",
-                "Pieces are identified by their initial letters: K for king, Q for queen, R for rook, B for bishop, N for knight, and P for pawn."
-            ],
-            "key_message": "Learning chess notation is helpful for recording, analyzing, and discussing games.",
-            "img_keywords": "chess notation, algebraic notation, chess symbols"
-        },
-        {
-            "heading": "Chess Strategies",
-            "bullet_points": [
-                "Develop your pieces quickly and efficiently.",
-                "Control the center of the board.",
-                "Castle early to protect your king.",
-                "Keep your king safe.",
-                "Think ahead and plan your moves."
-            ],
-            "key_message": "Following these strategies can help improve your chess skills.",
-            "img_keywords": "chess strategies, piece development, center control, king safety, planning ahead"
-        },
-        {
-            "heading": "Chess Tactics",
-            "bullet_points": [
-                "Fork: attacking two enemy pieces with the same move.",
-                "Pin: restricting the movement of an enemy piece.",
-                "Skewer: forcing an enemy piece to move away from a threatened piece.",
-                "Discovered attack: moving a piece to reveal an attack by another piece behind it."
-            ],
-            "key_message": "Mastering these tactics can help you gain an advantage in games.",
-            "img_keywords": "chess tactics, fork, pin, skewer, discovered attack"
-        },
-        {
-            "heading": "Chess Openings",
-            "bullet_points": [
-                {
-                    "heading": "Italian Game",
-                    "bullet_points": [
-                        "1. e4 e5",
-                        "2. Nf3 Nc6",
-                        "3. Bc4 Bc5"
-                    ]
-                },
-                {
-                    "heading": "Ruy Lopez",
-                    "bullet_points": [
-                        "1. e4 e5",
-                        "2. Nf3 Nc6",
-                        "3. Bb5"
-                    ]
-                }
-            ],
-            "key_message": "Learning popular chess openings can help you start games effectively.",
-            "img_keywords": "chess openings, Italian Game, Ruy Lopez"
-        },
-        {
-            "heading": "Chess Endgames",
-            "bullet_points": [
-                {
-                    "heading": "King and Pawn Endgame",
-                    "bullet_points": [
-                        "This endgame involves a king and one or more pawns against a lone king.",
-                        "The goal is to promote a pawn to a new queen."
-                    ]
-                },
-                {
-                    "heading": "Rook Endgame",
-                    "bullet_points": [
-                        "This endgame involves a rook against a lone king.",
-                        "The goal is to checkmate the opponent's king using the rook."
-                    ]
-                }
-            ],
-            "key_message": "Understanding common chess endgames can help you win games.",
-            "img_keywords": "chess endgames, king and pawn endgame, rook endgame"
-        },
-        {
-            "heading": "Conclusion",
-            "bullet_points": [
-                "Chess is a complex game that requires strategy, tactics, and planning.",
-                "Understanding the rules, piece movements, and common strategies can help improve your chess skills.",
-                "Practice regularly to improve your game."
-            ],
-            "key_message": "To excel at chess, one must understand its fundamentals and practice regularly.",
-            "img_keywords": "chess fundamentals, chess improvement, regular practice"
+          "heading": "Finance",
+          "bullet_points": [
+            "Credit scoring and risk assessment",
+            "Algorithmic trading and portfolio management",
+            "AI for detecting money laundering and cyber fraud"
+          ]
         }
-    ]
-}
-'''
+      ],
+      "key_message": "AI is transforming retail and finance with improved operations and decision-making",
+      "img_keywords": "retail, finance, inventory management, credit scoring, algorithmic trading"
+    },
+    {
+      "heading": "AI in Education",
+      "bullet_points": [
+        "Personalized learning paths and adaptive testing",
+        "Intelligent tutoring systems for skill development",
+        "AI for predicting student performance and dropout rates"
+      ],
+      "key_message": "AI is personalizing education and improving student outcomes",
+      "img_keywords": "education, personalized learning, intelligent tutoring, student performance"
+    },
+    {
+      "heading": "Step-by-Step: AI Development Process",
+      "bullet_points": [
+        ">> Define the problem and objectives",
+        ">> Collect and preprocess data",
+        ">> Select and train the AI model",
+        ">> Evaluate and optimize the model",
+        ">> Deploy and monitor the AI system"
+      ],
+      "key_message": "Developing AI involves a structured process from problem definition to deployment",
+      "img_keywords": "AI development process, problem definition, data collection, model training"
+    },
+    {
+      "heading": "AI Icons: Key Aspects",
+      "bullet_points": [
+        "[[brain]] Human-like intelligence and decision-making",
+        "[[robot]] Automation and physical tasks",
+        "[[cloud]] Data processing and cloud computing",
+        "[[lightbulb]] Insights and predictions",
+        "[[globe2]] Global connectivity and impact"
+      ],
+      "key_message": "AI encompasses various aspects, from human-like intelligence to global impact",
+      "img_keywords": "AI aspects, intelligence, automation, data processing, global impact"
+    },
+    {
+      "heading": "Conclusion: Embracing AI's Potential",
+      "bullet_points": [
+        "AI is transforming industries and improving lives",
+        "Ethical considerations are crucial for responsible AI development",
+        "Invest in AI education and workforce development",
+        "Call to action: Explore AI applications and contribute to shaping its future"
+      ],
+      "key_message": "AI offers immense potential, and we must embrace it responsibly",
+      "img_keywords": "AI transformation, ethical considerations, AI education, future of AI"
+    }
+  ]
+}'''
 
     temp = tempfile.NamedTemporaryFile(delete=False, suffix='.pptx')
     path = pathlib.Path(temp.name)

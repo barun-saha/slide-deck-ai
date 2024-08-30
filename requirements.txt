@@ -20,3 +20,5 @@ transformers~=4.39.2
 langchain-community
 
 urllib3~=2.2.1
+lxml~=4.9.3
+tqdm~=4.64.1
