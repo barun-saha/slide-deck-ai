@@ -9,16 +9,20 @@ from typing import Union, Tuple, Literal
 from urllib.parse import urlparse, parse_qs
 
 import requests
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 
 REQUEST_TIMEOUT = 12
 MAX_PHOTOS = 3
 
 
-# Only show warnings
-logging.getLogger('urllib3').setLevel(logging.WARNING)
+# Only show errors
+logging.getLogger('urllib3').setLevel(logging.ERROR)
 # Disable all child loggers of urllib3, e.g. urllib3.connectionpool
-logging.getLogger('urllib3').propagate = False
+# logging.getLogger('urllib3').propagate = True
 
 
 
@@ -33,6 +37,14 @@ def search_pexels(
     This function sends a GET request to the Pexels API with the specified search query
     and authorization header containing the API key. It returns the JSON response from the API.
 
+    [2024-08-31] Note:
+    `curl` succeeds but API call via Python `requests` fail. Apparently, this could be due to
+    Cloudflare (or others) blocking the requests, perhaps identifying as Web-scraping. So,
+    changing the user-agent to Firefox.
+    https://stackoverflow.com/a/74674276/147021
+    https://stackoverflow.com/a/51268523/147021
+    https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent/Firefox#linux
+
     :param query: The search query for finding images.
     :param size: The size of the images: small, medium, or large.
     :param per_page: No. of results to be displayed per page.
@@ -42,7 +54,8 @@ def search_pexels(
 
     url = 'https://api.pexels.com/v1/search'
     headers = {
-        'Authorization': os.getenv('PEXEL_API_KEY')
+        'Authorization': os.getenv('PEXEL_API_KEY'),
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20100101 Firefox/10.0',
     }
     params = {
         'query': query,
@@ -101,7 +114,11 @@ def get_image_from_url(url: str) -> BytesIO:
     :raises requests.exceptions.RequestException: If the request to the URL fails.
     """
 
-    response = requests.get(url, stream=True, timeout=REQUEST_TIMEOUT)
+    headers = {
+        'Authorization': os.getenv('PEXEL_API_KEY'),
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20100101 Firefox/10.0',
+    }
+    response = requests.get(url, headers=headers, stream=True, timeout=REQUEST_TIMEOUT)
     response.raise_for_status()
     image_data = BytesIO(response.content)
 
@@ -121,3 +138,11 @@ def extract_dimensions(url: str) -> Tuple[int, int]:
     height = int(query_params.get('h', [0])[0])
 
     return width, height
+
+
+if __name__ == '__main__':
+    print(
+        search_pexels(
+            query='people'
+        )
+    )
