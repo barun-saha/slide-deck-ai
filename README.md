@@ -45,7 +45,7 @@ Clicking on the button will download the file.
 
 SlideDeck AI uses a subset of icons from [bootstrap-icons-1.11.3](https://github.com/twbs/icons)
  (MIT license) in the slides. A few icons from [SVG Repo](https://www.svgrepo.com/)
-(CC0 and MIT licenses) are also used. 
+(CC0, MIT, and Apache licenses) are also used. 
 
 
 # Known Issues
