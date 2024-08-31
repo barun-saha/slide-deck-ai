@@ -212,7 +212,10 @@ def set_up_chat_ui():
 
             # Update the progress bar
             progress_percentage = min(len(response) / APPROX_TARGET_LENGTH, 0.95)
-            progress_bar.progress(progress_percentage, text='Streaming content...')
+            progress_bar.progress(
+                progress_percentage,
+                text='Streaming content...this might take a while...'
+            )
 
         history.add_user_message(prompt)
         history.add_ai_message(response)
@@ -226,7 +229,7 @@ def set_up_chat_ui():
             'Cleaned JSON response:: original length: %d | cleaned length: %d',
             len(response), len(response_cleaned)
         )
-        logger.debug('Cleaned JSON: %s', response_cleaned)
+        # logger.debug('Cleaned JSON: %s', response_cleaned)
 
         # Now create the PPT file
         progress_bar.progress(
