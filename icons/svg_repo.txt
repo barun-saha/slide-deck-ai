@@ -1,0 +1,6 @@
+Icon collections used and their licenses from SVG Repo:
+- Future Technology 2 (CC0 License): https://www.svgrepo.com/svg/235147/artificial-intelligence
+- Big Data And Web Analytics (CC0 License): https://www.svgrepo.com/svg/299170/data-document
+- Objects Infographic Icons (CC0 License): https://www.svgrepo.com/svg/308926/warehouse-inventory-stock-merchandise
+- Network 7 (CC0 License): https://www.svgrepo.com/svg/259945/router
+- Flexicon Sharp Interface Glyphs (MIT License): https://www.svgrepo.com/svg/506680/smartphone
