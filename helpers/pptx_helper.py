@@ -28,6 +28,7 @@ load_dotenv()
 
 # English Metric Unit (used by PowerPoint) to inches
 EMU_TO_INCH_SCALING_FACTOR = 1.0 / 914400
+INCHES_3 = pptx.util.Inches(3)
 INCHES_2 = pptx.util.Inches(2)
 INCHES_1_5 = pptx.util.Inches(1.5)
 INCHES_1 = pptx.util.Inches(1)
@@ -499,7 +500,7 @@ def _handle_icons_ideas(
             match = ICONS_REGEX.search(item)
 
             if not match:
-                print('No icon/text pattern match found...skipping to the next item')
+                # print('No icon/text pattern match found...skipping to the next item')
                 continue
 
             icon_name = match.group(1)
@@ -507,7 +508,7 @@ def _handle_icons_ideas(
             icon_path = f'{GlobalConfig.ICONS_DIR}/{icon_name}.png'
 
             left = spacing + idx * (ICON_SIZE + spacing)
-            top = pptx.util.Inches(2)  # Adjust the vertical position as needed
+            top = INCHES_3
 
             # Calculate the center position for alignment
             center = left + ICON_SIZE / 2
@@ -521,6 +522,7 @@ def _handle_icons_ideas(
                 INCHES_1, INCHES_1
             )
             shape.fill.solid()
+            shape.shadow.inherit = False
 
             # Set the icon's background shape color
             color = random.choice(ICON_COLORS)
@@ -551,6 +553,7 @@ def _handle_icons_ideas(
             text_frame = text_box.text_frame
             text_frame.text = accompanying_text
             text_frame.word_wrap = True
+            text_frame.paragraphs[0].alignment = pptx.enum.text.PP_ALIGN.CENTER
 
             # Center the text vertically
             text_frame.vertical_anchor = pptx.enum.text.MSO_ANCHOR.MIDDLE

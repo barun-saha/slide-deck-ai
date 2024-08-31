@@ -1,0 +1,29 @@
+Icons collections used (and their licenses) from SVG Repo:
+- Big Data And Web Analytics (CC0 License): https://www.svgrepo.com/collection/big-data-and-web-analytics/
+- Calcite Sharp Line Icons Collection (MIT License): https://www.svgrepo.com/collection/calcite-sharp-line-icons/
+- Carbon Design Pictograms (Apache License): https://www.svgrepo.com/collection/carbon-design-pictograms/
+- Flexicon Sharp Interface Glyphs (MIT License): https://www.svgrepo.com/collection/flexicon-sharp-interface-glyphs/
+- Future Technology 2 (CC0 License): https://www.svgrepo.com/collection/future-technology-2/
+- Network 7 (CC0 License): https://www.svgrepo.com/collection/network-7/
+- Objects Infographic Icons (CC0 License): https://www.svgrepo.com/collection/objects-infographic-icons/
+
+
+The specific icons used are:
+https://www.svgrepo.com/download/235147/artificial-intelligence.svg
+https://www.svgrepo.com/download/235194/windmill.svg
+https://www.svgrepo.com/download/235161/robot-ai.svg
+https://www.svgrepo.com/download/235166/industrial-robot.svg
+https://www.svgrepo.com/download/235170/drone.svg
+https://www.svgrepo.com/download/235189/solar-panel.svg
+https://www.svgrepo.com/download/235191/graphene-carbon.svg
+https://www.svgrepo.com/download/235192/tap-hands-and-gestures.svg
+https://www.svgrepo.com/download/506680/smartphone.svg
+https://www.svgrepo.com/download/259945/router.svg
+https://www.svgrepo.com/download/299210/warehouse.svg
+https://www.svgrepo.com/download/299178/value.svg
+https://www.svgrepo.com/download/299170/data-document.svg
+https://www.svgrepo.com/download/339330/machine-learning-03.svg
+https://www.svgrepo.com/download/450794/deep-learning.svg
+https://www.svgrepo.com/download/450704/certificate.svg
+https://www.svgrepo.com/download/451006/knowledge-graph.svg
+https://www.svgrepo.com/download/451276/satellite-3.svg

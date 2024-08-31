@@ -35,7 +35,7 @@ class GlobalConfig:
     REFINEMENT_PROMPT_TEMPLATE = 'langchain_templates/chat_prompts/refinement_template_v4_two_cols_img.txt'
 
     LLM_PROGRESS_MAX = 90
-    ICONS_DIR = 'bootstrap-icons-1.11.3/png128/'
+    ICONS_DIR = 'icons/png128/'
 
     PPTX_TEMPLATE_FILES = {
         'Basic': {
