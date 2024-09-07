@@ -82,21 +82,19 @@ def remove_slide_number_from_heading(header: str) -> str:
 
 
 def generate_powerpoint_presentation(
-        structured_data: str,
+        parsed_data: dict,
         slides_template: str,
         output_file_path: pathlib.Path
 ) -> List:
     """
     Create and save a PowerPoint presentation file containing the content in JSON format.
 
-    :param structured_data: The presentation contents as "JSON" (may contain trailing commas).
+    :param parsed_data: The presentation content as parsed JSON data.
     :param slides_template: The PPTX template to use.
     :param output_file_path: The path of the PPTX file to save as.
     :return: A list of presentation title and slides headers.
     """
 
-    # The structured "JSON" might contain trailing commas, so using json5
-    parsed_data = json5.loads(structured_data)
     presentation = pptx.Presentation(GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file'])
     slide_width_inch, slide_height_inch = _get_slide_width_height_inches(presentation)
 
@@ -237,21 +235,22 @@ def _handle_default_display(
 
     status = False
 
-    if random.random() < IMAGE_DISPLAY_PROBABILITY:
-        if random.random() < FOREGROUND_IMAGE_PROBABILITY:
-            status = _handle_display_image__in_foreground(
-                presentation,
-                slide_json,
-                slide_width_inch,
-                slide_height_inch
-            )
-        else:
-            status = _handle_display_image__in_background(
-                presentation,
-                slide_json,
-                slide_width_inch,
-                slide_height_inch
-            )
+    if 'img_keywords' in slide_json:
+        if random.random() < IMAGE_DISPLAY_PROBABILITY:
+            if random.random() < FOREGROUND_IMAGE_PROBABILITY:
+                status = _handle_display_image__in_foreground(
+                    presentation,
+                    slide_json,
+                    slide_width_inch,
+                    slide_height_inch
+                )
+            else:
+                status = _handle_display_image__in_background(
+                    presentation,
+                    slide_json,
+                    slide_width_inch,
+                    slide_height_inch
+                )
 
     if status:
         return
@@ -301,7 +300,8 @@ def _handle_display_image__in_foreground(
         slide_height_inch: float
 ) -> bool:
     """
-    Create a slide with text and image using a picture placeholder layout.
+    Create a slide with text and image using a picture placeholder layout. If not image keyword is
+    available, it will add only text to the slide.
 
     :param presentation: The presentation object.
     :param slide_json: The content of the slide as JSON data.
@@ -386,7 +386,8 @@ def _handle_display_image__in_background(
 ) -> bool:
     """
     Add a slide with text and an image in the background. It works just like
-    `_handle_default_display()` but with a background image added.
+    `_handle_default_display()` but with a background image added. If not image keyword is
+    available, it will add only text to the slide.
 
     :param presentation: The presentation object.
     :param slide_json: The content of the slide as JSON data.
@@ -565,6 +566,14 @@ def _handle_icons_ideas(
             for paragraph in text_frame.paragraphs:
                 for run in paragraph.runs:
                     run.font.color.theme_color = pptx.enum.dml.MSO_THEME_COLOR.TEXT_2
+
+            _add_text_at_bottom(
+                slide=slide,
+                slide_width_inch=slide_width_inch,
+                slide_height_inch=slide_height_inch,
+                text='More icons available in the SlideDeck AI repository',
+                hyperlink='https://github.com/barun-saha/slide-deck-ai/tree/main/icons/png128'
+            )
 
         return True
 
@@ -928,7 +937,6 @@ if __name__ == '__main__':
         "AI for predicting student performance and dropout rates"
       ],
       "key_message": "AI is personalizing education and improving student outcomes",
-      "img_keywords": "education, personalized learning, intelligent tutoring, student performance"
     },
     {
       "heading": "Step-by-Step: AI Development Process",
@@ -940,7 +948,7 @@ if __name__ == '__main__':
         ">> Deploy and monitor the AI system"
       ],
       "key_message": "Developing AI involves a structured process from problem definition to deployment",
-      "img_keywords": "AI development process, problem definition, data collection, model training"
+      "img_keywords": ""
     },
     {
       "heading": "AI Icons: Key Aspects",
@@ -974,7 +982,7 @@ if __name__ == '__main__':
     generate_powerpoint_presentation(
         json5.loads(_JSON_DATA),
         output_file_path=path,
-        slides_template='Minimalist Sales Pitch'
+        slides_template='Basic'
     )
     print(f'File path: {path}')
 

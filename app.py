@@ -7,7 +7,7 @@ import os
 import pathlib
 import random
 import tempfile
-from typing import List
+from typing import List, Union
 
 import json5
 import streamlit as st
@@ -240,7 +240,9 @@ def set_up_chat_ui():
         progress_bar.progress(1.0, text='Done!')
 
         st.chat_message('ai').code(response, language='json')
-        _display_download_button(path)
+
+        if path:
+            _display_download_button(path)
 
         logger.info(
             '#messages in history / 2: %d',
@@ -248,14 +250,37 @@ def set_up_chat_ui():
         )
 
 
-def generate_slide_deck(json_str: str) -> pathlib.Path:
+def generate_slide_deck(json_str: str) -> Union[pathlib.Path, None]:
     """
     Create a slide deck and return the file path. In case there is any error creating the slide
     deck, the path may be to an empty file.
 
     :param json_str: The content in *valid* JSON format.
-    :return: The file of the .pptx file.
+    :return: The path to the .pptx file or `None` in case of error.
     """
+
+    try:
+        parsed_data = json5.loads(json_str)
+    except ValueError:
+        st.error(
+            'Encountered error while parsing JSON...will fix it and retry'
+        )
+        logger.error(
+            'Caught ValueError: trying again after repairing JSON...'
+        )
+        try:
+            parsed_data = json5.loads(text_helper.fix_malformed_json(json_str))
+        except ValueError:
+            st.error(
+                'Encountered an error again while fixing JSON...'
+                'the slide deck cannot be created, unfortunately ☹'
+                '\nPlease try again later.'
+            )
+            logger.error(
+                'Caught ValueError: failed to repair JSON!'
+            )
+
+            return None
 
     if DOWNLOAD_FILE_KEY in st.session_state:
         path = pathlib.Path(st.session_state[DOWNLOAD_FILE_KEY])
@@ -267,24 +292,10 @@ def generate_slide_deck(json_str: str) -> pathlib.Path:
         if temp:
             temp.close()
 
-    logger.debug('Creating PPTX file: %s...', st.session_state[DOWNLOAD_FILE_KEY])
-
     try:
+        logger.debug('Creating PPTX file: %s...', st.session_state[DOWNLOAD_FILE_KEY])
         pptx_helper.generate_powerpoint_presentation(
-            json_str,
-            slides_template=pptx_template,
-            output_file_path=path
-        )
-    except ValueError:
-        st.error(
-            'Encountered error while parsing JSON...will fix it and retry'
-        )
-        logger.error(
-            'Caught ValueError: trying again after repairing JSON...'
-        )
-
-        pptx_helper.generate_powerpoint_presentation(
-            text_helper.fix_malformed_json(json_str),
+            parsed_data,
             slides_template=pptx_template,
             output_file_path=path
         )
