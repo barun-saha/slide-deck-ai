@@ -1,11 +1,16 @@
 Icons collections used (and their licenses) from SVG Repo:
+- Basicons Interface Line Icons Collection (MIT License): https://www.svgrepo.com/collection/basicons-interface-line-icons/
 - Big Data And Web Analytics (CC0 License): https://www.svgrepo.com/collection/big-data-and-web-analytics/
 - Calcite Sharp Line Icons Collection (MIT License): https://www.svgrepo.com/collection/calcite-sharp-line-icons/
 - Carbon Design Pictograms (Apache License): https://www.svgrepo.com/collection/carbon-design-pictograms/
+- Communication 71 Collection (CC0 License): https://www.svgrepo.com/collection/communication-71/
+- Denali Solid Interface Icons Collection (MIT License): https://www.svgrepo.com/collection/denali-solid-interface-icons/
 - Flexicon Sharp Interface Glyphs (MIT License): https://www.svgrepo.com/collection/flexicon-sharp-interface-glyphs/
 - Future Technology 2 (CC0 License): https://www.svgrepo.com/collection/future-technology-2/
 - Network 7 (CC0 License): https://www.svgrepo.com/collection/network-7/
 - Objects Infographic Icons (CC0 License): https://www.svgrepo.com/collection/objects-infographic-icons/
+- Scientifics Study Collection (CC0 License): https://www.svgrepo.com/collection/scientifics-study/
+- Vaadin Flat Vectors Collection (Apache License): https://www.svgrepo.com/collection/vaadin-flat-vectors/
 
 
 The specific icons used are:
@@ -27,3 +32,31 @@ https://www.svgrepo.com/download/450794/deep-learning.svg
 https://www.svgrepo.com/download/450704/certificate.svg
 https://www.svgrepo.com/download/451006/knowledge-graph.svg
 https://www.svgrepo.com/download/451276/satellite-3.svg
+https://www.svgrepo.com/download/32364/glasses.svg
+https://www.svgrepo.com/download/42246/gloves.svg
+https://www.svgrepo.com/download/127799/alien-head.svg
+https://www.svgrepo.com/download/128855/pulse.svg
+https://www.svgrepo.com/download/156615/brain.svg
+https://www.svgrepo.com/download/108458/cardiogram.svg
+https://www.svgrepo.com/download/7010/microscope.svg
+https://www.svgrepo.com/download/5170/flask.svg
+https://www.svgrepo.com/download/445375/stethoscope-solid.svg
+https://www.svgrepo.com/download/286233/laptop.svg
+https://www.svgrepo.com/download/286239/computer-tv.svg
+https://www.svgrepo.com/download/286242/conversation.svg
+https://www.svgrepo.com/download/286250/megaphone-loudspeaker.svg
+https://www.svgrepo.com/download/286262/webcam-video-chat.svg
+https://www.svgrepo.com/download/286243/microphone.svg
+https://www.svgrepo.com/download/286283/morse-code.svg
+https://www.svgrepo.com/download/286275/telemarketer-customer-service.svg
+https://www.svgrepo.com/download/339144/doctor-patient.svg
+https://www.svgrepo.com/download/339182/eye.svg
+https://www.svgrepo.com/download/339203/finance-strategy.svg
+https://www.svgrepo.com/download/339434/police.svg
+https://www.svgrepo.com/download/339442/prescription.svg
+https://www.svgrepo.com/download/339484/robotics.svg
+https://www.svgrepo.com/download/339552/strategy.svg
+https://www.svgrepo.com/download/339032/chart-t-sne.svg
+https://www.svgrepo.com/download/339141/dna.svg
+https://www.svgrepo.com/download/339194/farmer-02.svg
+https://www.svgrepo.com/download/371555/stethoscope.svg

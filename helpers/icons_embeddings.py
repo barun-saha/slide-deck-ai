@@ -67,7 +67,9 @@ def save_icons_embeddings():
     """
 
     file_names = get_icons_list()
+    print(f'{len(file_names)} icon files available...')
     file_name_embeddings = get_embeddings(file_names)
+    print(f'file_name_embeddings.shape: {file_name_embeddings.shape}')
 
     # Save embeddings to a file
     np.save(GlobalConfig.EMBEDDINGS_FILE_NAME, file_name_embeddings)
@@ -111,7 +113,7 @@ def main():
     """
 
     # Run this again if icons are to be added/removed
-    # save_icons_embeddings()
+    save_icons_embeddings()
 
     keywords = ['deep learning', 'library', 'universe', 'brain', 'cybersecurity', 'gaming', '']
     icon_files = find_icons(keywords)
