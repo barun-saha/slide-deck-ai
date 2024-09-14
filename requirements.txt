@@ -16,9 +16,11 @@ metaphor-python
 json5~=0.9.14
 requests~=2.31.0
 
-transformers~=4.39.2
+transformers~=4.44.0
 langchain-community
 
 urllib3~=2.2.1
 lxml~=4.9.3
 tqdm~=4.64.1
+numpy~=1.25.2
+scikit-learn~=1.5.1

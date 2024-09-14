@@ -3,9 +3,9 @@ Streamlit app containing the UI and the application logic.
 """
 import datetime
 import logging
-import os
 import pathlib
 import random
+import sys
 import tempfile
 from typing import List, Union
 
@@ -15,6 +15,10 @@ from langchain_community.chat_message_histories import StreamlitChatMessageHisto
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 
+sys.path.append('..')
+sys.path.append('../..')
+
+import helpers.icons_embeddings as ice
 from global_config import GlobalConfig
 from helpers import llm_helper, pptx_helper, text_helper
 
@@ -68,12 +72,7 @@ def _get_icons_list() -> List[str]:
     :return: A llist of the icons.
     """
 
-    items = pathlib.Path(GlobalConfig.ICONS_DIR).glob('*.png')
-    items = [
-        os.path.basename(str(item)).removesuffix('.png') for item in items
-    ]
-
-    return items
+    return ice.get_icons_list()
 
 
 APP_TEXT = _load_strings()

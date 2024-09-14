@@ -19,6 +19,7 @@ from pptx.shapes.placeholder import PicturePlaceholder, SlidePlaceholder
 sys.path.append('..')
 sys.path.append('../..')
 
+import helpers.icons_embeddings as ice
 import helpers.image_search as ims
 from global_config import GlobalConfig
 
@@ -493,24 +494,28 @@ def _handle_icons_ideas(
 
         # Calculate the total width of all pictures and the spacing
         total_width = n_items * ICON_SIZE
-        # slide_width = presentation.slide_width
         spacing = (pptx.util.Inches(slide_width_inch) - total_width) / (n_items + 1)
+        top = INCHES_3
 
-        for idx, item in enumerate(items):
-            # Extract the icon name and text
-            match = ICONS_REGEX.search(item)
+        icons_texts = [
+            (match.group(1), match.group(2)) for match in [
+                ICONS_REGEX.search(item) for item in items
+            ]
+        ]
+        fallback_icon_files = ice.find_icons([item[0] for item in icons_texts])
 
-            if not match:
-                # print('No icon/text pattern match found...skipping to the next item')
-                continue
+        for idx, item in enumerate(icons_texts):
+            icon, accompanying_text = item
+            icon_path = f'{GlobalConfig.ICONS_DIR}/{icon}.png'
 
-            icon_name = match.group(1)
-            accompanying_text = match.group(2)
-            icon_path = f'{GlobalConfig.ICONS_DIR}/{icon_name}.png'
+            if not os.path.exists(icon_path):
+                logger.warning(
+                    'Icon not found: %s...using fallback icon: %s',
+                    icon, fallback_icon_files[idx]
+                )
+                icon_path = f'{GlobalConfig.ICONS_DIR}/{fallback_icon_files[idx]}.png'
 
             left = spacing + idx * (ICON_SIZE + spacing)
-            top = INCHES_3
-
             # Calculate the center position for alignment
             center = left + ICON_SIZE / 2
 
@@ -526,30 +531,18 @@ def _handle_icons_ideas(
             shape.shadow.inherit = False
 
             # Set the icon's background shape color
-            color = random.choice(ICON_COLORS)
-            shape.fill.fore_color.rgb = color
-            shape.line.color.rgb = color
+            shape.fill.fore_color.rgb = shape.line.color.rgb = random.choice(ICON_COLORS)
 
             # Add the icon image on top of the colored shape
-            try:
-                slide.shapes.add_picture(icon_path, left, top, height=ICON_SIZE)
-            except FileNotFoundError:
-                logger.error(
-                    'Icon %s not found...using generic step number as icon...',
-                    icon_name
-                )
-                step_icon_path = f'{GlobalConfig.ICONS_DIR}/{idx + 1}-circle.png'
-                if os.path.exists(step_icon_path):
-                    slide.shapes.add_picture(step_icon_path, left, top, height=ICON_SIZE)
+            slide.shapes.add_picture(icon_path, left, top, height=ICON_SIZE)
 
             # Add a text box below the shape
-            text_top = top + ICON_SIZE + INCHES_0_2
-            text_left = center - text_box_size / 2  # Center the text box horizontally
-            # text_box = slide.shapes.add_textbox(text_left, text_top, text_box_size, text_box_size)
             text_box = slide.shapes.add_shape(
                 MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE,
-                text_left, text_top,
-                text_box_size, text_box_size
+                left=center - text_box_size / 2,  # Center the text box horizontally
+                top=top + ICON_SIZE + INCHES_0_2,
+                width=text_box_size,
+                height=text_box_size
             )
             text_frame = text_box.text_frame
             text_frame.text = accompanying_text
@@ -955,7 +948,7 @@ if __name__ == '__main__':
       "bullet_points": [
         "[[brain]] Human-like intelligence and decision-making",
         "[[robot]] Automation and physical tasks",
-        "[[cloud]] Data processing and cloud computing",
+        "[[]] Data processing and cloud computing",
         "[[lightbulb]] Insights and predictions",
         "[[globe2]] Global connectivity and impact"
       ],
