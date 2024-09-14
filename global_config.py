@@ -20,8 +20,8 @@ class GlobalConfig:
     HF_LLM_MODEL_NAME = 'mistralai/Mistral-Nemo-Instruct-2407'
     LLM_MODEL_TEMPERATURE = 0.2
     LLM_MODEL_MIN_OUTPUT_LENGTH = 100
-    LLM_MODEL_MAX_OUTPUT_LENGTH = 4 * 4096
-    LLM_MODEL_MAX_INPUT_LENGTH = 750
+    LLM_MODEL_MAX_OUTPUT_LENGTH = 4 * 4096  # tokens
+    LLM_MODEL_MAX_INPUT_LENGTH = 750  # characters
 
     HUGGINGFACEHUB_API_TOKEN = os.environ.get('HUGGINGFACEHUB_API_TOKEN', '')
     METAPHOR_API_KEY = os.environ.get('METAPHOR_API_KEY', '')
@@ -36,6 +36,9 @@ class GlobalConfig:
 
     LLM_PROGRESS_MAX = 90
     ICONS_DIR = 'icons/png128/'
+    TINY_BERT_MODEL = 'gaunernst/bert-tiny-uncased'
+    EMBEDDINGS_FILE_NAME = 'file_embeddings/embeddings.npy'
+    ICONS_FILE_NAME = 'file_embeddings/icons.npy'
 
     PPTX_TEMPLATE_FILES = {
         'Basic': {

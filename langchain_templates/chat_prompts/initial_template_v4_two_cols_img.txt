@@ -13,21 +13,17 @@ In addition, for each slide, add image keywords based on the content of the resp
 These keywords will be later used to search for images from the Web relevant to the slide content.
 
 In addition, create one slide containing 4 TO 6 icons (pictograms) illustrating some key ideas/aspects/concepts relevant to the topic.
-In this slide, each line of text will begin with the name of an icon enclosed between [[ and ]].
-The name of an icon MUST BE chosen exactly as it is from the <ICONS> section provided below and should be relevant to the aspects described.
-If you need an icon that is unavailable in the <ICONS> section, you may select a conceptually similar icon's name from <ICONS>.
-For example, if an icon for "neural network" is unavailable, you may choose the "deep-learning" icon from <ICONS>.
-However, you MUST NEVER generate any icon name not mentioned in the <ICONS> section.
-
-The content of each slide should be VERBOSE, DESCRIPTIVE, and very DETAILED.
-
-ALWAYS add a concluding slide at the end, containing a list of the key takeaways and an optional call-to-action if relevant to the context.
-Unless explicitly instructed, create 10 TO 12 SLIDES in total.
-
+In this slide, each line of text will begin with the name of a relevant icon enclosed between [[ and ]].
+Select appropriate and exact icon names from the <ICONS> section provided below.
 
 <ICONS>
 {icons_list}
 </ICONS>
+
+The content of each slide should be VERBOSE, DESCRIPTIVE, and very DETAILED. Each bullet point should be detailed and explanatory, not just short phrases.
+
+ALWAYS add a concluding slide at the end, containing a list of the key takeaways and an optional call-to-action if relevant to the context.
+Unless explicitly instructed with the topic, create 10 TO 12 SLIDES in total. You must never create more tha 15 slides.
 
 
 ### Topic:
@@ -64,10 +60,10 @@ The output must be only a valid and syntactically correct JSON adhering to the f
         {{
             "heading": "A slide illustrating key ideas/aspects/concepts (Hint: generate an appropriate heading)",
             "bullet_points": [
-                "[[icon_name]] Some text",
-                "[[another_icon_name]] Some words describing this aspect",
-                "[[icon_other_name]] Another aspect highlighted here",
-                "[[an_icon]] Another point here",
+                "[[icon name]] Some text",
+                "[[another icon name]] Some words describing this aspect",
+                "[[icon]] Another aspect highlighted here",
+                "[[an icon]] Another point here",
             ],
             "key_message": "",
             "img_keywords": ""
