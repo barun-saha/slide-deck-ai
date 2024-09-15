@@ -24,7 +24,6 @@ class GlobalConfig:
     LLM_MODEL_MAX_INPUT_LENGTH = 750  # characters
 
     HUGGINGFACEHUB_API_TOKEN = os.environ.get('HUGGINGFACEHUB_API_TOKEN', '')
-    METAPHOR_API_KEY = os.environ.get('METAPHOR_API_KEY', '')
 
     LOG_LEVEL = 'DEBUG'
     COUNT_TOKENS = False
