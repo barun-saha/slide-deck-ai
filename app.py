@@ -96,9 +96,9 @@ pptx_template = st.sidebar.radio(
 )
 
 
-def display_page_header_content():
+def build_ui():
     """
-    Display content in the page header.
+    Display the input elements for content generation.
     """
 
     st.title(APP_TEXT['app_name'])
@@ -107,24 +107,8 @@ def display_page_header_content():
         '![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fhuggingface.co%2Fspaces%2Fbarunsaha%2Fslide-deck-ai&countColor=%23263759)'  # noqa: E501
     )
 
-
-def display_page_footer_content():
-    """
-    Display content in the page footer.
-    """
-
-    st.text(APP_TEXT['tos'] + '\n\n' + APP_TEXT['tos2'])
-
-
-def build_ui():
-    """
-    Display the input elements for content generation.
-    """
-
-    display_page_header_content()
-
     with st.expander('Usage Policies and Limitations'):
-        display_page_footer_content()
+        st.text(APP_TEXT['tos'] + '\n\n' + APP_TEXT['tos2'])
 
     set_up_chat_ui()
 
@@ -137,9 +121,17 @@ def set_up_chat_ui():
     with st.expander('Usage Instructions'):
         st.markdown(GlobalConfig.CHAT_USAGE_INSTRUCTIONS)
         st.markdown(
-            'SlideDeck AI is powered by'  # noqa: E501
-            ' [Mistral-Nemo-Instruct-2407](https://huggingface.co/mistralai/Mistral-Nemo-Instruct-2407).'
+            '[SlideDeck AI](https://github.com/barun-saha/slide-deck-ai) is an Open-Source project.'  # noqa: E501
+            ' It is is powered by'  # noqa: E501
+            ' [Mistral-Nemo-Instruct-2407](https://huggingface.co/mistralai/Mistral-Nemo-Instruct-2407).'  # noqa: E501
         )
+
+    st.info(
+        'If you like SlideDeck AI, please consider leaving a heart ❤️ on the'
+        ' [Hugging Face Space](https://huggingface.co/spaces/barunsaha/slide-deck-ai/) or'
+        ' a star ⭐ on [GitHub](https://github.com/barun-saha/slide-deck-ai).'
+        ' Your [feedback](https://forms.gle/JECFBGhjvSj7moBx9) is appreciated.'
+    )
 
     # view_messages = st.expander('View the messages in the session state')
 
