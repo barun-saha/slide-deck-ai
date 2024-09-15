@@ -74,10 +74,6 @@ class GlobalConfig:
         ' SlideDeck AI does not have access to the Web, apart for searching for images relevant'
         ' to the slides. Photos are added probabilistically; transparency needs to be changed'
         ' manually, if required.'
-        '\n\n'
-        'If you like SlideDeck AI, please consider leaving a heart ❤️ on the'
-        ' [Hugging Face Space](https://huggingface.co/spaces/barunsaha/slide-deck-ai/) or'
-        ' a star ⭐ on [GitHub](https://github.com/barun-saha/slide-deck-ai).'
     )
 
 
