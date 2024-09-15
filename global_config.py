@@ -42,19 +42,19 @@ class GlobalConfig:
     PPTX_TEMPLATE_FILES = {
         'Basic': {
             'file': 'pptx_templates/Blank.pptx',
-            'caption': '🟠 A good start (Uses [photos](https://unsplash.com/photos/AFZ-qBPEceA) by [cetteup](https://unsplash.com/@cetteup?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash) on [Unsplash](https://unsplash.com/photos/a-foggy-forest-filled-with-lots-of-trees-d3ci37Gcgxg?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash))'
+            'caption': 'A good start (Uses [photos](https://unsplash.com/photos/AFZ-qBPEceA) by [cetteup](https://unsplash.com/@cetteup?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash) on [Unsplash](https://unsplash.com/photos/a-foggy-forest-filled-with-lots-of-trees-d3ci37Gcgxg?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)) 🟧'
         },
         'Minimalist Sales Pitch': {
             'file': 'pptx_templates/Minimalist_sales_pitch.pptx',
-            'caption': '⚫ In high contrast'
+            'caption': 'In high contrast ⬛'
         },
         'Ion Boardroom': {
             'file': 'pptx_templates/Ion_Boardroom.pptx',
-            'caption': '🔴 Make some bold decisions'
+            'caption': 'Make some bold decisions 🟥'
         },
         'Urban Monochrome': {
             'file': 'pptx_templates/Urban_monochrome.pptx',
-            'caption': '⚪ Marvel in a monochrome dream'
+            'caption': 'Marvel in a monochrome dream ⬜'
         },
     }
 
