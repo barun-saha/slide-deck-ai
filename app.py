@@ -10,6 +10,7 @@ import tempfile
 from typing import List, Union
 
 import json5
+import requests
 import streamlit as st
 from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 from langchain_core.messages import HumanMessage
@@ -198,15 +199,24 @@ def set_up_chat_ui():
         progress_bar = st.progress(0, 'Preparing to call LLM...')
         response = ''
 
-        for chunk in _get_llm().stream(formatted_template):
-            response += chunk
+        try:
+            for chunk in _get_llm().stream(formatted_template):
+                response += chunk
 
-            # Update the progress bar
-            progress_percentage = min(len(response) / APPROX_TARGET_LENGTH, 0.95)
-            progress_bar.progress(
-                progress_percentage,
-                text='Streaming content...this might take a while...'
+                # Update the progress bar
+                progress_percentage = min(len(response) / APPROX_TARGET_LENGTH, 0.95)
+                progress_bar.progress(
+                    progress_percentage,
+                    text='Streaming content...this might take a while...'
+                )
+        except requests.exceptions.ConnectionError:
+            msg = (
+                'A connection error occurred while streaming content from the LLM endpoint.'
+                ' Unfortunately, the slide deck cannot be generated. Please try again later.'
             )
+            logger.error(msg)
+            st.error(msg)
+            return
 
         history.add_user_message(prompt)
         history.add_ai_message(response)
@@ -272,6 +282,26 @@ def generate_slide_deck(json_str: str) -> Union[pathlib.Path, None]:
             )
 
             return None
+    except RecursionError:
+        st.error(
+            'Encountered an error while parsing JSON...'
+            'the slide deck cannot be created, unfortunately ☹'
+            '\nPlease try again later.'
+        )
+        logger.error('Caught RecursionError while parsing JSON. Cannot generate the slide deck!')
+
+        return None
+    except Exception:
+        st.error(
+            'Encountered an error while parsing JSON...'
+            'the slide deck cannot be created, unfortunately ☹'
+            '\nPlease try again later.'
+        )
+        logger.error(
+            'Caught ValueError: failed to parse JSON!'
+        )
+
+        return None
 
     if DOWNLOAD_FILE_KEY in st.session_state:
         path = pathlib.Path(st.session_state[DOWNLOAD_FILE_KEY])
