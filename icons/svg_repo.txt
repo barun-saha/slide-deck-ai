@@ -5,6 +5,7 @@ Icons collections used (and their licenses) from SVG Repo:
 - Carbon Design Pictograms (Apache License): https://www.svgrepo.com/collection/carbon-design-pictograms/
 - Communication 71 Collection (CC0 License): https://www.svgrepo.com/collection/communication-71/
 - Denali Solid Interface Icons Collection (MIT License): https://www.svgrepo.com/collection/denali-solid-interface-icons/
+- Fast Food Junk Line Vectors Collection (CC0 License): https://www.svgrepo.com/collection/fast-food-junk-line-vectors/
 - Flexicon Sharp Interface Glyphs (MIT License): https://www.svgrepo.com/collection/flexicon-sharp-interface-glyphs/
 - Future Technology 2 (CC0 License): https://www.svgrepo.com/collection/future-technology-2/
 - Linear Monuments Collection (CC0 License): https://www.svgrepo.com/collection/linear-monuments/
@@ -15,6 +16,7 @@ Icons collections used (and their licenses) from SVG Repo:
 - Network 7 (CC0 License): https://www.svgrepo.com/collection/network-7/
 - Objects Infographic Icons (CC0 License): https://www.svgrepo.com/collection/objects-infographic-icons/
 - Scientifics Study Collection (CC0 License): https://www.svgrepo.com/collection/scientifics-study/
+- Thanksgiving 4 Collection (CC0 License): https://www.svgrepo.com/collection/thanksgiving-4/
 - Vaadin Flat Vectors Collection (Apache License): https://www.svgrepo.com/collection/vaadin-flat-vectors/
 
 - India ICON SET (SVG) [NO attribution required]: https://icon666.com/collection/india_m7tgpnohh
@@ -149,3 +151,24 @@ https://icon666.com/icon/golden_temple_iqso963j6mn1
 https://icon666.com/icon/ganges_72fztx3tpikg
 https://icon666.com/icon/lotus_temple_uz2oct12rka4
 
+https://www.svgrepo.com/download/423081/fast-food-steak.svg
+https://www.svgrepo.com/download/423101/fast-food-kebab.svg
+https://www.svgrepo.com/download/423102/fast-food-sandwich.svg
+https://www.svgrepo.com/download/423103/fast-food-salad.svg
+https://www.svgrepo.com/download/423104/fast-food-popcorn.svg
+https://www.svgrepo.com/download/423100/fast-food-burger.svg
+https://www.svgrepo.com/download/423099/fast-food-pancake.svg
+https://www.svgrepo.com/download/423096/fast-food-pudding.svg
+https://www.svgrepo.com/download/423095/fast-food-onigiri.svg
+https://www.svgrepo.com/download/423092/fast-food-donut.svg
+https://www.svgrepo.com/download/423091/fast-food-bread.svg
+https://www.svgrepo.com/download/423090/fast-food-pizza.svg
+https://www.svgrepo.com/download/423087/fast-food-noodle.svg
+https://www.svgrepo.com/download/423086/fast-food-ice.svg
+https://www.svgrepo.com/download/423085/fast-food-french.svg
+https://www.svgrepo.com/download/423084/fast-food-hotdog.svg
+https://www.svgrepo.com/download/423083/fast-food-sushi.svg
+https://www.svgrepo.com/download/423082/fast-food-fried-2.svg
+https://www.svgrepo.com/download/209887/tea-coffee-cup.svg
+https://www.svgrepo.com/download/209855/restaurant-spoon.svg
+https://www.svgrepo.com/download/209875/jelly-jar.svg
