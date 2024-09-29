@@ -7,10 +7,17 @@ Icons collections used (and their licenses) from SVG Repo:
 - Denali Solid Interface Icons Collection (MIT License): https://www.svgrepo.com/collection/denali-solid-interface-icons/
 - Flexicon Sharp Interface Glyphs (MIT License): https://www.svgrepo.com/collection/flexicon-sharp-interface-glyphs/
 - Future Technology 2 (CC0 License): https://www.svgrepo.com/collection/future-technology-2/
+- Linear Monuments Collection (CC0 License): https://www.svgrepo.com/collection/linear-monuments/
+- Monuments 1 Collection (CC0 License): https://www.svgrepo.com/collection/monuments-1/
+- Monuments 3 Collection (CC0 License): https://www.svgrepo.com/collection/monuments-3/
+- Monuments 5 Collection (CC0 License): https://www.svgrepo.com/collection/monuments-5/
+- Monuments 9 Collection (CC0 License): https://www.svgrepo.com/collection/monuments-9/
 - Network 7 (CC0 License): https://www.svgrepo.com/collection/network-7/
 - Objects Infographic Icons (CC0 License): https://www.svgrepo.com/collection/objects-infographic-icons/
 - Scientifics Study Collection (CC0 License): https://www.svgrepo.com/collection/scientifics-study/
 - Vaadin Flat Vectors Collection (Apache License): https://www.svgrepo.com/collection/vaadin-flat-vectors/
+
+- India ICON SET (SVG) [NO attribution required]: https://icon666.com/collection/india_m7tgpnohh
 
 
 The specific icons used are:
@@ -60,3 +67,85 @@ https://www.svgrepo.com/download/339032/chart-t-sne.svg
 https://www.svgrepo.com/download/339141/dna.svg
 https://www.svgrepo.com/download/339194/farmer-02.svg
 https://www.svgrepo.com/download/371555/stethoscope.svg
+/339608/tokyo-temple.svg
+https://www.svgrepo.com/download/339736/automation-decision.svg
+https://www.svgrepo.com/download/339734/austin.svg
+https://www.svgrepo.com/download/339733/atlanta.svg
+https://www.svgrepo.com/download/339726/argentina-obelisk.svg
+https://www.svgrepo.com/download/339718/amsterdam-windmill.svg
+https://www.svgrepo.com/download/339715/amsterdam-canal.svg
+https://www.svgrepo.com/download/339687/wrecking-ball.svg
+https://www.svgrepo.com/download/339670/washington-dc-monument.svg
+https://www.svgrepo.com/download/339669/washington-dc-capitol.svg
+https://www.svgrepo.com/download/339655/venezuela-national-pantheon-of-venezuela.svg
+https://www.svgrepo.com/download/339607/tokyo-gates.svg
+https://www.svgrepo.com/download/339615/toronto.svg
+https://www.svgrepo.com/download/339549/stockholm.svg
+https://www.svgrepo.com/download/339519/singapore.svg
+https://www.svgrepo.com/download/339501/seattle.svg
+https://www.svgrepo.com/download/339494/san-francisco-fog.svg
+https://www.svgrepo.com/download/339493/sao-paulo.svg
+https://www.svgrepo.com/download/339489/rome.svg
+https://www.svgrepo.com/download/339468/refinery.svg
+https://www.svgrepo.com/download/339438/prague-charles-bridge-tower.svg
+https://www.svgrepo.com/download/339425/peru-machu-picchu.svg
+https://www.svgrepo.com/download/339390/nyc-brooklyn.svg
+https://www.svgrepo.com/download/339391/no-smoking.svg
+https://www.svgrepo.com/download/339407/paris-notre-dame.svg
+https://www.svgrepo.com/download/339408/paris-louvre.svg
+https://www.svgrepo.com/download/339412/parliament.svg
+https://www.svgrepo.com/download/339399/okinawa.svg
+https://www.svgrepo.com/download/339398/oil-rig.svg
+https://www.svgrepo.com/download/339397/oil-pump.svg
+https://www.svgrepo.com/download/339396/nyc-world-trade-center.svg
+https://www.svgrepo.com/download/339394/nyc-statue-of-liberty.svg
+https://www.svgrepo.com/download/339375/munich.svg
+https://www.svgrepo.com/download/339337/madrid-cathedral.svg
+https://www.svgrepo.com/download/339367/moscow.svg
+https://www.svgrepo.com/download/339357/milan-skyscrapers.svg
+https://www.svgrepo.com/download/339351/mexico-city-angel-of-independence.svg
+https://www.svgrepo.com/download/339356/milan-duomo-di-milano.svg
+https://www.svgrepo.com/download/339324/london-big-ben.svg
+https://www.svgrepo.com/download/339307/kuala-lumpur.svg
+https://www.svgrepo.com/download/339272/hospital.svg
+https://www.svgrepo.com/download/339269/hong-kong.svg
+https://www.svgrepo.com/download/339190/fairness.svg
+https://www.svgrepo.com/download/339175/escalator-up.svg
+https://www.svgrepo.com/download/339159/ecuador-quito.svg
+https://www.svgrepo.com/download/339156/dublin-castle.svg
+https://www.svgrepo.com/download/339004/capitol.svg
+https://www.svgrepo.com/download/338997/cafe.svg
+https://www.svgrepo.com/download/338988/budapest.svg
+https://www.svgrepo.com/download/338985/blockchain.svg
+https://www.svgrepo.com/download/338984/boston-zakim-bridge.svg
+https://www.svgrepo.com/download/338981/berlin-tower.svg
+https://www.svgrepo.com/download/338980/beijing-tower.svg
+https://www.svgrepo.com/download/338977/berlin-cathedral.svg
+https://www.svgrepo.com/download/338976/beijing-municipal.svg
+https://www.svgrepo.com/download/338974/barcelona.svg
+https://www.svgrepo.com/download/338971/bangalore.svg
+https://www.svgrepo.com/download/339734/austin.svg
+https://www.svgrepo.com/download/338998/cairo-giza-plateau.svg
+https://www.svgrepo.com/download/179037/sphinx-monuments.svg
+https://www.svgrepo.com/download/179023/eiffel-tower-travel.svg
+https://www.svgrepo.com/download/175156/temple-of-heaven-in-beijing.svg
+https://www.svgrepo.com/download/103185/porcelain-tower-of-nanjing.svg
+https://www.svgrepo.com/download/80664/taj-mahal.svg
+https://www.svgrepo.com/download/127582/sydney-opera-house.svg
+https://www.svgrepo.com/download/170194/christ-the-redeemer.svg
+https://www.svgrepo.com/download/196713/hassan-mosque-morocco.svg
+https://www.svgrepo.com/download/196708/teotihuacan-aztec.svg
+https://www.svgrepo.com/download/196712/great-buddha-of-thailand-thailand.svg
+https://www.svgrepo.com/download/196714/great-wall-of-china.svg
+https://www.svgrepo.com/download/196715/gate-of-india-mumbai.svg
+https://www.svgrepo.com/download/14517/qutb-minar.svg
+
+https://icon666.com/icon/red_fort_qyg7rbqgqywb
+https://icon666.com/icon/jantar_mantar_kbo0wk1dah7i
+https://icon666.com/icon/jama_masjid_uxb6glpbcomj
+https://icon666.com/icon/humayun_31si8fr6ow6n
+https://icon666.com/icon/hawa_mahal_puga89z201h8
+https://icon666.com/icon/golden_temple_iqso963j6mn1
+https://icon666.com/icon/ganges_72fztx3tpikg
+https://icon666.com/icon/lotus_temple_uz2oct12rka4
+
