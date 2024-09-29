@@ -83,7 +83,6 @@ APP_TEXT = _load_strings()
 CHAT_MESSAGES = 'chat_messages'
 DOWNLOAD_FILE_KEY = 'download_file_name'
 IS_IT_REFINEMENT = 'is_it_refinement'
-APPROX_TARGET_LENGTH = GlobalConfig.LLM_MODEL_MAX_OUTPUT_LENGTH / 2
 
 
 logger = logging.getLogger(__name__)
@@ -205,7 +204,9 @@ def set_up_chat_ui():
                 response += chunk
 
                 # Update the progress bar
-                progress_percentage = min(len(response) / APPROX_TARGET_LENGTH, 0.95)
+                progress_percentage = min(
+                    len(response) / GlobalConfig.LLM_MODEL_MAX_OUTPUT_LENGTH, 0.95
+                )
                 progress_bar.progress(
                     progress_percentage,
                     text='Streaming content...this might take a while...'
