@@ -9,6 +9,7 @@ import sys
 import tempfile
 from typing import List, Union
 
+import huggingface_hub
 import json5
 import requests
 import streamlit as st
@@ -213,6 +214,22 @@ def set_up_chat_ui():
             msg = (
                 'A connection error occurred while streaming content from the LLM endpoint.'
                 ' Unfortunately, the slide deck cannot be generated. Please try again later.'
+            )
+            logger.error(msg)
+            st.error(msg)
+            return
+        except huggingface_hub.errors.ValidationError as ve:
+            msg = (
+                f'An error occurred while trying to generate the content: {ve}'
+                '\nPlease try again with a significantly shorter input text.'
+            )
+            logger.error(msg)
+            st.error(msg)
+            return
+        except Exception as ex:
+            msg = (
+                f'An unexpected error occurred while generating the content: {ex}'
+                '\nPlease try again later, possibly with different inputs.'
             )
             logger.error(msg)
             st.error(msg)
