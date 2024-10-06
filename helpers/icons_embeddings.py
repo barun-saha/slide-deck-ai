@@ -115,9 +115,51 @@ def main():
     # Run this again if icons are to be added/removed
     save_icons_embeddings()
 
-    keywords = ['deep learning', 'library', 'universe', 'brain', 'cybersecurity', 'gaming', '']
+    keywords = [
+        'deep learning',
+        '',
+        'recycling',
+        'handshake',
+        'Ferry',
+        'rain drop',
+        'speech bubble',
+        'mental resilience',
+        'turmeric',
+        'Art',
+        'price tag',
+        'Oxygen',
+        'oxygen',
+        'Social Connection',
+        'Accomplishment',
+        'Python',
+        'XML',
+        'Handshake',
+    ]
     icon_files = find_icons(keywords)
-    print(f'The relevant icon files are: {icon_files}')
+    print(
+        f'The relevant icon files are:\n'
+        f'{list(zip(keywords, icon_files))}'
+    )
+
+    # BERT tiny:
+    # [('deep learning', 'deep-learning'), ('', '123'), ('recycling', 'refinery'),
+    #  ('handshake', 'dash-circle'), ('Ferry', 'cart'), ('rain drop', 'bucket'),
+    #  ('speech bubble', 'globe'), ('mental resilience', 'exclamation-triangle'),
+    #  ('turmeric', 'kebab'), ('Art', 'display'), ('price tag', 'bug-fill'),
+    #  ('Oxygen', 'radioactive')]
+
+    # BERT mini
+    # [('deep learning', 'deep-learning'), ('', 'compass'), ('recycling', 'tools'),
+    #  ('handshake', 'bandaid'), ('Ferry', 'cart'), ('rain drop', 'trash'),
+    #  ('speech bubble', 'image'), ('mental resilience', 'recycle'), ('turmeric', 'linkedin'),
+    #  ('Art', 'book'), ('price tag', 'card-image'), ('Oxygen', 'radioactive')]
+
+    # BERT small
+    # [('deep learning', 'deep-learning'), ('', 'gem'), ('recycling', 'tools'),
+    #  ('handshake', 'handbag'), ('Ferry', 'truck'), ('rain drop', 'bucket'),
+    #  ('speech bubble', 'strategy'), ('mental resilience', 'deep-learning'),
+    #  ('turmeric', 'flower'),
+    #  ('Art', 'book'), ('price tag', 'hotdog'), ('Oxygen', 'radioactive')]
 
 
 if __name__ == '__main__':

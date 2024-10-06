@@ -17,6 +17,7 @@ Icons collections used (and their licenses) from SVG Repo:
 - Objects Infographic Icons (CC0 License): https://www.svgrepo.com/collection/objects-infographic-icons/
 - Scientifics Study Collection (CC0 License): https://www.svgrepo.com/collection/scientifics-study/
 - Thanksgiving 4 Collection (CC0 License): https://www.svgrepo.com/collection/thanksgiving-4/
+- Using Hands Collection (CC0 License): https://www.svgrepo.com/collection/using-hands/
 - Vaadin Flat Vectors Collection (Apache License): https://www.svgrepo.com/collection/vaadin-flat-vectors/
 
 - India ICON SET (SVG) [NO attribution required]: https://icon666.com/collection/india_m7tgpnohh
@@ -172,3 +173,4 @@ https://www.svgrepo.com/download/423082/fast-food-fried-2.svg
 https://www.svgrepo.com/download/209887/tea-coffee-cup.svg
 https://www.svgrepo.com/download/209855/restaurant-spoon.svg
 https://www.svgrepo.com/download/209875/jelly-jar.svg
+https://www.svgrepo.com/download/83723/handshake.svg
