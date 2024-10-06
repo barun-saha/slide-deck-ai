@@ -35,7 +35,7 @@ class GlobalConfig:
 
     LLM_PROGRESS_MAX = 90
     ICONS_DIR = 'icons/png128/'
-    TINY_BERT_MODEL = 'gaunernst/bert-tiny-uncased'
+    TINY_BERT_MODEL = 'gaunernst/bert-mini-uncased'
     EMBEDDINGS_FILE_NAME = 'file_embeddings/embeddings.npy'
     ICONS_FILE_NAME = 'file_embeddings/icons.npy'
 
