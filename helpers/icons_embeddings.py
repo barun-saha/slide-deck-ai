@@ -131,6 +131,9 @@ def main():
         'oxygen',
         'Social Connection',
         'Accomplishment',
+        'Python',
+        'XML',
+        'Handshake',
     ]
     icon_files = find_icons(keywords)
     print(
