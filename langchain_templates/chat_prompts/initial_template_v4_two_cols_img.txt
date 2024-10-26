@@ -14,11 +14,6 @@ These keywords will be later used to search for images from the Web relevant to 
 
 In addition, create one slide containing 4 TO 6 icons (pictograms) illustrating some key ideas/aspects/concepts relevant to the topic.
 In this slide, each line of text will begin with the name of a relevant icon enclosed between [[ and ]].
-Select appropriate and exact icon names from the <ICONS> section provided below.
-
-<ICONS>
-{icons_list}
-</ICONS>
 
 The content of each slide should be VERBOSE, DESCRIPTIVE, and very DETAILED. Each bullet point should be detailed and explanatory, not just short phrases.
 

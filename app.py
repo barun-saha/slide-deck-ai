@@ -66,17 +66,6 @@ def _get_llm():
     return llm_helper.get_hf_endpoint()
 
 
-@st.cache_data
-def _get_icons_list() -> List[str]:
-    """
-    Get a list of available icons names without the dir name and file extension.
-
-    :return: A llist of the icons.
-    """
-
-    return ice.get_icons_list()
-
-
 APP_TEXT = _load_strings()
 
 # Session variables
@@ -185,14 +174,12 @@ def set_up_chat_ui():
                 **{
                     'instructions': list_of_msgs,
                     'previous_content': _get_last_response(),
-                    'icons_list': '\n'.join(_get_icons_list())
                 }
             )
         else:
             formatted_template = prompt_template.format(
                 **{
                     'question': prompt,
-                    'icons_list': '\n'.join(_get_icons_list())
                 }
             )
 
