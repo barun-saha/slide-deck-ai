@@ -20,7 +20,6 @@ from langchain_core.prompts import ChatPromptTemplate
 sys.path.append('..')
 sys.path.append('../..')
 
-import helpers.icons_embeddings as ice
 from global_config import GlobalConfig
 from helpers import llm_helper, pptx_helper, text_helper
 
@@ -56,14 +55,16 @@ def _get_prompt_template(is_refinement: bool) -> str:
 
 
 @st.cache_resource
-def _get_llm():
+def _get_llm(repo_id: str, max_new_tokens: int):
     """
     Get an LLM instance.
 
+    :param repo_id: The model name.
+    :param max_new_tokens: The max new tokens to generate.
     :return: The LLM.
     """
 
-    return llm_helper.get_hf_endpoint()
+    return llm_helper.get_hf_endpoint(repo_id, max_new_tokens)
 
 
 APP_TEXT = _load_strings()
@@ -78,12 +79,19 @@ logger = logging.getLogger(__name__)
 
 texts = list(GlobalConfig.PPTX_TEMPLATE_FILES.keys())
 captions = [GlobalConfig.PPTX_TEMPLATE_FILES[x]['caption'] for x in texts]
-pptx_template = st.sidebar.radio(
-    'Select a presentation template:',
-    texts,
-    captions=captions,
-    horizontal=True
-)
+
+with st.sidebar:
+    pptx_template = st.sidebar.radio(
+        'Select a presentation template:',
+        texts,
+        captions=captions,
+        horizontal=True
+    )
+    st.divider()
+    llm_to_use = st.sidebar.selectbox(
+        'Select an LLM to use:',
+        [f'{k} ({v["description"]})' for k, v in GlobalConfig.HF_MODELS.items()]
+    ).split(' ')[0]
 
 
 def build_ui():
@@ -187,12 +195,15 @@ def set_up_chat_ui():
         response = ''
 
         try:
-            for chunk in _get_llm().stream(formatted_template):
+            for chunk in _get_llm(
+                    repo_id=llm_to_use,
+                    max_new_tokens=GlobalConfig.HF_MODELS[llm_to_use]['max_new_tokens']
+            ).stream(formatted_template):
                 response += chunk
 
                 # Update the progress bar
                 progress_percentage = min(
-                    len(response) / GlobalConfig.LLM_MODEL_MAX_OUTPUT_LENGTH, 0.95
+                    len(response) / GlobalConfig.HF_MODELS[llm_to_use]['max_new_tokens'], 0.95
                 )
                 progress_bar.progress(
                     progress_percentage,
