@@ -17,10 +17,18 @@ class GlobalConfig:
     A data class holding the configurations.
     """
 
-    HF_LLM_MODEL_NAME = 'mistralai/Mistral-Nemo-Instruct-2407'
+    HF_MODELS = {
+        'mistralai/Mistral-Nemo-Instruct-2407': {
+            'description': 'longer response',
+            'max_new_tokens': 12228
+        },
+        'mistralai/Mistral-7B-Instruct-v0.2': {
+            'description': 'faster, shorter',
+            'max_new_tokens': 8192
+        },
+    }
     LLM_MODEL_TEMPERATURE = 0.2
     LLM_MODEL_MIN_OUTPUT_LENGTH = 100
-    LLM_MODEL_MAX_OUTPUT_LENGTH = 4 * 4096  # tokens
     LLM_MODEL_MAX_INPUT_LENGTH = 400  # characters
 
     HUGGINGFACEHUB_API_TOKEN = os.environ.get('HUGGINGFACEHUB_API_TOKEN', '')
