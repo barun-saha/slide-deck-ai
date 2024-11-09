@@ -167,7 +167,10 @@ def set_up_chat_ui():
             )
             return
 
-        logger.info('User input: %s | #characters: %d', prompt, len(prompt))
+        logger.info(
+            'User input: %s | #characters: %d | LLM: %s',
+            prompt, len(prompt), llm_to_use
+        )
         st.chat_message('user').write(prompt)
 
         user_messages = _get_user_messages()
@@ -213,6 +216,7 @@ def set_up_chat_ui():
             msg = (
                 'A connection error occurred while streaming content from the LLM endpoint.'
                 ' Unfortunately, the slide deck cannot be generated. Please try again later.'
+                ' Alternatively, try selecting a different LLM from the dropdown list.'
             )
             logger.error(msg)
             st.error(msg)
@@ -229,6 +233,7 @@ def set_up_chat_ui():
             msg = (
                 f'An unexpected error occurred while generating the content: {ex}'
                 '\nPlease try again later, possibly with different inputs.'
+                ' Alternatively, try selecting a different LLM from the dropdown list.'
             )
             logger.error(msg)
             st.error(msg)
