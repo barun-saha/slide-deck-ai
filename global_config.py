@@ -79,9 +79,20 @@ class GlobalConfig:
         '- Make the slide with title \'Examples of AI\' a bit more descriptive.'
         '\n\n'
         'See this [demo video](https://youtu.be/QvAKzNKtk9k) for a brief walkthrough.\n\n'
+        'Currently, two LLMs are supported. **Mistral 7B Instruct v0.2** is fast and generates'
+        ' shorter outputs. On the other hand, **Mistral Nemo Instruct 2407** usually generates'
+        ' longer outputs but can also be slower. If one is not available, choose the other from'
+        ' the dropdown list.\n\n'
         ' SlideDeck AI does not have access to the Web, apart for searching for images relevant'
         ' to the slides. Photos are added probabilistically; transparency needs to be changed'
-        ' manually, if required.'
+        ' manually, if required.\n\n'
+        '[SlideDeck AI](https://github.com/barun-saha/slide-deck-ai) is an Open-Source project,'
+        ' released under [MIT license](https://github.com/barun-saha/slide-deck-ai?tab=MIT-1-ov-file#readme).'
+        ' It is is powered by'
+        ' [Mistral-Nemo-Instruct-2407](https://huggingface.co/mistralai/Mistral-Nemo-Instruct-2407)'
+        ' and [Mistral 7B v0.2](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2).\n\n'
+        '---\n\n'
+        '© Copyright 2023-2024 Barun Saha. All rights reserved.'
     )
 
 

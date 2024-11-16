@@ -118,11 +118,6 @@ def set_up_chat_ui():
 
     with st.expander('Usage Instructions'):
         st.markdown(GlobalConfig.CHAT_USAGE_INSTRUCTIONS)
-        st.markdown(
-            '[SlideDeck AI](https://github.com/barun-saha/slide-deck-ai) is an Open-Source project.'  # noqa: E501
-            ' It is is powered by'  # noqa: E501
-            ' [Mistral-Nemo-Instruct-2407](https://huggingface.co/mistralai/Mistral-Nemo-Instruct-2407).'  # noqa: E501
-        )
 
     st.info(
         'If you like SlideDeck AI, please consider leaving a heart ❤️ on the'
