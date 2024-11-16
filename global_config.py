@@ -18,13 +18,13 @@ class GlobalConfig:
     """
 
     HF_MODELS = {
-        'mistralai/Mistral-Nemo-Instruct-2407': {
-            'description': 'longer response',
-            'max_new_tokens': 12228
-        },
         'mistralai/Mistral-7B-Instruct-v0.2': {
             'description': 'faster, shorter',
             'max_new_tokens': 8192
+        },
+        'mistralai/Mistral-Nemo-Instruct-2407': {
+            'description': 'longer response',
+            'max_new_tokens': 12228
         },
     }
     LLM_MODEL_TEMPERATURE = 0.2
