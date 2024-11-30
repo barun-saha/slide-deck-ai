@@ -17,12 +17,13 @@ class GlobalConfig:
     A data class holding the configurations.
     """
 
-    HF_MODELS = {
-        'mistralai/Mistral-7B-Instruct-v0.2': {
+    VALID_PROVIDERS = {'hf'}
+    VALID_MODELS = {
+        '[hf]mistralai/Mistral-7B-Instruct-v0.2': {
             'description': 'faster, shorter',
             'max_new_tokens': 8192
         },
-        'mistralai/Mistral-Nemo-Instruct-2407': {
+        '[hf]mistralai/Mistral-Nemo-Instruct-2407': {
             'description': 'longer response',
             'max_new_tokens': 12228
         },

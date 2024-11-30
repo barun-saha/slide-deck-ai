@@ -54,19 +54,6 @@ def _get_prompt_template(is_refinement: bool) -> str:
     return template
 
 
-@st.cache_resource
-def _get_llm(repo_id: str, max_new_tokens: int):
-    """
-    Get an LLM instance.
-
-    :param repo_id: The model name.
-    :param max_new_tokens: The max new tokens to generate.
-    :return: The LLM.
-    """
-
-    return llm_helper.get_hf_endpoint(repo_id, max_new_tokens)
-
-
 APP_TEXT = _load_strings()
 
 # Session variables
@@ -81,17 +68,34 @@ texts = list(GlobalConfig.PPTX_TEMPLATE_FILES.keys())
 captions = [GlobalConfig.PPTX_TEMPLATE_FILES[x]['caption'] for x in texts]
 
 with st.sidebar:
+    # The PPT templates
     pptx_template = st.sidebar.radio(
-        'Select a presentation template:',
+        '1: Select a presentation template:',
         texts,
         captions=captions,
         horizontal=True
     )
-    st.divider()
-    llm_to_use = st.sidebar.selectbox(
-        'Select an LLM to use:',
-        [f'{k} ({v["description"]})' for k, v in GlobalConfig.HF_MODELS.items()]
+
+    # The LLMs
+    llm_provider_to_use = st.sidebar.selectbox(
+        label='2: Select an LLM to use:',
+        options=[f'{k} ({v["description"]})' for k, v in GlobalConfig.VALID_MODELS.items()],
+        index=0,
+        help=(
+            'LLM provider codes:\n\n'
+            '- **[hf]**: Hugging Face Inference Endpoint\n'
+        ),
     ).split(' ')[0]
+
+    # The API key/access token
+    api_key_token = st.text_input(
+        label=(
+            '3: Paste your API key/access token:\n\n'
+            '*Optional* if an HF Mistral LLM is selected from the list but still encouraged.\n\n'
+        ),
+        type='password',
+    )
+    st.caption('(Wrong HF access token will lead to validation error)')
 
 
 def build_ui():
@@ -101,9 +105,9 @@ def build_ui():
 
     st.title(APP_TEXT['app_name'])
     st.subheader(APP_TEXT['caption'])
-    st.markdown(
-        '![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fhuggingface.co%2Fspaces%2Fbarunsaha%2Fslide-deck-ai&countColor=%23263759)'  # noqa: E501
-    )
+    # st.markdown(
+    #     '![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fhuggingface.co%2Fspaces%2Fbarunsaha%2Fslide-deck-ai&countColor=%23263759)'  # noqa: E501
+    # )
 
     with st.expander('Usage Policies and Limitations'):
         st.text(APP_TEXT['tos'] + '\n\n' + APP_TEXT['tos2'])
@@ -162,9 +166,15 @@ def set_up_chat_ui():
             )
             return
 
+        provider, llm_name = llm_helper.get_provider_model(llm_provider_to_use)
+
+        if not provider or not llm_name:
+            st.error('No valid LLM provider and/or model name found!')
+            return
+
         logger.info(
             'User input: %s | #characters: %d | LLM: %s',
-            prompt, len(prompt), llm_to_use
+            prompt, len(prompt), llm_name
         )
         st.chat_message('user').write(prompt)
 
@@ -193,15 +203,17 @@ def set_up_chat_ui():
         response = ''
 
         try:
-            for chunk in _get_llm(
-                    repo_id=llm_to_use,
-                    max_new_tokens=GlobalConfig.HF_MODELS[llm_to_use]['max_new_tokens']
+            for chunk in llm_helper.get_langchain_llm(
+                    provider=provider,
+                    model=llm_name,
+                    max_new_tokens=GlobalConfig.VALID_MODELS[llm_provider_to_use]['max_new_tokens'],
+                    api_key=api_key_token.strip(),
             ).stream(formatted_template):
                 response += chunk
 
                 # Update the progress bar
                 progress_percentage = min(
-                    len(response) / GlobalConfig.HF_MODELS[llm_to_use]['max_new_tokens'], 0.95
+                    len(response) / GlobalConfig.VALID_MODELS[llm_provider_to_use]['max_new_tokens'], 0.95
                 )
                 progress_bar.progress(
                     progress_percentage,
