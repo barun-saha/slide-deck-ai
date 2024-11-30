@@ -95,7 +95,6 @@ class GlobalConfig:
         ' and [Mistral 7B v0.2](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2).\n\n'
         '---\n\n'
         '© Copyright 2023-2024 Barun Saha.\n\n'
-        'Usage governed by the terms of the MIT license.'
     )
 
 

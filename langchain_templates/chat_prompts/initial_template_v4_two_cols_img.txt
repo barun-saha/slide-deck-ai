@@ -16,7 +16,8 @@ In addition, create one slide containing 4 TO 6 icons (pictograms) illustrating 
 In this slide, each line of text will begin with the name of a relevant icon enclosed between [[ and ]], e.g., [[machine-learning]] and [[fairness]].
 Insert icons only in this slide.
 
-The content of each slide should be VERBOSE, DESCRIPTIVE, and very DETAILED. Each bullet point should be detailed and explanatory, not just short phrases.
+Your output, i.e., the content of each slide should be VERBOSE, DESCRIPTIVE, and very DETAILED.
+Each bullet point should be detailed and explanatory, not just short phrases.
 
 ALWAYS add a concluding slide at the end, containing a list of the key takeaways and an optional call-to-action if relevant to the context.
 Unless explicitly instructed with the topic, create 10 TO 12 SLIDES in total. You must never create more tha 15 slides.
