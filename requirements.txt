@@ -10,6 +10,7 @@ pydantic==2.9.1
 langchain~=0.3.7
 langchain-core~=0.3.0
 langchain-community==0.3.0
+langchain-google-genai==2.0.6
 streamlit~=1.38.0
 
 python-pptx
@@ -19,7 +20,6 @@ requests~=2.32.3
 
 transformers~=4.44.0
 torch==2.4.0
-langchain-community
 
 urllib3~=2.2.1
 lxml~=4.9.3

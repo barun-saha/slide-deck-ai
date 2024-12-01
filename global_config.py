@@ -17,17 +17,32 @@ class GlobalConfig:
     A data class holding the configurations.
     """
 
-    VALID_PROVIDERS = {'hf'}
+    PROVIDER_HUGGING_FACE = 'hf'
+    PROVIDER_GOOGLE_GEMINI = 'gg'
+    VALID_PROVIDERS = {PROVIDER_HUGGING_FACE, PROVIDER_GOOGLE_GEMINI}
     VALID_MODELS = {
+        '[gg]gemini-1.5-flash-002': {
+            'description': 'faster response',
+            'max_new_tokens': 8192,
+            'paid': True,
+        },
         '[hf]mistralai/Mistral-7B-Instruct-v0.2': {
             'description': 'faster, shorter',
-            'max_new_tokens': 8192
+            'max_new_tokens': 8192,
+            'paid': False,
         },
         '[hf]mistralai/Mistral-Nemo-Instruct-2407': {
             'description': 'longer response',
-            'max_new_tokens': 12228
+            'max_new_tokens': 10240,
+            'paid': False,
         },
     }
+    LLM_PROVIDER_HELP = (
+        'LLM provider codes:\n\n'
+        '- **[gg]**: Google Gemini API\n'
+        '- **[hf]**: Hugging Face Inference Endpoint\n'
+    )
+    DEFAULT_MODEL_INDEX = 1
     LLM_MODEL_TEMPERATURE = 0.2
     LLM_MODEL_MIN_OUTPUT_LENGTH = 100
     LLM_MODEL_MAX_INPUT_LENGTH = 400  # characters

@@ -1,13 +1,18 @@
+"""
+Helper functions to access LLMs.
+"""
 import logging
 import re
+import sys
 from typing import Tuple, Union
 
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
-
 from langchain_community.llms.huggingface_endpoint import HuggingFaceEndpoint
-from langchain_core.language_models import LLM
+from langchain_core.language_models import BaseLLM
+
+sys.path.append('..')
 
 from global_config import GlobalConfig
 
@@ -49,30 +54,26 @@ def get_provider_model(provider_model: str) -> Tuple[str, str]:
     return '', ''
 
 
-def get_hf_endpoint(repo_id: str, max_new_tokens: int, api_key: str = '') -> LLM:
+def is_valid_llm_provider_model(provider: str, model: str, api_key: str) -> bool:
     """
-    Get an LLM via the HuggingFaceEndpoint of LangChain.
+    Verify whether LLM settings are proper.
+    This function does not verify whether `api_key` is correct. It only confirms that the key has
+    at least five characters. Key verification is done when the LLM is created.
 
-    :param repo_id: The model name.
-    :param max_new_tokens: The max new tokens to generate.
-    :param api_key: [Optional] Hugging Face access token.
-    :return: The HF LLM inference endpoint.
+    :param provider: Name of the LLM provider.
+    :param model: Name of the model.
+    :param api_key: The API key or access token.
+    :return: `True` if the settings "look" OK; `False` otherwise.
     """
 
-    logger.debug('Getting LLM via HF endpoint: %s', repo_id)
+    if not provider or not model or provider not in GlobalConfig.VALID_PROVIDERS:
+        return False
 
-    return HuggingFaceEndpoint(
-        repo_id=repo_id,
-        max_new_tokens=max_new_tokens,
-        top_k=40,
-        top_p=0.95,
-        temperature=GlobalConfig.LLM_MODEL_TEMPERATURE,
-        repetition_penalty=1.03,
-        streaming=True,
-        huggingfacehub_api_token=api_key or GlobalConfig.HUGGINGFACEHUB_API_TOKEN,
-        return_full_text=False,
-        stop_sequences=['</s>'],
-    )
+    if provider in [GlobalConfig.PROVIDER_GOOGLE_GEMINI, ]:
+        if not api_key or len(api_key) < 5:
+            return False
+
+    return True
 
 
 def get_langchain_llm(
@@ -80,22 +81,19 @@ def get_langchain_llm(
         model: str,
         max_new_tokens: int,
         api_key: str = ''
-) -> Union[LLM, None]:
+) -> Union[BaseLLM, None]:
     """
     Get an LLM based on the provider and model specified.
 
     :param provider: The LLM provider. Valid values are `hf` for Hugging Face.
-    :param model:
-    :param max_new_tokens:
-    :param api_key:
-    :return:
+    :param model: The name of the LLM.
+    :param max_new_tokens: The maximum number of tokens to generate.
+    :param api_key: API key or access token to use.
+    :return: An instance of the LLM or `None` in case of any error.
     """
-    if not provider or not model or provider not in GlobalConfig.VALID_PROVIDERS:
-        return None
 
-    if provider == 'hf':
+    if provider == GlobalConfig.PROVIDER_HUGGING_FACE:
         logger.debug('Getting LLM via HF endpoint: %s', model)
-
         return HuggingFaceEndpoint(
             repo_id=model,
             max_new_tokens=max_new_tokens,
@@ -107,6 +105,27 @@ def get_langchain_llm(
             huggingfacehub_api_token=api_key or GlobalConfig.HUGGINGFACEHUB_API_TOKEN,
             return_full_text=False,
             stop_sequences=['</s>'],
+        )
+
+    if provider == GlobalConfig.PROVIDER_GOOGLE_GEMINI:
+        from google.generativeai.types.safety_types import HarmBlockThreshold, HarmCategory
+        from langchain_google_genai import GoogleGenerativeAI
+
+        return GoogleGenerativeAI(
+            model=model,
+            temperature=GlobalConfig.LLM_MODEL_TEMPERATURE,
+            max_tokens=max_new_tokens,
+            timeout=None,
+            max_retries=2,
+            google_api_key=api_key,
+            safety_settings={
+                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT:
+                    HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
+                HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT:
+                    HarmBlockThreshold.BLOCK_LOW_AND_ABOVE
+            }
         )
 
     return None
