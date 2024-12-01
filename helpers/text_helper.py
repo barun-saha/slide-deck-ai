@@ -1,3 +1,6 @@
+"""
+Utility functions to help with text processing.
+"""
 import json_repair as jr
 
 
@@ -17,27 +20,18 @@ def is_valid_prompt(prompt: str) -> bool:
 
 def get_clean_json(json_str: str) -> str:
     """
-    Attempt to clean a JSON response string from the LLM by removing the trailing ```
-    and any text beyond that.
+    Attempt to clean a JSON response string from the LLM by removing ```json at the beginning and
+    trailing ``` and any text beyond that.
     CAUTION: May not be always accurate.
 
     :param json_str: The input string in JSON format.
     :return: The "cleaned" JSON string.
     """
 
-    # An example of response containing JSON and other text:
-    # {
-    #     "title": "AI and the Future: A Transformative Journey",
-    #     "slides": [
-    #       ...
-    #     ]
-    # }    <<---- This is end of valid JSON content
-    # ```
-    #
-    # ```vbnet
-    # Please note that the JSON output is in valid format but the content of the "Role of GPUs in AI" slide is just an example and may not be factually accurate. For accurate information, you should consult relevant resources and update the content accordingly.
-    # ```
     response_cleaned = json_str
+
+    if json_str.startswith('```json'):
+        json_str = json_str[7:]
 
     while True:
         idx = json_str.rfind('```')  # -1 on failure
@@ -46,7 +40,7 @@ def get_clean_json(json_str: str) -> str:
             break
 
         # In the ideal scenario, the character before the last ``` should be
-        # a new line or a closing bracket }
+        # a new line or a closing bracket
         prev_char = json_str[idx - 1]
 
         if (prev_char == '}') or (prev_char == '\n' and json_str[idx - 2] == '}'):
@@ -69,13 +63,13 @@ def fix_malformed_json(json_str: str) -> str:
 
 
 if __name__ == '__main__':
-    json1 = '''{
+    JSON1 = '''{
     "key": "value"
     }
     '''
-    json2 = '''["Reason": "Regular updates help protect against known vulnerabilities."]'''
-    json3 = '''["Reason" Regular updates help protect against known vulnerabilities."]'''
-    json4 = '''
+    JSON2 = '''["Reason": "Regular updates help protect against known vulnerabilities."]'''
+    JSON3 = '''["Reason" Regular updates help protect against known vulnerabilities."]'''
+    JSON4 = '''
     {"bullet_points": [
         ">> Write without stopping or editing",
         >> Set daily writing goals and stick to them,
@@ -83,7 +77,7 @@ if __name__ == '__main__':
     ],}
     '''
 
-    print(fix_malformed_json(json1))
-    print(fix_malformed_json(json2))
-    print(fix_malformed_json(json3))
-    print(fix_malformed_json(json4))
+    print(fix_malformed_json(JSON1))
+    print(fix_malformed_json(JSON2))
+    print(fix_malformed_json(JSON3))
+    print(fix_malformed_json(JSON4))

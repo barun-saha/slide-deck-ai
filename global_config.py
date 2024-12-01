@@ -17,16 +17,39 @@ class GlobalConfig:
     A data class holding the configurations.
     """
 
-    HF_MODELS = {
-        'mistralai/Mistral-7B-Instruct-v0.2': {
-            'description': 'faster, shorter',
-            'max_new_tokens': 8192
+    PROVIDER_COHERE = 'co'
+    PROVIDER_GOOGLE_GEMINI = 'gg'
+    PROVIDER_HUGGING_FACE = 'hf'
+    VALID_PROVIDERS = {PROVIDER_COHERE, PROVIDER_GOOGLE_GEMINI, PROVIDER_HUGGING_FACE}
+    VALID_MODELS = {
+        '[co]command-r-08-2024': {
+            'description': 'simpler, slower',
+            'max_new_tokens': 4096,
+            'paid': True,
         },
-        'mistralai/Mistral-Nemo-Instruct-2407': {
+        '[gg]gemini-1.5-flash-002': {
+            'description': 'faster response',
+            'max_new_tokens': 8192,
+            'paid': True,
+        },
+        '[hf]mistralai/Mistral-7B-Instruct-v0.2': {
+            'description': 'faster, shorter',
+            'max_new_tokens': 8192,
+            'paid': False,
+        },
+        '[hf]mistralai/Mistral-Nemo-Instruct-2407': {
             'description': 'longer response',
-            'max_new_tokens': 12228
+            'max_new_tokens': 10240,
+            'paid': False,
         },
     }
+    LLM_PROVIDER_HELP = (
+        'LLM provider codes:\n\n'
+        '- **[co]**: Cohere\n'
+        '- **[gg]**: Google Gemini API\n'
+        '- **[hf]**: Hugging Face Inference Endpoint\n'
+    )
+    DEFAULT_MODEL_INDEX = 2
     LLM_MODEL_TEMPERATURE = 0.2
     LLM_MODEL_MIN_OUTPUT_LENGTH = 100
     LLM_MODEL_MAX_INPUT_LENGTH = 400  # characters

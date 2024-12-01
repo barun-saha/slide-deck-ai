@@ -33,5 +33,6 @@
         "Looks like you have a looming deadline. Can I help you get started with your slide deck?",
         "Hello! What topic do you have on your mind today?"
     ],
-    "chat_placeholder": "Write the topic or instructions here"
+    "chat_placeholder": "Write the topic or instructions here",
+    "like_feedback": "If you like SlideDeck AI, please consider leaving a heart ❤\uFE0F on the [Hugging Face Space](https://huggingface.co/spaces/barunsaha/slide-deck-ai/) or a star ⭐ on [GitHub](https://github.com/barun-saha/slide-deck-ai). Your [feedback](https://forms.gle/JECFBGhjvSj7moBx9) is appreciated."
 }

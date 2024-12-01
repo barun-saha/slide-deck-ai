@@ -5,7 +5,6 @@ import datetime
 import logging
 import pathlib
 import random
-import sys
 import tempfile
 from typing import List, Union
 
@@ -16,9 +15,6 @@ import streamlit as st
 from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
-
-sys.path.append('..')
-sys.path.append('../..')
 
 from global_config import GlobalConfig
 from helpers import llm_helper, pptx_helper, text_helper
@@ -54,17 +50,58 @@ def _get_prompt_template(is_refinement: bool) -> str:
     return template
 
 
-@st.cache_resource
-def _get_llm(repo_id: str, max_new_tokens: int):
+def are_all_inputs_valid(
+        user_prompt: str,
+        selected_provider: str,
+        selected_model: str,
+        user_key: str,
+) -> bool:
     """
-    Get an LLM instance.
+    Validate user input and LLM selection.
 
-    :param repo_id: The model name.
-    :param max_new_tokens: The max new tokens to generate.
-    :return: The LLM.
+    :param user_prompt: The prompt.
+    :param selected_provider: The LLM provider.
+    :param selected_model: Name of the model.
+    :param user_key: User-provided API key.
+    :return: `True` if all inputs "look" OK; `False` otherwise.
     """
 
-    return llm_helper.get_hf_endpoint(repo_id, max_new_tokens)
+    if not text_helper.is_valid_prompt(user_prompt):
+        handle_error(
+            'Not enough information provided!'
+            ' Please be a little more descriptive and type a few words'
+            ' with a few characters :)',
+            False
+        )
+        return False
+
+    if not selected_provider or not selected_model:
+        handle_error('No valid LLM provider and/or model name found!', False)
+        return False
+
+    if not llm_helper.is_valid_llm_provider_model(selected_provider, selected_model, user_key):
+        handle_error(
+            'The LLM settings do not look correct. Make sure that an API key/access token'
+            ' is provided if the selected LLM requires it.',
+            False
+        )
+        return False
+
+    return True
+
+
+def handle_error(error_msg: str, should_log: bool):
+    """
+    Display an error message in the app.
+
+    :param error_msg: The error message to be displayed.
+    :param should_log: If `True`, log the message.
+    """
+
+    if should_log:
+        logger.error(error_msg)
+
+    st.error(error_msg)
 
 
 APP_TEXT = _load_strings()
@@ -81,17 +118,31 @@ texts = list(GlobalConfig.PPTX_TEMPLATE_FILES.keys())
 captions = [GlobalConfig.PPTX_TEMPLATE_FILES[x]['caption'] for x in texts]
 
 with st.sidebar:
+    # The PPT templates
     pptx_template = st.sidebar.radio(
-        'Select a presentation template:',
+        '1: Select a presentation template:',
         texts,
         captions=captions,
         horizontal=True
     )
-    st.divider()
-    llm_to_use = st.sidebar.selectbox(
-        'Select an LLM to use:',
-        [f'{k} ({v["description"]})' for k, v in GlobalConfig.HF_MODELS.items()]
+
+    # The LLMs
+    llm_provider_to_use = st.sidebar.selectbox(
+        label='2: Select an LLM to use:',
+        options=[f'{k} ({v["description"]})' for k, v in GlobalConfig.VALID_MODELS.items()],
+        index=GlobalConfig.DEFAULT_MODEL_INDEX,
+        help=GlobalConfig.LLM_PROVIDER_HELP,
     ).split(' ')[0]
+
+    # The API key/access token
+    api_key_token = st.text_input(
+        label=(
+            '3: Paste your API key/access token:\n\n'
+            '*Mandatory* for Cohere and Gemini LLMs.'
+            ' *Optional* for HF Mistral LLMs but still encouraged.\n\n'
+        ),
+        type='password',
+    )
 
 
 def build_ui():
@@ -119,119 +170,108 @@ def set_up_chat_ui():
     with st.expander('Usage Instructions'):
         st.markdown(GlobalConfig.CHAT_USAGE_INSTRUCTIONS)
 
-    st.info(
-        'If you like SlideDeck AI, please consider leaving a heart ❤️ on the'
-        ' [Hugging Face Space](https://huggingface.co/spaces/barunsaha/slide-deck-ai/) or'
-        ' a star ⭐ on [GitHub](https://github.com/barun-saha/slide-deck-ai).'
-        ' Your [feedback](https://forms.gle/JECFBGhjvSj7moBx9) is appreciated.'
-    )
-
-    # view_messages = st.expander('View the messages in the session state')
-
-    st.chat_message('ai').write(
-        random.choice(APP_TEXT['ai_greetings'])
-    )
+    st.info(APP_TEXT['like_feedback'])
+    st.chat_message('ai').write(random.choice(APP_TEXT['ai_greetings']))
 
     history = StreamlitChatMessageHistory(key=CHAT_MESSAGES)
-
-    if _is_it_refinement():
-        template = _get_prompt_template(is_refinement=True)
-    else:
-        template = _get_prompt_template(is_refinement=False)
-
-    prompt_template = ChatPromptTemplate.from_template(template)
+    prompt_template = ChatPromptTemplate.from_template(
+        _get_prompt_template(
+            is_refinement=_is_it_refinement()
+        )
+    )
 
     # Since Streamlit app reloads at every interaction, display the chat history
     # from the save session state
     for msg in history.messages:
-        msg_type = msg.type
-        if msg_type == 'user':
-            st.chat_message(msg_type).write(msg.content)
-        else:
-            st.chat_message(msg_type).code(msg.content, language='json')
+        st.chat_message(msg.type).code(msg.content, language='json')
 
     if prompt := st.chat_input(
         placeholder=APP_TEXT['chat_placeholder'],
         max_chars=GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH
     ):
-        if not text_helper.is_valid_prompt(prompt):
-            st.error(
-                'Not enough information provided!'
-                ' Please be a little more descriptive and type a few words'
-                ' with a few characters :)'
-            )
+        provider, llm_name = llm_helper.get_provider_model(llm_provider_to_use)
+
+        if not are_all_inputs_valid(prompt, provider, llm_name, api_key_token):
             return
 
         logger.info(
             'User input: %s | #characters: %d | LLM: %s',
-            prompt, len(prompt), llm_to_use
+            prompt, len(prompt), llm_name
         )
         st.chat_message('user').write(prompt)
 
-        user_messages = _get_user_messages()
-        user_messages.append(prompt)
-        list_of_msgs = [
-            f'{idx + 1}. {msg}' for idx, msg in enumerate(user_messages)
-        ]
-        list_of_msgs = '\n'.join(list_of_msgs)
-
         if _is_it_refinement():
+            user_messages = _get_user_messages()
+            user_messages.append(prompt)
+            list_of_msgs = [
+                f'{idx + 1}. {msg}' for idx, msg in enumerate(user_messages)
+            ]
             formatted_template = prompt_template.format(
                 **{
-                    'instructions': list_of_msgs,
+                    'instructions': '\n'.join(list_of_msgs),
                     'previous_content': _get_last_response(),
                 }
             )
         else:
-            formatted_template = prompt_template.format(
-                **{
-                    'question': prompt,
-                }
-            )
+            formatted_template = prompt_template.format(**{'question': prompt})
 
         progress_bar = st.progress(0, 'Preparing to call LLM...')
         response = ''
 
         try:
-            for chunk in _get_llm(
-                    repo_id=llm_to_use,
-                    max_new_tokens=GlobalConfig.HF_MODELS[llm_to_use]['max_new_tokens']
-            ).stream(formatted_template):
-                response += chunk
+            llm = llm_helper.get_langchain_llm(
+                provider=provider,
+                model=llm_name,
+                max_new_tokens=GlobalConfig.VALID_MODELS[llm_provider_to_use]['max_new_tokens'],
+                api_key=api_key_token.strip(),
+            )
 
-                # Update the progress bar
-                progress_percentage = min(
-                    len(response) / GlobalConfig.HF_MODELS[llm_to_use]['max_new_tokens'], 0.95
+            if not llm:
+                handle_error(
+                    'Failed to create an LLM instance! Make sure that you have selected the'
+                    ' correct model from the dropdown list and have provided correct API key'
+                    ' or access token.',
+                    False
                 )
+                return
+
+            for _ in llm.stream(formatted_template):
+                response += _
+
+                # Update the progress bar with an approx progress percentage
                 progress_bar.progress(
-                    progress_percentage,
+                    min(
+                        len(response) / GlobalConfig.VALID_MODELS[
+                            llm_provider_to_use
+                        ]['max_new_tokens'],
+                        0.95
+                    ),
                     text='Streaming content...this might take a while...'
                 )
         except requests.exceptions.ConnectionError:
-            msg = (
+            handle_error(
                 'A connection error occurred while streaming content from the LLM endpoint.'
                 ' Unfortunately, the slide deck cannot be generated. Please try again later.'
-                ' Alternatively, try selecting a different LLM from the dropdown list.'
+                ' Alternatively, try selecting a different LLM from the dropdown list.',
+                True
             )
-            logger.error(msg)
-            st.error(msg)
             return
         except huggingface_hub.errors.ValidationError as ve:
-            msg = (
+            handle_error(
                 f'An error occurred while trying to generate the content: {ve}'
-                '\nPlease try again with a significantly shorter input text.'
+                '\nPlease try again with a significantly shorter input text.',
+                True
             )
-            logger.error(msg)
-            st.error(msg)
             return
         except Exception as ex:
-            msg = (
+            handle_error(
                 f'An unexpected error occurred while generating the content: {ex}'
                 '\nPlease try again later, possibly with different inputs.'
                 ' Alternatively, try selecting a different LLM from the dropdown list.'
+                ' If you are using Cohere or Gemini models, make sure that you have provided'
+                ' a correct API key.',
+                True
             )
-            logger.error(msg)
-            st.error(msg)
             return
 
         history.add_user_message(prompt)
@@ -240,25 +280,20 @@ def set_up_chat_ui():
         # The content has been generated as JSON
         # There maybe trailing ``` at the end of the response -- remove them
         # To be careful: ``` may be part of the content as well when code is generated
-        response_cleaned = text_helper.get_clean_json(response)
-
+        response = text_helper.get_clean_json(response)
         logger.info(
-            'Cleaned JSON response:: original length: %d | cleaned length: %d',
-            len(response), len(response_cleaned)
+            'Cleaned JSON length: %d', len(response)
         )
-        # logger.debug('Cleaned JSON: %s', response_cleaned)
 
         # Now create the PPT file
         progress_bar.progress(
             GlobalConfig.LLM_PROGRESS_MAX,
             text='Finding photos online and generating the slide deck...'
         )
-        path = generate_slide_deck(response_cleaned)
         progress_bar.progress(1.0, text='Done!')
-
         st.chat_message('ai').code(response, language='json')
 
-        if path:
+        if path := generate_slide_deck(response):
             _display_download_button(path)
 
         logger.info(
@@ -279,44 +314,35 @@ def generate_slide_deck(json_str: str) -> Union[pathlib.Path, None]:
     try:
         parsed_data = json5.loads(json_str)
     except ValueError:
-        st.error(
-            'Encountered error while parsing JSON...will fix it and retry'
-        )
-        logger.error(
-            'Caught ValueError: trying again after repairing JSON...'
+        handle_error(
+            'Encountered error while parsing JSON...will fix it and retry',
+            True
         )
         try:
             parsed_data = json5.loads(text_helper.fix_malformed_json(json_str))
         except ValueError:
-            st.error(
+            handle_error(
                 'Encountered an error again while fixing JSON...'
                 'the slide deck cannot be created, unfortunately ☹'
-                '\nPlease try again later.'
+                '\nPlease try again later.',
+                True
             )
-            logger.error(
-                'Caught ValueError: failed to repair JSON!'
-            )
-
             return None
     except RecursionError:
-        st.error(
-            'Encountered an error while parsing JSON...'
+        handle_error(
+            'Encountered a recursion error while parsing JSON...'
             'the slide deck cannot be created, unfortunately ☹'
-            '\nPlease try again later.'
+            '\nPlease try again later.',
+            True
         )
-        logger.error('Caught RecursionError while parsing JSON. Cannot generate the slide deck!')
-
         return None
     except Exception:
-        st.error(
+        handle_error(
             'Encountered an error while parsing JSON...'
             'the slide deck cannot be created, unfortunately ☹'
-            '\nPlease try again later.'
+            '\nPlease try again later.',
+            True
         )
-        logger.error(
-            'Caught ValueError: failed to parse JSON!'
-        )
-
         return None
 
     if DOWNLOAD_FILE_KEY in st.session_state:

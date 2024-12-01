@@ -115,36 +115,41 @@ def generate_powerpoint_presentation(
 
     # Add content in a loop
     for a_slide in parsed_data['slides']:
-        is_processing_done = _handle_icons_ideas(
-            presentation=presentation,
-            slide_json=a_slide,
-            slide_width_inch=slide_width_inch,
-            slide_height_inch=slide_height_inch
-        )
-
-        if not is_processing_done:
-            is_processing_done = _handle_double_col_layout(
+        try:
+            is_processing_done = _handle_icons_ideas(
                 presentation=presentation,
                 slide_json=a_slide,
                 slide_width_inch=slide_width_inch,
                 slide_height_inch=slide_height_inch
             )
 
-        if not is_processing_done:
-            is_processing_done = _handle_step_by_step_process(
-                presentation=presentation,
-                slide_json=a_slide,
-                slide_width_inch=slide_width_inch,
-                slide_height_inch=slide_height_inch
+            if not is_processing_done:
+                is_processing_done = _handle_double_col_layout(
+                    presentation=presentation,
+                    slide_json=a_slide,
+                    slide_width_inch=slide_width_inch,
+                    slide_height_inch=slide_height_inch
+                )
+
+            if not is_processing_done:
+                is_processing_done = _handle_step_by_step_process(
+                    presentation=presentation,
+                    slide_json=a_slide,
+                    slide_width_inch=slide_width_inch,
+                    slide_height_inch=slide_height_inch
+                )
+
+            if not is_processing_done:
+                _handle_default_display(
+                    presentation=presentation,
+                    slide_json=a_slide,
+                    slide_width_inch=slide_width_inch,
+                    slide_height_inch=slide_height_inch
             )
 
-        if not is_processing_done:
-            _handle_default_display(
-                presentation=presentation,
-                slide_json=a_slide,
-                slide_width_inch=slide_width_inch,
-                slide_height_inch=slide_height_inch
-            )
+        except Exception:
+            # In case of any unforeseen error, try to salvage what is available
+            continue
 
     # The thank-you slide
     last_slide_layout = presentation.slide_layouts[0]
