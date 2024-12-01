@@ -70,7 +70,7 @@ def is_valid_llm_provider_model(provider: str, model: str, api_key: str) -> bool
     if not provider or not model or provider not in GlobalConfig.VALID_PROVIDERS:
         return False
 
-    if provider in [GlobalConfig.PROVIDER_GOOGLE_GEMINI, ]:
+    if provider in [GlobalConfig.PROVIDER_GOOGLE_GEMINI, GlobalConfig.PROVIDER_COHERE,]:
         if not api_key or len(api_key) < 5:
             return False
 
