@@ -9,7 +9,6 @@ from typing import Tuple, Union
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
-from langchain_community.llms.huggingface_endpoint import HuggingFaceEndpoint
 from langchain_core.language_models import BaseLLM
 
 sys.path.append('..')
@@ -22,6 +21,8 @@ HF_API_HEADERS = {'Authorization': f'Bearer {GlobalConfig.HUGGINGFACEHUB_API_TOK
 REQUEST_TIMEOUT = 35
 
 logger = logging.getLogger(__name__)
+logging.getLogger('httpx').setLevel(logging.WARNING)
+logging.getLogger('httpcore').setLevel(logging.WARNING)
 
 retries = Retry(
     total=5,
@@ -93,6 +94,8 @@ def get_langchain_llm(
     """
 
     if provider == GlobalConfig.PROVIDER_HUGGING_FACE:
+        from langchain_community.llms.huggingface_endpoint import HuggingFaceEndpoint
+
         logger.debug('Getting LLM via HF endpoint: %s', model)
         return HuggingFaceEndpoint(
             repo_id=model,
@@ -111,6 +114,7 @@ def get_langchain_llm(
         from google.generativeai.types.safety_types import HarmBlockThreshold, HarmCategory
         from langchain_google_genai import GoogleGenerativeAI
 
+        logger.debug('Getting LLM via Google Gemini: %s', model)
         return GoogleGenerativeAI(
             model=model,
             temperature=GlobalConfig.LLM_MODEL_TEMPERATURE,
@@ -128,11 +132,25 @@ def get_langchain_llm(
             }
         )
 
+    if provider == GlobalConfig.PROVIDER_COHERE:
+        from langchain_cohere.llms import Cohere
+
+        logger.debug('Getting LLM via Cohere: %s', model)
+        return Cohere(
+            temperature=GlobalConfig.LLM_MODEL_TEMPERATURE,
+            max_tokens=max_new_tokens,
+            timeout_seconds=None,
+            max_retries=2,
+            cohere_api_key=api_key,
+            streaming=True,
+        )
+
     return None
 
 
 if __name__ == '__main__':
     inputs = [
+        '[co]Cohere',
         '[hf]mistralai/Mistral-7B-Instruct-v0.2',
         '[gg]gemini-1.5-flash-002'
     ]

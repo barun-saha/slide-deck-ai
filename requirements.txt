@@ -11,6 +11,7 @@ langchain~=0.3.7
 langchain-core~=0.3.0
 langchain-community==0.3.0
 langchain-google-genai==2.0.6
+langchain-cohere==0.3.3
 streamlit~=1.38.0
 
 python-pptx

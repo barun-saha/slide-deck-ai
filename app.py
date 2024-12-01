@@ -138,11 +138,11 @@ with st.sidebar:
     api_key_token = st.text_input(
         label=(
             '3: Paste your API key/access token:\n\n'
-            '*Optional* if an HF Mistral LLM is selected from the list but still encouraged.\n\n'
+            '*Mandatory* for Cohere and Gemini LLMs.'
+            ' *Optional* for HF Mistral LLMs but still encouraged.\n\n'
         ),
         type='password',
     )
-    st.caption('(Wrong HF access token will lead to validation error)')
 
 
 def build_ui():
@@ -152,9 +152,9 @@ def build_ui():
 
     st.title(APP_TEXT['app_name'])
     st.subheader(APP_TEXT['caption'])
-    # st.markdown(
-    #     '![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fhuggingface.co%2Fspaces%2Fbarunsaha%2Fslide-deck-ai&countColor=%23263759)'  # noqa: E501
-    # )
+    st.markdown(
+        '![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fhuggingface.co%2Fspaces%2Fbarunsaha%2Fslide-deck-ai&countColor=%23263759)'  # noqa: E501
+    )
 
     with st.expander('Usage Policies and Limitations'):
         st.text(APP_TEXT['tos'] + '\n\n' + APP_TEXT['tos2'])
@@ -267,7 +267,9 @@ def set_up_chat_ui():
             handle_error(
                 f'An unexpected error occurred while generating the content: {ex}'
                 '\nPlease try again later, possibly with different inputs.'
-                ' Alternatively, try selecting a different LLM from the dropdown list.',
+                ' Alternatively, try selecting a different LLM from the dropdown list.'
+                ' If you are using Cohere or Gemini models, make sure that you have provided'
+                ' a correct API key.',
                 True
             )
             return

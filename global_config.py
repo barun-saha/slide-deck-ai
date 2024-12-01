@@ -17,10 +17,16 @@ class GlobalConfig:
     A data class holding the configurations.
     """
 
-    PROVIDER_HUGGING_FACE = 'hf'
+    PROVIDER_COHERE = 'co'
     PROVIDER_GOOGLE_GEMINI = 'gg'
-    VALID_PROVIDERS = {PROVIDER_HUGGING_FACE, PROVIDER_GOOGLE_GEMINI}
+    PROVIDER_HUGGING_FACE = 'hf'
+    VALID_PROVIDERS = {PROVIDER_COHERE, PROVIDER_GOOGLE_GEMINI, PROVIDER_HUGGING_FACE}
     VALID_MODELS = {
+        '[co]command-r-08-2024': {
+            'description': 'simpler, slower',
+            'max_new_tokens': 4096,
+            'paid': True,
+        },
         '[gg]gemini-1.5-flash-002': {
             'description': 'faster response',
             'max_new_tokens': 8192,
@@ -39,10 +45,11 @@ class GlobalConfig:
     }
     LLM_PROVIDER_HELP = (
         'LLM provider codes:\n\n'
+        '- **[co]**: Cohere\n'
         '- **[gg]**: Google Gemini API\n'
         '- **[hf]**: Hugging Face Inference Endpoint\n'
     )
-    DEFAULT_MODEL_INDEX = 1
+    DEFAULT_MODEL_INDEX = 2
     LLM_MODEL_TEMPERATURE = 0.2
     LLM_MODEL_MIN_OUTPUT_LENGTH = 100
     LLM_MODEL_MAX_INPUT_LENGTH = 400  # characters
