@@ -82,7 +82,8 @@ def are_all_inputs_valid(
     if not llm_helper.is_valid_llm_provider_model(selected_provider, selected_model, user_key):
         handle_error(
             'The LLM settings do not look correct. Make sure that an API key/access token'
-            ' is provided if the selected LLM requires it.',
+            ' is provided if the selected LLM requires it. An API key should be 6-64 characters'
+            ' long, only containing alphanumeric characters, hyphens, and underscores.',
             False
         )
         return False

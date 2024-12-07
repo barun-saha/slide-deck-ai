@@ -17,6 +17,8 @@ from global_config import GlobalConfig
 
 
 LLM_PROVIDER_MODEL_REGEX = re.compile(r'\[(.*?)\](.*)')
+# 6-64 characters long, only containing alphanumeric characters, hyphens, and underscores
+API_KEY_REGEX = re.compile(r'^[a-zA-Z0-9\-_]{6,64}$')
 HF_API_HEADERS = {'Authorization': f'Bearer {GlobalConfig.HUGGINGFACEHUB_API_TOKEN}'}
 REQUEST_TIMEOUT = 35
 
@@ -70,9 +72,14 @@ def is_valid_llm_provider_model(provider: str, model: str, api_key: str) -> bool
     if not provider or not model or provider not in GlobalConfig.VALID_PROVIDERS:
         return False
 
-    if provider in [GlobalConfig.PROVIDER_GOOGLE_GEMINI, GlobalConfig.PROVIDER_COHERE,]:
-        if not api_key or len(api_key) < 5:
-            return False
+    if provider in [
+        GlobalConfig.PROVIDER_GOOGLE_GEMINI,
+        GlobalConfig.PROVIDER_COHERE,
+    ] and not api_key:
+        return False
+
+    if api_key:
+        return API_KEY_REGEX.match(api_key) is not None
 
     return True
 
