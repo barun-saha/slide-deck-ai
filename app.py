@@ -82,7 +82,8 @@ def are_all_inputs_valid(
     if not llm_helper.is_valid_llm_provider_model(selected_provider, selected_model, user_key):
         handle_error(
             'The LLM settings do not look correct. Make sure that an API key/access token'
-            ' is provided if the selected LLM requires it.',
+            ' is provided if the selected LLM requires it. An API key should be 6-64 characters'
+            ' long, only containing alphanumeric characters, hyphens, and underscores.',
             False
         )
         return False
@@ -102,6 +103,14 @@ def handle_error(error_msg: str, should_log: bool):
         logger.error(error_msg)
 
     st.error(error_msg)
+
+
+def reset_api_key():
+    """
+    Clear API key input when a different LLM is selected from the dropdown list.
+    """
+
+    st.session_state.api_key_input = ''
 
 
 APP_TEXT = _load_strings()
@@ -132,6 +141,7 @@ with st.sidebar:
         options=[f'{k} ({v["description"]})' for k, v in GlobalConfig.VALID_MODELS.items()],
         index=GlobalConfig.DEFAULT_MODEL_INDEX,
         help=GlobalConfig.LLM_PROVIDER_HELP,
+        on_change=reset_api_key
     ).split(' ')[0]
 
     # The API key/access token
@@ -142,6 +152,7 @@ with st.sidebar:
             ' *Optional* for HF Mistral LLMs but still encouraged.\n\n'
         ),
         type='password',
+        key='api_key_input'
     )
 
 
