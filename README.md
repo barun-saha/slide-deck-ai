@@ -55,16 +55,6 @@ SlideDeck AI uses a subset of icons from [bootstrap-icons-1.11.3](https://github
 (CC0, MIT, and Apache licenses) are also used. 
 
 
-# Known Issues
-
-- **Model unavailable**: Mistral Nemo currently appears to be unavailable. See this [issue](https://huggingface.co/mistralai/Mistral-Nemo-Instruct-2407/discussions/83).
-- **Connection timeout**: Requests sent to the Hugging Face Inference endpoint might time out. If it still does not work, wait for a while and try again.
-
-The following is not an issue but might appear as a strange behavior:
-- **Cannot paste text in the input box**: If the length of the copied text is greater than the maximum
-number of allowed characters in the textbox, pasting would not work.
-
-
 # Local Development
 
 SlideDeck AI uses LLMs via different providers, such as Hugging Face, Google, and Gemini.
