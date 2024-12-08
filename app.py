@@ -3,21 +3,32 @@ Streamlit app containing the UI and the application logic.
 """
 import datetime
 import logging
+import os
 import pathlib
 import random
 import tempfile
 from typing import List, Union
 
+import httpx
 import huggingface_hub
 import json5
+import ollama
 import requests
 import streamlit as st
+from dotenv import load_dotenv
 from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 
+import global_config as gcfg
 from global_config import GlobalConfig
 from helpers import llm_helper, pptx_helper, text_helper
+
+
+load_dotenv()
+
+
+RUN_IN_OFFLINE_MODE = os.getenv('RUN_IN_OFFLINE_MODE', 'False').lower() == 'true'
 
 
 @st.cache_data
@@ -135,25 +146,36 @@ with st.sidebar:
         horizontal=True
     )
 
-    # The LLMs
-    llm_provider_to_use = st.sidebar.selectbox(
-        label='2: Select an LLM to use:',
-        options=[f'{k} ({v["description"]})' for k, v in GlobalConfig.VALID_MODELS.items()],
-        index=GlobalConfig.DEFAULT_MODEL_INDEX,
-        help=GlobalConfig.LLM_PROVIDER_HELP,
-        on_change=reset_api_key
-    ).split(' ')[0]
+    if RUN_IN_OFFLINE_MODE:
+        llm_provider_to_use = st.text_input(
+            label='2: Enter Ollama model name to use:',
+            help=(
+                'Specify a correct, locally available LLM, found by running `ollama list`, for'
+                ' example `mistral:v0.2` and `mistral-nemo:latest`. Having an Ollama-compatible'
+                ' and supported GPU is strongly recommended.'
+            )
+        )
+        api_key_token: str = ''
+    else:
+        # The LLMs
+        llm_provider_to_use = st.sidebar.selectbox(
+            label='2: Select an LLM to use:',
+            options=[f'{k} ({v["description"]})' for k, v in GlobalConfig.VALID_MODELS.items()],
+            index=GlobalConfig.DEFAULT_MODEL_INDEX,
+            help=GlobalConfig.LLM_PROVIDER_HELP,
+            on_change=reset_api_key
+        ).split(' ')[0]
 
-    # The API key/access token
-    api_key_token = st.text_input(
-        label=(
-            '3: Paste your API key/access token:\n\n'
-            '*Mandatory* for Cohere and Gemini LLMs.'
-            ' *Optional* for HF Mistral LLMs but still encouraged.\n\n'
-        ),
-        type='password',
-        key='api_key_input'
-    )
+        # The API key/access token
+        api_key_token = st.text_input(
+            label=(
+                '3: Paste your API key/access token:\n\n'
+                '*Mandatory* for Cohere and Gemini LLMs.'
+                ' *Optional* for HF Mistral LLMs but still encouraged.\n\n'
+            ),
+            type='password',
+            key='api_key_input'
+        )
 
 
 def build_ui():
@@ -200,7 +222,11 @@ def set_up_chat_ui():
         placeholder=APP_TEXT['chat_placeholder'],
         max_chars=GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH
     ):
-        provider, llm_name = llm_helper.get_provider_model(llm_provider_to_use)
+        provider, llm_name = llm_helper.get_provider_model(
+            llm_provider_to_use,
+            use_ollama=RUN_IN_OFFLINE_MODE
+        )
+        print(f'{llm_provider_to_use=}, {provider=}, {llm_name=}, {api_key_token=}')
 
         if not are_all_inputs_valid(prompt, provider, llm_name, api_key_token):
             return
@@ -233,7 +259,7 @@ def set_up_chat_ui():
             llm = llm_helper.get_langchain_llm(
                 provider=provider,
                 model=llm_name,
-                max_new_tokens=GlobalConfig.VALID_MODELS[llm_provider_to_use]['max_new_tokens'],
+                max_new_tokens=gcfg.get_max_output_tokens(llm_provider_to_use),
                 api_key=api_key_token.strip(),
             )
 
@@ -252,18 +278,17 @@ def set_up_chat_ui():
                 # Update the progress bar with an approx progress percentage
                 progress_bar.progress(
                     min(
-                        len(response) / GlobalConfig.VALID_MODELS[
-                            llm_provider_to_use
-                        ]['max_new_tokens'],
+                        len(response) / gcfg.get_max_output_tokens(llm_provider_to_use),
                         0.95
                     ),
                     text='Streaming content...this might take a while...'
                 )
-        except requests.exceptions.ConnectionError:
+        except (httpx.ConnectError, requests.exceptions.ConnectionError):
             handle_error(
                 'A connection error occurred while streaming content from the LLM endpoint.'
                 ' Unfortunately, the slide deck cannot be generated. Please try again later.'
-                ' Alternatively, try selecting a different LLM from the dropdown list.',
+                ' Alternatively, try selecting a different LLM from the dropdown list. If you are'
+                ' using Ollama, make sure that Ollama is already running on your system.',
                 True
             )
             return
@@ -271,6 +296,14 @@ def set_up_chat_ui():
             handle_error(
                 f'An error occurred while trying to generate the content: {ve}'
                 '\nPlease try again with a significantly shorter input text.',
+                True
+            )
+            return
+        except ollama.ResponseError:
+            handle_error(
+                f'The model `{llm_name}` is unavailable with Ollama on your system.'
+                f' Make sure that you have provided the correct LLM name or pull it using'
+                f' `ollama pull {llm_name}`. View LLMs available locally by running `ollama list`.',
                 True
             )
             return

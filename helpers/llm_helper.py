@@ -17,8 +17,9 @@ from global_config import GlobalConfig
 
 
 LLM_PROVIDER_MODEL_REGEX = re.compile(r'\[(.*?)\](.*)')
+OLLAMA_MODEL_REGEX = re.compile(r'[a-zA-Z0-9._:-]+$')
 # 6-64 characters long, only containing alphanumeric characters, hyphens, and underscores
-API_KEY_REGEX = re.compile(r'^[a-zA-Z0-9\-_]{6,64}$')
+API_KEY_REGEX = re.compile(r'^[a-zA-Z0-9_-]{6,64}$')
 HF_API_HEADERS = {'Authorization': f'Bearer {GlobalConfig.HUGGINGFACEHUB_API_TOKEN}'}
 REQUEST_TIMEOUT = 35
 
@@ -39,20 +40,28 @@ http_session.mount('https://', adapter)
 http_session.mount('http://', adapter)
 
 
-def get_provider_model(provider_model: str) -> Tuple[str, str]:
+def get_provider_model(provider_model: str, use_ollama: bool) -> Tuple[str, str]:
     """
     Parse and get LLM provider and model name from strings like `[provider]model/name-version`.
 
     :param provider_model: The provider, model name string from `GlobalConfig`.
-    :return: The provider and the model name.
+    :param use_ollama: Whether Ollama is used (i.e., running in offline mode).
+    :return: The provider and the model name; empty strings in case no matching pattern found.
     """
 
-    match = LLM_PROVIDER_MODEL_REGEX.match(provider_model)
+    provider_model = provider_model.strip()
 
-    if match:
-        inside_brackets = match.group(1)
-        outside_brackets = match.group(2)
-        return inside_brackets, outside_brackets
+    if use_ollama:
+        match = OLLAMA_MODEL_REGEX.match(provider_model)
+        if match:
+            return GlobalConfig.PROVIDER_OLLAMA, match.group(0)
+    else:
+        match = LLM_PROVIDER_MODEL_REGEX.match(provider_model)
+
+        if match:
+            inside_brackets = match.group(1)
+            outside_brackets = match.group(2)
+            return inside_brackets, outside_brackets
 
     return '', ''
 
@@ -152,6 +161,18 @@ def get_langchain_llm(
             streaming=True,
         )
 
+    if provider == GlobalConfig.PROVIDER_OLLAMA:
+        from langchain_ollama.llms import OllamaLLM
+
+        logger.debug('Getting LLM via Ollama: %s', model)
+        return OllamaLLM(
+            model=model,
+            temperature=GlobalConfig.LLM_MODEL_TEMPERATURE,
+            num_predict=max_new_tokens,
+            format='json',
+            streaming=True,
+        )
+
     return None
 
 
@@ -163,4 +184,4 @@ if __name__ == '__main__':
     ]
 
     for text in inputs:
-        print(get_provider_model(text))
+        print(get_provider_model(text, use_ollama=False))

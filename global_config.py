@@ -20,7 +20,13 @@ class GlobalConfig:
     PROVIDER_COHERE = 'co'
     PROVIDER_GOOGLE_GEMINI = 'gg'
     PROVIDER_HUGGING_FACE = 'hf'
-    VALID_PROVIDERS = {PROVIDER_COHERE, PROVIDER_GOOGLE_GEMINI, PROVIDER_HUGGING_FACE}
+    PROVIDER_OLLAMA = 'ol'
+    VALID_PROVIDERS = {
+        PROVIDER_COHERE,
+        PROVIDER_GOOGLE_GEMINI,
+        PROVIDER_HUGGING_FACE,
+        PROVIDER_OLLAMA
+    }
     VALID_MODELS = {
         '[co]command-r-08-2024': {
             'description': 'simpler, slower',
@@ -47,7 +53,7 @@ class GlobalConfig:
         'LLM provider codes:\n\n'
         '- **[co]**: Cohere\n'
         '- **[gg]**: Google Gemini API\n'
-        '- **[hf]**: Hugging Face Inference Endpoint\n'
+        '- **[hf]**: Hugging Face Inference API\n'
     )
     DEFAULT_MODEL_INDEX = 2
     LLM_MODEL_TEMPERATURE = 0.2
@@ -125,3 +131,17 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S'
 )
+
+
+def get_max_output_tokens(llm_name: str) -> int:
+    """
+    Get the max output tokens value configured for an LLM. Return a default value if not configured.
+
+    :param llm_name: The name of the LLM.
+    :return: Max output tokens or a default count.
+    """
+
+    try:
+        return GlobalConfig.VALID_MODELS[llm_name]['max_new_tokens']
+    except KeyError:
+        return 2048
