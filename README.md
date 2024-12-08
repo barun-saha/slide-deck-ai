@@ -77,6 +77,9 @@ ollama list  # View locally available LLMs
 export RUN_IN_OFFLINE_MODE=True  # Enable the offline mode to use Ollama
 git clone https://github.com/barun-saha/slide-deck-ai.git
 cd slide-deck-ai
+python -m venv venv  # Create a virtual environment
+source venv/bin/activate  # On a Linux system
+pip install -r requirements.txt
 streamlit run ./app.py  # Run the application
 ```
 
