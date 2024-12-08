@@ -47,6 +47,8 @@ Different LLMs offer different styles of content generation. Use one of the foll
 
 The Mistral models do not mandatorily require an access token. However, you are encouraged to get and use your own Hugging Face access token.
 
+In addition, offline LLMs provided by Ollama can be used. Read below to know more. 
+
 
 # Icons
 
@@ -61,6 +63,33 @@ SlideDeck AI uses LLMs via different providers, such as Hugging Face, Google, an
 To run this project by yourself, you need to provide the `HUGGINGFACEHUB_API_TOKEN` API key,
 for example, in a `.env` file. Alternatively, you can provide the access token in the app's user interface itself (UI). For other LLM providers, the API key can only be specified in the UI.  For image search, the `PEXEL_API_KEY` should be made available as an environment variable. 
 Visit the respective websites to obtain the API keys.
+
+## Offline LLMs Using Ollama
+
+SlideDeck AI allows the use of offline LLMs to generate the contents of the slide decks. This is typically suitable for individuals or organizations who would like to use self-hosted LLMs for privacy concerns, for example.
+
+Offline LLMs are made available via Ollama. Therefore, a pre-requisite here is to have [Ollama installed](https://ollama.com/download) on the system and the desired [LLM](https://ollama.com/search) pulled locally.
+
+In addition, the `RUN_IN_OFFLINE_MODE` environment variable needs to be set to `True` to enable the offline mode. This, for example, can be done using a `.env` file or from the terminal. The typical steps to use SlideDeck AI in offline mode (in a `bash` shell) are as follows:
+
+```bash
+ollama list  # View locally available LLMs
+export RUN_IN_OFFLINE_MODE=True  # Enable the offline mode to use Ollama
+git clone https://github.com/barun-saha/slide-deck-ai.git
+cd slide-deck-ai
+python -m venv venv  # Create a virtual environment
+source venv/bin/activate  # On a Linux system
+pip install -r requirements.txt
+streamlit run ./app.py  # Run the application
+```
+
+The `.env` file should be created inside the `slide-deck-ai` directory. 
+
+The UI is similar to the online mode. However, rather than selecting an LLM from a list, one has to write the name of the Ollama model to be used in a textbox. There is no API key asked here.
+
+The online and offline modes are mutually exclusive. So, setting `RUN_IN_OFFLINE_MODE` to `False` will make SlideDeck AI use the online LLMs (i.e., the "original mode."). By default, `RUN_IN_OFFLINE_MODE` is set to `False`.
+
+Finally, the focus is on using offline LLMs, not going completely offline. So, Internet connectivity would still be required to fetch the images from Pexels. 
 
 
 # Live Demo
