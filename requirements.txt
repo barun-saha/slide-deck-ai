@@ -36,4 +36,4 @@ anyio==4.4.0
 
 httpx~=0.27.2
 huggingface-hub~=0.24.5
-ollama~=0.4.3
+ollama~=0.4.4

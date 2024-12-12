@@ -226,7 +226,6 @@ def set_up_chat_ui():
             llm_provider_to_use,
             use_ollama=RUN_IN_OFFLINE_MODE
         )
-        print(f'{llm_provider_to_use=}, {provider=}, {llm_name=}, {api_key_token=}')
 
         if not are_all_inputs_valid(prompt, provider, llm_name, api_key_token):
             return
