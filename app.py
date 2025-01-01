@@ -189,6 +189,17 @@ def build_ui():
         '![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fhuggingface.co%2Fspaces%2Fbarunsaha%2Fslide-deck-ai&countColor=%23263759)'  # noqa: E501
     )
 
+    today = datetime.date.today()
+    if today.month == 1 and 1 <= today.day <= 15:
+        st.success(
+            (
+                'Wishing you a happy and successful New Year!'
+                ' It is your appreciation that keeps SlideDeck AI going.'
+                f' May you make some great slide decks in {today.year} ✨'
+            ),
+            icon='🎆'
+        )
+
     with st.expander('Usage Policies and Limitations'):
         st.text(APP_TEXT['tos'] + '\n\n' + APP_TEXT['tos2'])
 
