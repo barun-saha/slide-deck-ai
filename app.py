@@ -159,7 +159,7 @@ with st.sidebar:
     else:
         # The LLMs
         llm_provider_to_use = st.sidebar.selectbox(
-            label='2: Select an LLM to use:',
+            label='2: Select a suitable LLM to use:\n\n(Gemini and Mistral-Nemo are recommended)',
             options=[f'{k} ({v["description"]})' for k, v in GlobalConfig.VALID_MODELS.items()],
             index=GlobalConfig.DEFAULT_MODEL_INDEX,
             help=GlobalConfig.LLM_PROVIDER_HELP,

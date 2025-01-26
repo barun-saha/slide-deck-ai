@@ -34,7 +34,12 @@ class GlobalConfig:
             'paid': True,
         },
         '[gg]gemini-1.5-flash-002': {
-            'description': 'faster response',
+            'description': 'faster, detailed',
+            'max_new_tokens': 8192,
+            'paid': True,
+        },
+        '[gg]gemini-2.0-flash-exp': {
+            'description': 'fast, detailed',
             'max_new_tokens': 8192,
             'paid': True,
         },
@@ -55,7 +60,7 @@ class GlobalConfig:
         '- **[gg]**: Google Gemini API\n'
         '- **[hf]**: Hugging Face Inference API\n'
     )
-    DEFAULT_MODEL_INDEX = 2
+    DEFAULT_MODEL_INDEX = 3
     LLM_MODEL_TEMPERATURE = 0.2
     LLM_MODEL_MIN_OUTPUT_LENGTH = 100
     LLM_MODEL_MAX_INPUT_LENGTH = 400  # characters
