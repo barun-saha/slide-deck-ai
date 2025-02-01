@@ -21,11 +21,13 @@ class GlobalConfig:
     PROVIDER_GOOGLE_GEMINI = 'gg'
     PROVIDER_HUGGING_FACE = 'hf'
     PROVIDER_OLLAMA = 'ol'
+    PROVIDER_TOGETHER_AI = 'to'
     VALID_PROVIDERS = {
         PROVIDER_COHERE,
         PROVIDER_GOOGLE_GEMINI,
         PROVIDER_HUGGING_FACE,
-        PROVIDER_OLLAMA
+        PROVIDER_OLLAMA,
+        PROVIDER_TOGETHER_AI
     }
     VALID_MODELS = {
         '[co]command-r-08-2024': {
@@ -53,12 +55,23 @@ class GlobalConfig:
             'max_new_tokens': 10240,
             'paid': False,
         },
+        '[to]meta-llama/Llama-3.3-70B-Instruct-Turbo': {
+            'description': 'detailed, slower',
+            'max_new_tokens': 4096,
+            'paid': True,
+        },
+        '[to]meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo-128K': {
+            'description': 'shorter, faster',
+            'max_new_tokens': 4096,
+            'paid': True,
+        },
     }
     LLM_PROVIDER_HELP = (
         'LLM provider codes:\n\n'
         '- **[co]**: Cohere\n'
         '- **[gg]**: Google Gemini API\n'
         '- **[hf]**: Hugging Face Inference API\n'
+        '- **[to]**: Together AI\n'
     )
     DEFAULT_MODEL_INDEX = 3
     LLM_MODEL_TEMPERATURE = 0.2
