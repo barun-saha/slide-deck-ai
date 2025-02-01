@@ -170,7 +170,7 @@ with st.sidebar:
         api_key_token = st.text_input(
             label=(
                 '3: Paste your API key/access token:\n\n'
-                '*Mandatory* for Cohere and Gemini LLMs.'
+                '*Mandatory* for Cohere, Google Gemini, and Together AI providers.'
                 ' *Optional* for HF Mistral LLMs but still encouraged.\n\n'
             ),
             type='password',

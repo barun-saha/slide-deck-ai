@@ -84,6 +84,7 @@ def is_valid_llm_provider_model(provider: str, model: str, api_key: str) -> bool
     if provider in [
         GlobalConfig.PROVIDER_GOOGLE_GEMINI,
         GlobalConfig.PROVIDER_COHERE,
+        GlobalConfig.PROVIDER_TOGETHER_AI,
     ] and not api_key:
         return False
 
@@ -159,6 +160,19 @@ def get_langchain_llm(
             max_retries=2,
             cohere_api_key=api_key,
             streaming=True,
+        )
+
+    if provider == GlobalConfig.PROVIDER_TOGETHER_AI:
+        from langchain_together import Together
+
+        logger.debug('Getting LLM via Together AI: %s', model)
+        return Together(
+            model=model,
+            temperature=GlobalConfig.LLM_MODEL_TEMPERATURE,
+            together_api_key=api_key,
+            max_tokens=max_new_tokens,
+            top_k=40,
+            top_p=0.90,
         )
 
     if provider == GlobalConfig.PROVIDER_OLLAMA:
