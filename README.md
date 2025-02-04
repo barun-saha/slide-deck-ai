@@ -36,9 +36,11 @@ Clicking on the button will download the file.
 
 # Summary of the LLMs
 
-SlideDeck AI allows the use of different LLMs from three online providers. These LLMs offer different styles of content generation. Based on several experiments, SlideDeck AI generally recommends the use of Mistral NeMo and Gemini Flash to generate the slide decks.
+SlideDeck AI allows the use of different LLMs from four online providers—Hugging Face, Google, Cohere, and Together AI. These service providers—even the latter three—offer generous free usage of relevant LLMs without requiring any billing information.  
 
-Use one of the following LLMs along with relevant API keys/access tokens, as appropriate, to create the content of the slide deck:
+Based on several experiments, SlideDeck AI generally recommends the use of Mistral NeMo and Gemini Flash to generate the slide decks.
+
+The supported LLMs offer different styles of content generation. Use one of the following LLMs along with relevant API keys/access tokens, as appropriate, to create the content of the slide deck:
 
 | LLM                              | Provider (code) | Requires API key                                                            | Characteristics          |
 |:---------------------------------| :------- |:----------------------------------------------------------------------------|:-------------------------|
