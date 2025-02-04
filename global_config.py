@@ -71,7 +71,8 @@ class GlobalConfig:
         '- **[co]**: Cohere\n'
         '- **[gg]**: Google Gemini API\n'
         '- **[hf]**: Hugging Face Inference API\n'
-        '- **[to]**: Together AI\n'
+        '- **[to]**: Together AI\n\n'
+        '[Find out more](https://github.com/barun-saha/slide-deck-ai?tab=readme-ov-file#summary-of-the-llms)'
     )
     DEFAULT_MODEL_INDEX = 3
     LLM_MODEL_TEMPERATURE = 0.2
