@@ -322,8 +322,8 @@ def set_up_chat_ui():
                 f'An unexpected error occurred while generating the content: {ex}'
                 '\nPlease try again later, possibly with different inputs.'
                 ' Alternatively, try selecting a different LLM from the dropdown list.'
-                ' If you are using Cohere or Gemini models, make sure that you have provided'
-                ' a correct API key.',
+                ' If you are using Cohere, Gemini, or Together AI models, make sure that you have'
+                ' provided a correct API key.',
                 True
             )
             return
