@@ -40,7 +40,12 @@ class GlobalConfig:
             'max_new_tokens': 8192,
             'paid': True,
         },
-        '[gg]gemini-2.0-flash-exp': {
+        '[gg]gemini-2.0-flash': {
+            'description': 'fast, detailed',
+            'max_new_tokens': 8192,
+            'paid': True,
+        },
+        '[gg]gemini-2.0-flash-lite-preview-02-05': {
             'description': 'fast, detailed',
             'max_new_tokens': 8192,
             'paid': True,
@@ -74,7 +79,7 @@ class GlobalConfig:
         '- **[to]**: Together AI\n\n'
         '[Find out more](https://github.com/barun-saha/slide-deck-ai?tab=readme-ov-file#summary-of-the-llms)'
     )
-    DEFAULT_MODEL_INDEX = 3
+    DEFAULT_MODEL_INDEX = 4
     LLM_MODEL_TEMPERATURE = 0.2
     LLM_MODEL_MIN_OUTPUT_LENGTH = 100
     LLM_MODEL_MAX_INPUT_LENGTH = 400  # characters
@@ -127,13 +132,11 @@ class GlobalConfig:
         '\n\n'
         'Finally, click on the download button at the bottom to download the slide deck.'
         ' See this [demo video](https://youtu.be/QvAKzNKtk9k) for a brief walkthrough.\n\n'
-        'Currently, three LLMs providers and four LLMs are supported:'
-        ' **Mistral 7B Instruct v0.2** and **Mistral Nemo Instruct 2407** via Hugging Face'
-        ' Inference Endpoint; **Gemini 1.5 Flash** via Gemini API; and **Command R+** via Cohere'
-        ' API. If one is not available, choose the other from the dropdown list. A [summary of'
+        'Currently, eight *free-to-use* LLMs from four different providers are supported.'
+        ' If one is not available, choose the other from the dropdown list. A [summary of'
         ' the supported LLMs]('
         'https://github.com/barun-saha/slide-deck-ai/blob/main/README.md#summary-of-the-llms)'
-        ' is available for reference.\n\n'
+        ' is available for reference. SlideDeck AI does **NOT** store your API keys.\n\n'
         ' SlideDeck AI does not have access to the Web, apart for searching for images relevant'
         ' to the slides. Photos are added probabilistically; transparency needs to be changed'
         ' manually, if required.\n\n'

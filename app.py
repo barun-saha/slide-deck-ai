@@ -320,10 +320,11 @@ def set_up_chat_ui():
         except Exception as ex:
             handle_error(
                 f'An unexpected error occurred while generating the content: {ex}'
-                '\nPlease try again later, possibly with different inputs.'
+                '\n\nPlease try again later, possibly with different inputs.'
                 ' Alternatively, try selecting a different LLM from the dropdown list.'
                 ' If you are using Cohere, Gemini, or Together AI models, make sure that you have'
-                ' provided a correct API key.',
+                ' provided a correct API key.'
+                ' Read **[how to get free LLM API keys](https://github.com/barun-saha/slide-deck-ai?tab=readme-ov-file#summary-of-the-llms)**.',
                 True
             )
             return
