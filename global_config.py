@@ -132,6 +132,9 @@ class GlobalConfig:
         '\n\n'
         'Finally, click on the download button at the bottom to download the slide deck.'
         ' See this [demo video](https://youtu.be/QvAKzNKtk9k) for a brief walkthrough.\n\n'
+        'Remember, the conversational interface is meant to (and will) update yor *initial*'
+        ' slide deck. If you want to create a new slide deck on a different topic,'
+        ' start a new chat session by reloading this page.\n\n'
         'Currently, eight *free-to-use* LLMs from four different providers are supported.'
         ' If one is not available, choose the other from the dropdown list. A [summary of'
         ' the supported LLMs]('
@@ -144,7 +147,7 @@ class GlobalConfig:
         ' released under the'
         ' [MIT license](https://github.com/barun-saha/slide-deck-ai?tab=MIT-1-ov-file#readme).'
         '\n\n---\n\n'
-        '© Copyright 2023-2024 Barun Saha.\n\n'
+        '© Copyright 2023-2025 Barun Saha.\n\n'
     )
 
 
