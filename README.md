@@ -16,6 +16,10 @@ We spend a lot of time on creating the slides and organizing our thoughts for an
 With SlideDeck AI, co-create slide decks on any topic with Generative Artificial Intelligence.
 Describe your topic and let SlideDeck AI generate a PowerPoint slide deck for you—it's as simple as that!
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=barun-saha/slide-deck-ai&type=Date)](https://star-history.com/#barun-saha/slide-deck-ai&Date)
+
 
 # Process
 
