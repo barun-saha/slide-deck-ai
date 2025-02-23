@@ -50,7 +50,6 @@ The supported LLMs offer different styles of content generation. Use one of the 
 |:---------------------------------| :------- |:-------------------------------------------------------------------------------------------------------------------------|:-------------------------|
 | Mistral 7B Instruct v0.2         | Hugging Face (`hf`) | Optional but strongly encouraged; [get here](https://huggingface.co/settings/tokens)                                     | Faster, shorter content  |
 | Mistral NeMo Instruct 2407       | Hugging Face (`hf`) | Optional but strongly encouraged; [get here](https://huggingface.co/settings/tokens)                                     | Slower, longer content   |
-| Gemini 1.5 Flash                 | Google Gemini API (`gg`) | Mandatory; [get here](https://aistudio.google.com/apikey)                                                                | Faster, longer content   |
 | Gemini 2.0 Flash                 | Google Gemini API (`gg`) | Mandatory; [get here](https://aistudio.google.com/apikey)                                                                | Faster, longer content   |
 | Gemini 2.0 Flash Lite            | Google Gemini API (`gg`) | Mandatory; [get here](https://aistudio.google.com/apikey)                                                                | Faster, longer content   |
 | GPT                              | Azure OpenAI (`az`)      | Mandatory; [get here](https://ai.azure.com/resource/playground)  NOTE: You need to have your subscription/billing set up | Faster, longer content   |
