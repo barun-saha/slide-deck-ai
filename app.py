@@ -66,6 +66,9 @@ def are_all_inputs_valid(
         selected_provider: str,
         selected_model: str,
         user_key: str,
+        azure_deployment_url: str = '',
+        azure_endpoint_name: str = '',
+        azure_api_version: str = '',
 ) -> bool:
     """
     Validate user input and LLM selection.
@@ -74,6 +77,9 @@ def are_all_inputs_valid(
     :param selected_provider: The LLM provider.
     :param selected_model: Name of the model.
     :param user_key: User-provided API key.
+    :param azure_deployment_url: Azure OpenAI deployment URL.
+    :param azure_endpoint_name: Azure OpenAI model endpoint.
+    :param azure_api_version: Azure OpenAI API version.
     :return: `True` if all inputs "look" OK; `False` otherwise.
     """
 
@@ -90,11 +96,16 @@ def are_all_inputs_valid(
         handle_error('No valid LLM provider and/or model name found!', False)
         return False
 
-    if not llm_helper.is_valid_llm_provider_model(selected_provider, selected_model, user_key):
+    if not llm_helper.is_valid_llm_provider_model(
+            selected_provider, selected_model, user_key,
+            azure_endpoint_name, azure_deployment_url, azure_api_version
+    ):
         handle_error(
             'The LLM settings do not look correct. Make sure that an API key/access token'
-            ' is provided if the selected LLM requires it. An API key should be 6-64 characters'
-            ' long, only containing alphanumeric characters, hyphens, and underscores.',
+            ' is provided if the selected LLM requires it. An API key should be 6-94 characters'
+            ' long, only containing alphanumeric characters, hyphens, and underscores.\n\n'
+            'If you are using Azure OpenAI, make sure that you have provided the additional and'
+            ' correct configurations.',
             False
         )
         return False
@@ -170,12 +181,34 @@ with st.sidebar:
         api_key_token = st.text_input(
             label=(
                 '3: Paste your API key/access token:\n\n'
-                '*Mandatory* for Cohere, Google Gemini, and Together AI providers.'
+                '*Mandatory* for Azure OpenAI, Cohere, Google Gemini, and Together AI providers.'
                 ' *Optional* for HF Mistral LLMs but still encouraged.\n\n'
             ),
             type='password',
             key='api_key_input'
         )
+
+        # Additional configs for Azure OpenAI
+        with st.expander('**Azure OpenAI-specific configurations**'):
+            azure_endpoint = st.text_input(
+                label=(
+                    '4: Azure endpoint URL, e.g., https://example.openai.azure.com/.\n\n'
+                    '*Mandatory* for Azure OpenAI (only).'
+                )
+            )
+            azure_deployment = st.text_input(
+                label=(
+                    '5: Deployment name on Azure OpenAI:\n\n'
+                    '*Mandatory* for Azure OpenAI (only).'
+                ),
+            )
+            api_version = st.text_input(
+                label=(
+                    '6: API version:\n\n'
+                    '*Mandatory* field. Change based on your deployment configurations.'
+                ),
+                value='2024-05-01-preview',
+            )
 
 
 def build_ui():
@@ -238,7 +271,15 @@ def set_up_chat_ui():
             use_ollama=RUN_IN_OFFLINE_MODE
         )
 
-        if not are_all_inputs_valid(prompt, provider, llm_name, api_key_token):
+        user_key = api_key_token.strip()
+        az_deployment = azure_deployment.strip()
+        az_endpoint = azure_endpoint.strip()
+        api_ver = api_version.strip()
+
+        if not are_all_inputs_valid(
+                prompt, provider, llm_name, user_key,
+                az_deployment, az_endpoint, api_ver
+        ):
             return
 
         logger.info(
@@ -270,7 +311,10 @@ def set_up_chat_ui():
                 provider=provider,
                 model=llm_name,
                 max_new_tokens=gcfg.get_max_output_tokens(llm_provider_to_use),
-                api_key=api_key_token.strip(),
+                api_key=user_key,
+                azure_endpoint_url=az_endpoint,
+                azure_deployment_name=az_deployment,
+                azure_api_version=api_ver,
             )
 
             if not llm:
@@ -282,8 +326,11 @@ def set_up_chat_ui():
                 )
                 return
 
-            for _ in llm.stream(formatted_template):
-                response += _
+            for chunk in llm.stream(formatted_template):
+                if isinstance(chunk, str):
+                    response += chunk
+                else:
+                    response += chunk.content  # AIMessageChunk
 
                 # Update the progress bar with an approx progress percentage
                 progress_bar.progress(
