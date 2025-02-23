@@ -22,22 +22,24 @@ class GlobalConfig:
     PROVIDER_HUGGING_FACE = 'hf'
     PROVIDER_OLLAMA = 'ol'
     PROVIDER_TOGETHER_AI = 'to'
+    PROVIDER_AZURE_OPENAI = 'az'
     VALID_PROVIDERS = {
         PROVIDER_COHERE,
         PROVIDER_GOOGLE_GEMINI,
         PROVIDER_HUGGING_FACE,
         PROVIDER_OLLAMA,
-        PROVIDER_TOGETHER_AI
+        PROVIDER_TOGETHER_AI,
+        PROVIDER_AZURE_OPENAI,
     }
     VALID_MODELS = {
+        '[az]azure/open-ai': {
+            'description': 'faster, detailed',
+            'max_new_tokens': 8192,
+            'paid': True,
+        },
         '[co]command-r-08-2024': {
             'description': 'simpler, slower',
             'max_new_tokens': 4096,
-            'paid': True,
-        },
-        '[gg]gemini-1.5-flash-002': {
-            'description': 'faster, detailed',
-            'max_new_tokens': 8192,
             'paid': True,
         },
         '[gg]gemini-2.0-flash': {
@@ -73,6 +75,7 @@ class GlobalConfig:
     }
     LLM_PROVIDER_HELP = (
         'LLM provider codes:\n\n'
+        '- **[az]**: Azure OpenAI\n'
         '- **[co]**: Cohere\n'
         '- **[gg]**: Google Gemini API\n'
         '- **[hf]**: Hugging Face Inference API\n'
@@ -135,7 +138,7 @@ class GlobalConfig:
         'Remember, the conversational interface is meant to (and will) update yor *initial*'
         ' slide deck. If you want to create a new slide deck on a different topic,'
         ' start a new chat session by reloading this page.\n\n'
-        'Currently, eight *free-to-use* LLMs from four different providers are supported.'
+        'Currently, paid or *free-to-use* LLMs from five different providers are supported.'
         ' If one is not available, choose the other from the dropdown list. A [summary of'
         ' the supported LLMs]('
         'https://github.com/barun-saha/slide-deck-ai/blob/main/README.md#summary-of-the-llms)'

@@ -16,6 +16,10 @@ We spend a lot of time on creating the slides and organizing our thoughts for an
 With SlideDeck AI, co-create slide decks on any topic with Generative Artificial Intelligence.
 Describe your topic and let SlideDeck AI generate a PowerPoint slide deck for you—it's as simple as that!
 
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=barun-saha/slide-deck-ai&type=Date)](https://star-history.com/#barun-saha/slide-deck-ai&Date)
+
 
 # Process
 
@@ -36,22 +40,22 @@ Clicking on the button will download the file.
 
 # Summary of the LLMs
 
-SlideDeck AI allows the use of different LLMs from four online providers—Hugging Face, Google, Cohere, and Together AI. These service providers—even the latter three—offer generous free usage of relevant LLMs without requiring any billing information.  
+SlideDeck AI allows the use of different LLMs from five online providers—Azure OpenAI, Hugging Face, Google, Cohere, and Together AI. The latter four service providers offer generous free usage of relevant LLMs without requiring any billing information.  
 
-Based on several experiments, SlideDeck AI generally recommends the use of Mistral NeMo and Gemini Flash to generate the slide decks.
+Based on several experiments, SlideDeck AI generally recommends the use of Mistral NeMo, Gemini Flash, and GPT-4o to generate the slide decks.
 
 The supported LLMs offer different styles of content generation. Use one of the following LLMs along with relevant API keys/access tokens, as appropriate, to create the content of the slide deck:
 
-| LLM                              | Provider (code) | Requires API key                                                                     | Characteristics          |
-|:---------------------------------| :------- |:-------------------------------------------------------------------------------------|:-------------------------|
-| Mistral 7B Instruct v0.2         | Hugging Face (`hf`) | Optional but strongly encouraged; [get here](https://huggingface.co/settings/tokens) | Faster, shorter content  |
-| Mistral NeMo Instruct 2407       | Hugging Face (`hf`) | Optional but strongly encouraged; [get here](https://huggingface.co/settings/tokens) | Slower, longer content   |
-| Gemini 1.5 Flash                 | Google Gemini API (`gg`) | Mandatory; [get here](https://aistudio.google.com/apikey)                            | Faster, longer content   |
-| Gemini 2.0 Flash                 | Google Gemini API (`gg`) | Mandatory; [get here](https://aistudio.google.com/apikey)                            | Faster, longer content   |
-| Gemini 2.0 Flash Lite            | Google Gemini API (`gg`) | Mandatory; [get here](https://aistudio.google.com/apikey)                            | Faster, longer content   |
-| Command R+                       | Cohere (`co`) | Mandatory; [get here](https://dashboard.cohere.com/api-keys)                         | Shorter, simpler content |
-| Llama 3.3 70B Instruct Turbo     | Together AI (`to`) | Mandatory; [get here](https://api.together.ai/settings/api-keys)                     | Detailed, slower         |
-| Llama 3.1 8B Instruct Turbo 128K | Together AI (`to`) | Mandatory; [get here](https://api.together.ai/settings/api-keys)                     | Shorter                  |
+| LLM                              | Provider (code) | Requires API key                                                                                                         | Characteristics          |
+|:---------------------------------| :------- |:-------------------------------------------------------------------------------------------------------------------------|:-------------------------|
+| Mistral 7B Instruct v0.2         | Hugging Face (`hf`) | Optional but strongly encouraged; [get here](https://huggingface.co/settings/tokens)                                     | Faster, shorter content  |
+| Mistral NeMo Instruct 2407       | Hugging Face (`hf`) | Optional but strongly encouraged; [get here](https://huggingface.co/settings/tokens)                                     | Slower, longer content   |
+| Gemini 2.0 Flash                 | Google Gemini API (`gg`) | Mandatory; [get here](https://aistudio.google.com/apikey)                                                                | Faster, longer content   |
+| Gemini 2.0 Flash Lite            | Google Gemini API (`gg`) | Mandatory; [get here](https://aistudio.google.com/apikey)                                                                | Faster, longer content   |
+| GPT                              | Azure OpenAI (`az`)      | Mandatory; [get here](https://ai.azure.com/resource/playground)  NOTE: You need to have your subscription/billing set up | Faster, longer content   |
+| Command R+                       | Cohere (`co`) | Mandatory; [get here](https://dashboard.cohere.com/api-keys)                                                             | Shorter, simpler content |
+| Llama 3.3 70B Instruct Turbo     | Together AI (`to`) | Mandatory; [get here](https://api.together.ai/settings/api-keys)                                                         | Detailed, slower         |
+| Llama 3.1 8B Instruct Turbo 128K | Together AI (`to`) | Mandatory; [get here](https://api.together.ai/settings/api-keys)                                                         | Shorter                  |
 
 The Mistral models (via Hugging Face) do not mandatorily require an access token. In other words, you are always free to use these two LLMs, subject to Hugging Face's usage constrains. However, you are strongly encouraged to get and use your own Hugging Face access token.
 
