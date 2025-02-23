@@ -48,7 +48,7 @@ class GlobalConfig:
             'paid': True,
         },
         '[gg]gemini-2.0-flash-lite-preview-02-05': {
-            'description': 'fast, detailed',
+            'description': 'fastest, detailed',
             'max_new_tokens': 8192,
             'paid': True,
         },
