@@ -111,6 +111,7 @@ Finally, the focus is on using offline LLMs, not going completely offline. So, I
 
 - [SlideDeck AI](https://huggingface.co/spaces/barunsaha/slide-deck-ai) on Hugging Face Spaces
 - [Demo video](https://youtu.be/QvAKzNKtk9k) of the chat interface on YouTube
+- Demo video on [using Azure OpenAI](https://youtu.be/oPbH-z3q0Mw)
 
 
 # Award
