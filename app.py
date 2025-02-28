@@ -159,7 +159,7 @@ with st.sidebar:
 
     if RUN_IN_OFFLINE_MODE:
         llm_provider_to_use = st.text_input(
-            label='2: Enter Ollama model name to use:',
+            label='2: Enter Ollama model name to use (e.g., mistral:v0.2):',
             help=(
                 'Specify a correct, locally available LLM, found by running `ollama list`, for'
                 ' example `mistral:v0.2` and `mistral-nemo:latest`. Having an Ollama-compatible'
@@ -167,8 +167,11 @@ with st.sidebar:
             )
         )
         api_key_token: str = ''
+        azure_endpoint: str = ''
+        azure_deployment: str = ''
+        api_version: str = ''
     else:
-        # The LLMs
+        # The online LLMs
         llm_provider_to_use = st.sidebar.selectbox(
             label='2: Select a suitable LLM to use:\n\n(Gemini and Mistral-Nemo are recommended)',
             options=[f'{k} ({v["description"]})' for k, v in GlobalConfig.VALID_MODELS.items()],
