@@ -18,14 +18,12 @@ langchain-openai==0.3.3
 streamlit~=1.38.0
 
 python-pptx~=0.6.21
-# metaphor-python
 json5~=0.9.14
 requests~=2.32.3
 
 transformers>=4.48.0
 torch==2.4.0
 
-urllib3~=2.2.1
 lxml~=4.9.3
 tqdm~=4.66.5
 numpy
