@@ -88,13 +88,20 @@ Offline LLMs are made available via Ollama. Therefore, a pre-requisite here is t
 In addition, the `RUN_IN_OFFLINE_MODE` environment variable needs to be set to `True` to enable the offline mode. This, for example, can be done using a `.env` file or from the terminal. The typical steps to use SlideDeck AI in offline mode (in a `bash` shell) are as follows:
 
 ```bash
+# Install Git Large File Storage (LFS)
+sudo apt install git-lfs
+git lfs install
+
 ollama list  # View locally available LLMs
 export RUN_IN_OFFLINE_MODE=True  # Enable the offline mode to use Ollama
 git clone https://github.com/barun-saha/slide-deck-ai.git
 cd slide-deck-ai
+git lfs pull  # Pull the PPTX template files
+
 python -m venv venv  # Create a virtual environment
 source venv/bin/activate  # On a Linux system
 pip install -r requirements.txt
+
 streamlit run ./app.py  # Run the application
 ```
 
