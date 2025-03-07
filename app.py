@@ -367,13 +367,27 @@ def set_up_chat_ui():
                 True
             )
             return
+        except huggingface_hub.utils._errors.HfHubHTTPError as hfe:
+            _msg = str(hfe).lower()
+            if 'payment required' in _msg:
+                _msg = (
+                    'The available inference quota has exhausted.'
+                    ' Please use your own Hugging Face access token. Paste your token in'
+                    ' the input field on the sidebar to the left.'
+                    '\n\nDon\'t have a token? Get your free'
+                    ' [HF access token](https://huggingface.co/settings/tokens) now'
+                    ' and create a magical slide deck!'
+                )
+
+            handle_error(_msg, should_log=True)
+            return
         except Exception as ex:
             handle_error(
                 f'An unexpected error occurred while generating the content: {ex}'
                 '\n\nPlease try again later, possibly with different inputs.'
                 ' Alternatively, try selecting a different LLM from the dropdown list.'
-                ' If you are using Cohere, Gemini, or Together AI models, make sure that you have'
-                ' provided a correct API key.'
+                ' If you are using Azure OpenAI, Cohere, Gemini, or Together AI models, make sure'
+                ' that you have provided a correct API key.'
                 ' Read **[how to get free LLM API keys](https://github.com/barun-saha/slide-deck-ai?tab=readme-ov-file#summary-of-the-llms)**.',
                 True
             )
