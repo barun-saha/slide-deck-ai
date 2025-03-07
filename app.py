@@ -367,21 +367,18 @@ def set_up_chat_ui():
                 True
             )
             return
-        except huggingface_hub.utils._errors.HfHubHTTPError as hfe:
-            _msg = str(hfe).lower()
+        except Exception as ex:
+            _msg = str(ex).lower()
             if 'payment required' in _msg:
-                _msg = (
+                handle_error(
                     'The available inference quota has exhausted.'
                     ' Please use your own Hugging Face access token. Paste your token in'
                     ' the input field on the sidebar to the left.'
                     '\n\nDon\'t have a token? Get your free'
                     ' [HF access token](https://huggingface.co/settings/tokens) now'
-                    ' and create a magical slide deck!'
+                    ' and create a magical slide deck!',
+                    should_log=True
                 )
-
-            handle_error(_msg, should_log=True)
-            return
-        except Exception as ex:
             handle_error(
                 f'An unexpected error occurred while generating the content: {ex}'
                 '\n\nPlease try again later, possibly with different inputs.'
