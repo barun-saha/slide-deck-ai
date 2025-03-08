@@ -59,7 +59,7 @@ class GlobalConfig:
         },
         '[hf]mistralai/Mistral-Nemo-Instruct-2407': {
             'description': 'longer response',
-            'max_new_tokens': 10240,
+            'max_new_tokens': 8192,
             'paid': False,
         },
         '[to]meta-llama/Llama-3.3-70B-Instruct-Turbo': {
@@ -82,7 +82,7 @@ class GlobalConfig:
         '- **[to]**: Together AI\n\n'
         '[Find out more](https://github.com/barun-saha/slide-deck-ai?tab=readme-ov-file#summary-of-the-llms)'
     )
-    DEFAULT_MODEL_INDEX = 4
+    DEFAULT_MODEL_INDEX = int(os.environ.get('DEFAULT_MODEL_INDEX', '4'))
     LLM_MODEL_TEMPERATURE = 0.2
     LLM_MODEL_MIN_OUTPUT_LENGTH = 100
     LLM_MODEL_MAX_INPUT_LENGTH = 400  # characters
