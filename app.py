@@ -184,8 +184,7 @@ with st.sidebar:
         api_key_token = st.text_input(
             label=(
                 '3: Paste your API key/access token:\n\n'
-                '*Mandatory* for Azure OpenAI, Cohere, Google Gemini, and Together AI providers.'
-                ' *Optional* for HF Mistral LLMs but still encouraged.\n\n'
+                '*Mandatory* for all providers.'
             ),
             type='password',
             key='api_key_input'

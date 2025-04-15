@@ -22,7 +22,6 @@ LLM_PROVIDER_MODEL_REGEX = re.compile(r'\[(.*?)\](.*)')
 OLLAMA_MODEL_REGEX = re.compile(r'[a-zA-Z0-9._:-]+$')
 # 94 characters long, only containing alphanumeric characters, hyphens, and underscores
 API_KEY_REGEX = re.compile(r'^[a-zA-Z0-9_-]{6,94}$')
-HF_API_HEADERS = {'Authorization': f'Bearer {GlobalConfig.HUGGINGFACEHUB_API_TOKEN}'}
 REQUEST_TIMEOUT = 35
 
 
@@ -95,12 +94,7 @@ def is_valid_llm_provider_model(
     if not provider or not model or provider not in GlobalConfig.VALID_PROVIDERS:
         return False
 
-    if provider in [
-        GlobalConfig.PROVIDER_GOOGLE_GEMINI,
-        GlobalConfig.PROVIDER_COHERE,
-        GlobalConfig.PROVIDER_TOGETHER_AI,
-        GlobalConfig.PROVIDER_AZURE_OPENAI,
-    ] and not api_key:
+    if not api_key:
         return False
 
     if api_key and API_KEY_REGEX.match(api_key) is None:
@@ -150,7 +144,7 @@ def get_langchain_llm(
             temperature=GlobalConfig.LLM_MODEL_TEMPERATURE,
             repetition_penalty=1.03,
             streaming=True,
-            huggingfacehub_api_token=api_key or GlobalConfig.HUGGINGFACEHUB_API_TOKEN,
+            huggingfacehub_api_token=api_key,
             return_full_text=False,
             stop_sequences=['</s>'],
         )

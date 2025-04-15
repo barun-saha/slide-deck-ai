@@ -87,8 +87,6 @@ class GlobalConfig:
     LLM_MODEL_MIN_OUTPUT_LENGTH = 100
     LLM_MODEL_MAX_INPUT_LENGTH = 400  # characters
 
-    HUGGINGFACEHUB_API_TOKEN = os.environ.get('HUGGINGFACEHUB_API_TOKEN', '')
-
     LOG_LEVEL = 'DEBUG'
     COUNT_TOKENS = False
     APP_STRINGS_FILE = 'strings.json'
