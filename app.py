@@ -19,6 +19,7 @@ from dotenv import load_dotenv
 from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
+from pypdf import PdfReader
 
 import global_config as gcfg
 from global_config import GlobalConfig
@@ -266,8 +267,17 @@ def set_up_chat_ui():
 
     if prompt := st.chat_input(
         placeholder=APP_TEXT['chat_placeholder'],
-        max_chars=GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH
+        max_chars=GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH,
+        accept_file=True,
+        file_type=['pdf', ],
     ):
+        print(f'{prompt=}')
+        prompt_text = prompt.text or ''
+        if prompt['files']:
+            additional_text = get_pdf_contents(prompt['files'][0])
+        else:
+            additional_text = ''
+
         provider, llm_name = llm_helper.get_provider_model(
             llm_provider_to_use,
             use_ollama=RUN_IN_OFFLINE_MODE
@@ -279,20 +289,20 @@ def set_up_chat_ui():
         api_ver = api_version.strip()
 
         if not are_all_inputs_valid(
-                prompt, provider, llm_name, user_key,
+                prompt_text, provider, llm_name, user_key,
                 az_deployment, az_endpoint, api_ver
         ):
             return
 
         logger.info(
             'User input: %s | #characters: %d | LLM: %s',
-            prompt, len(prompt), llm_name
+            prompt_text, len(prompt_text), llm_name
         )
-        st.chat_message('user').write(prompt)
+        st.chat_message('user').write(prompt_text)
 
         if _is_it_refinement():
             user_messages = _get_user_messages()
-            user_messages.append(prompt)
+            user_messages.append(prompt_text)
             list_of_msgs = [
                 f'{idx + 1}. {msg}' for idx, msg in enumerate(user_messages)
             ]
@@ -300,10 +310,16 @@ def set_up_chat_ui():
                 **{
                     'instructions': '\n'.join(list_of_msgs),
                     'previous_content': _get_last_response(),
+                    'additional_info': additional_text,
                 }
             )
         else:
-            formatted_template = prompt_template.format(**{'question': prompt})
+            formatted_template = prompt_template.format(
+                **{
+                    'question': prompt_text,
+                    'additional_info': additional_text,
+                }
+            )
 
         progress_bar = st.progress(0, 'Preparing to call LLM...')
         response = ''
@@ -392,7 +408,7 @@ def set_up_chat_ui():
                 )
             return
 
-        history.add_user_message(prompt)
+        history.add_user_message(prompt_text)
         history.add_ai_message(response)
 
         # The content has been generated as JSON
@@ -485,6 +501,30 @@ def generate_slide_deck(json_str: str) -> Union[pathlib.Path, None]:
         logger.error('Caught a generic exception: %s', str(ex))
 
     return path
+
+
+def get_pdf_contents(
+        pdf_file: st.runtime.uploaded_file_manager.UploadedFile,
+        max_pages: int = 20
+) -> str:
+    """
+    Extract the text contents from a PDF file.
+
+    :param pdf_file: The uploaded PDF file.
+    :param max_pages: The max no. of pages to extract contents from.
+    :return: The contents.
+    """
+
+    print(f'{type(pdf_file)=}')
+    reader = PdfReader(pdf_file)
+    n_pages = min(max_pages, len(reader.pages))
+    text = ''
+
+    for page in range(n_pages):
+        page = reader.pages[page]
+        text += page.extract_text()
+
+    return text
 
 
 def _is_it_refinement() -> bool:
