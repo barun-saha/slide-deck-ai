@@ -48,16 +48,14 @@ The supported LLMs offer different styles of content generation. Use one of the 
 
 | LLM                              | Provider (code) | Requires API key                                                                                                         | Characteristics          |
 |:---------------------------------| :------- |:-------------------------------------------------------------------------------------------------------------------------|:-------------------------|
-| Mistral 7B Instruct v0.2         | Hugging Face (`hf`) | Optional but strongly encouraged; [get here](https://huggingface.co/settings/tokens)                                     | Faster, shorter content  |
-| Mistral NeMo Instruct 2407       | Hugging Face (`hf`) | Optional but strongly encouraged; [get here](https://huggingface.co/settings/tokens)                                     | Slower, longer content   |
+| Mistral 7B Instruct v0.2         | Hugging Face (`hf`) | Mandatory; [get here](https://huggingface.co/settings/tokens)                                                            | Faster, shorter content  |
+| Mistral NeMo Instruct 2407       | Hugging Face (`hf`) | Mandatory; [get here](https://huggingface.co/settings/tokens)                                                            | Slower, longer content   |
 | Gemini 2.0 Flash                 | Google Gemini API (`gg`) | Mandatory; [get here](https://aistudio.google.com/apikey)                                                                | Faster, longer content   |
 | Gemini 2.0 Flash Lite            | Google Gemini API (`gg`) | Mandatory; [get here](https://aistudio.google.com/apikey)                                                                | Fastest, longer content  |
 | GPT                              | Azure OpenAI (`az`)      | Mandatory; [get here](https://ai.azure.com/resource/playground)  NOTE: You need to have your subscription/billing set up | Faster, longer content   |
 | Command R+                       | Cohere (`co`) | Mandatory; [get here](https://dashboard.cohere.com/api-keys)                                                             | Shorter, simpler content |
 | Llama 3.3 70B Instruct Turbo     | Together AI (`to`) | Mandatory; [get here](https://api.together.ai/settings/api-keys)                                                         | Detailed, slower         |
 | Llama 3.1 8B Instruct Turbo 128K | Together AI (`to`) | Mandatory; [get here](https://api.together.ai/settings/api-keys)                                                         | Shorter                  |
-
-The Mistral models (via Hugging Face) do not mandatorily require an access token. In other words, you are always free to use these two LLMs, subject to Hugging Face's usage constrains. However, you are strongly encouraged to get and use your own Hugging Face access token.
 
 **IMPORTANT**: SlideDeck AI does **NOT** store your API keys/tokens or transmit them elsewhere. If you provide your API key, it is only used to invoke the relevant LLM to generate contents. That's it! This is an 
 Open-Source project, so feel free to audit the code and convince yourself. 

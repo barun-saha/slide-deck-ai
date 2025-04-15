@@ -184,8 +184,7 @@ with st.sidebar:
         api_key_token = st.text_input(
             label=(
                 '3: Paste your API key/access token:\n\n'
-                '*Mandatory* for Azure OpenAI, Cohere, Google Gemini, and Together AI providers.'
-                ' *Optional* for HF Mistral LLMs but still encouraged.\n\n'
+                '*Mandatory* for all providers.'
             ),
             type='password',
             key='api_key_input'
@@ -376,8 +375,9 @@ def set_up_chat_ui():
                     ' the input field on the sidebar to the left.'
                     '\n\nDon\'t have a token? Get your free'
                     ' [HF access token](https://huggingface.co/settings/tokens) now'
-                    ' and start creating your slide deck! Alternatively, choose a different LLM'
-                    ' and provider from the list.',
+                    ' and start creating your slide deck! For gated models, you may need to'
+                    ' visit the model\'s page and accept the terms or service.'
+                    '\n\nAlternatively, choose a different LLM and provider from the list.',
                     should_log=True
                 )
             else:
