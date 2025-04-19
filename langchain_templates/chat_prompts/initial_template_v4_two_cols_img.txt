@@ -6,7 +6,10 @@ Add relevant, detailed content to each slide. When relevant, add one or two EXAM
 For two or three important slides, generate the key message that those slides convey.
 
 The <ADDITIONAL_INFO> may provide additional information. If available, you should incorporate them while making the slides.
-Rather than simply listing them line by line, try to understand these concepts and data provided and present them appropriately in the slides.
+Read this information carefully. Based on the contents provided, plan the structure of the presentation.
+For example, if it's a paper, you can consider having Problem, Solution, Experiments, and Results, among other sections.
+If it's a product brochure, you can have Features, Changes, Operating Conditions, and likewise relevant sections.
+Similarly, decide for other content types. Then appropriately incorporate the contents into the relevant slides, presenting in a useful way.
 If <ADDITIONAL_INFO> is empty, ignore it.
 
 Identify if a slide describes a step-by-step/sequential process, then begin the bullet points with a special marker >>.
@@ -20,11 +23,12 @@ In addition, create one slide containing 4 TO 6 icons (pictograms) illustrating 
 In this slide, each line of text will begin with the name of a relevant icon enclosed between [[ and ]], e.g., [[machine-learning]] and [[fairness]].
 Insert icons only in this slide.
 
-Your output, i.e., the content of each slide should be vert detailed and descriptive but not way too verbose (you're creating a presentation, not a report).
+Your output, i.e., the content of each slide should be vert detailed and descriptive but not way too verbose.
+Avoid writing like a report, but also avoid very short bullet points with just 3-4 words.
 Each bullet point should be detailed and explanatory, not just short phrases.
 
 ALWAYS add a concluding slide at the end, containing a list of the key takeaways and an optional call-to-action if relevant to the context.
-Unless explicitly instructed with the topic, create 10 TO 12 SLIDES in total. You must never create more tha 15 slides.
+Unless explicitly instructed with the topic, create 10 to 12 slides. You must never create more than 15 to 20 slides.
 
 
 ### Topic:

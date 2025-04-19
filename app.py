@@ -142,6 +142,7 @@ APP_TEXT = _load_strings()
 CHAT_MESSAGES = 'chat_messages'
 DOWNLOAD_FILE_KEY = 'download_file_name'
 IS_IT_REFINEMENT = 'is_it_refinement'
+ADDITIONAL_INFO = 'additional_info'
 
 
 logger = logging.getLogger(__name__)
@@ -271,12 +272,10 @@ def set_up_chat_ui():
         accept_file=True,
         file_type=['pdf', ],
     ):
-        print(f'{prompt=}')
         prompt_text = prompt.text or ''
         if prompt['files']:
-            additional_text = get_pdf_contents(prompt['files'][0])
-        else:
-            additional_text = ''
+            st.session_state[ADDITIONAL_INFO] = get_pdf_contents(prompt['files'][0])
+            print(f'{prompt["files"]=}')
 
         provider, llm_name = llm_helper.get_provider_model(
             llm_provider_to_use,
@@ -310,14 +309,14 @@ def set_up_chat_ui():
                 **{
                     'instructions': '\n'.join(list_of_msgs),
                     'previous_content': _get_last_response(),
-                    'additional_info': additional_text,
+                    'additional_info': st.session_state.get(ADDITIONAL_INFO, ''),
                 }
             )
         else:
             formatted_template = prompt_template.format(
                 **{
                     'question': prompt_text,
-                    'additional_info': additional_text,
+                    'additional_info': st.session_state.get(ADDITIONAL_INFO, ''),
                 }
             )
 
