@@ -504,7 +504,7 @@ def generate_slide_deck(json_str: str) -> Union[pathlib.Path, None]:
 
 def get_pdf_contents(
         pdf_file: st.runtime.uploaded_file_manager.UploadedFile,
-        max_pages: int = 20
+        max_pages: int = GlobalConfig.MAX_PAGE_COUNT
 ) -> str:
     """
     Extract the text contents from a PDF file.

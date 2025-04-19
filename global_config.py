@@ -86,6 +86,7 @@ class GlobalConfig:
     LLM_MODEL_TEMPERATURE = 0.2
     LLM_MODEL_MIN_OUTPUT_LENGTH = 100
     LLM_MODEL_MAX_INPUT_LENGTH = 400  # characters
+    MAX_PAGE_COUNT = 50
 
     LOG_LEVEL = 'DEBUG'
     COUNT_TOKENS = False
