@@ -19,9 +19,9 @@ from dotenv import load_dotenv
 from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
-from pypdf import PdfReader
 
 import global_config as gcfg
+import helpers.file_manager as filem
 from global_config import GlobalConfig
 from helpers import llm_helper, pptx_helper, text_helper
 
@@ -274,7 +274,9 @@ def set_up_chat_ui():
     ):
         prompt_text = prompt.text or ''
         if prompt['files']:
-            st.session_state[ADDITIONAL_INFO] = get_pdf_contents(prompt['files'][0])
+            # Apparently, Streamlit stores uploaded files in memory and clears on browser close
+            # https://docs.streamlit.io/knowledge-base/using-streamlit/where-file-uploader-store-when-deleted
+            st.session_state[ADDITIONAL_INFO] = filem.get_pdf_contents(prompt['files'][0])
             print(f'{prompt["files"]=}')
 
         provider, llm_name = llm_helper.get_provider_model(
@@ -500,30 +502,6 @@ def generate_slide_deck(json_str: str) -> Union[pathlib.Path, None]:
         logger.error('Caught a generic exception: %s', str(ex))
 
     return path
-
-
-def get_pdf_contents(
-        pdf_file: st.runtime.uploaded_file_manager.UploadedFile,
-        max_pages: int = GlobalConfig.MAX_PAGE_COUNT
-) -> str:
-    """
-    Extract the text contents from a PDF file.
-
-    :param pdf_file: The uploaded PDF file.
-    :param max_pages: The max no. of pages to extract contents from.
-    :return: The contents.
-    """
-
-    print(f'{type(pdf_file)=}')
-    reader = PdfReader(pdf_file)
-    n_pages = min(max_pages, len(reader.pages))
-    text = ''
-
-    for page in range(n_pages):
-        page = reader.pages[page]
-        text += page.extract_text()
-
-    return text
 
 
 def _is_it_refinement() -> bool:
