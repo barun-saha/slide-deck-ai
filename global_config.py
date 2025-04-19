@@ -86,6 +86,7 @@ class GlobalConfig:
     LLM_MODEL_TEMPERATURE = 0.2
     LLM_MODEL_MIN_OUTPUT_LENGTH = 100
     LLM_MODEL_MAX_INPUT_LENGTH = 400  # characters
+    MAX_PAGE_COUNT = 50
 
     LOG_LEVEL = 'DEBUG'
     COUNT_TOKENS = False
@@ -133,15 +134,23 @@ class GlobalConfig:
         '\n\n'
         'Finally, click on the download button at the bottom to download the slide deck.'
         ' See this [demo video](https://youtu.be/QvAKzNKtk9k) for a brief walkthrough.\n\n'
-        'Remember, the conversational interface is meant to (and will) update yor *initial*'
-        ' slide deck. If you want to create a new slide deck on a different topic,'
-        ' start a new chat session by reloading this page.\n\n'
-        'Currently, paid or *free-to-use* LLMs from five different providers are supported.'
-        ' If one is not available, choose the other from the dropdown list. A [summary of'
-        ' the supported LLMs]('
+        'Remember, the conversational interface is meant to (and will) update yor *initial*/'
+        '*previous* slide deck. If you want to create a new slide deck on a different topic,'
+        ' start a new chat session by reloading this page.'
+        '\n\nSlideDeck AI can algo generate a presentation based on a PDF file. You can upload'
+        ' a PDF file using the chat widget. Only a single file and up to max 50 pages will be'
+        ' considered. For PDF-based slide deck generation, LLMs with large context windows, such'
+        ' as Gemini, GPT, and Mistral-Nemo, are recommended. Note: images from the PDF files will'
+        ' not be used.'
+        '\n\nAlso, note that the uploaded file might disappear from the page after click.'
+        ' You do not need to upload the same file again to continue'
+        ' the interaction and refining—the contents of the PDF file will be retained in the'
+        ' same interactive session.'
+        '\n\nCurrently, paid or *free-to-use* LLMs from five different providers are supported.'
+        ' A [summary of the supported LLMs]('
         'https://github.com/barun-saha/slide-deck-ai/blob/main/README.md#summary-of-the-llms)'
-        ' is available for reference. SlideDeck AI does **NOT** store your API keys.\n\n'
-        ' SlideDeck AI does not have access to the Web, apart for searching for images relevant'
+        ' is available for reference. SlideDeck AI does **NOT** store your API keys.'
+        '\n\nSlideDeck AI does not have access to the Web, apart for searching for images relevant'
         ' to the slides. Photos are added probabilistically; transparency needs to be changed'
         ' manually, if required.\n\n'
         '[SlideDeck AI](https://github.com/barun-saha/slide-deck-ai) is an Open-Source project,'

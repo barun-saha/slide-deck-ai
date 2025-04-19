@@ -1,7 +1,7 @@
 [server]
 runOnSave = true
 headless = false
-maxUploadSize = 0
+maxUploadSize = 2
 
 [browser]
 gatherUsageStats = false

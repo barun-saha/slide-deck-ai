@@ -25,15 +25,16 @@
     "image_info": "Got some more minutes? We are also trying to deliver an AI-generated art on the presentation topic, fresh off the studio, just for you!",
     "content_generation_error": "Unfortunately, SlideDeck AI failed to generate any content for you! Please try again later.",
     "json_parsing_error": "Unfortunately, SlideDeck AI failed to parse the response from LLM! Please try again by rephrasing the query or refreshing the page.",
-    "tos": "SlideDeck AI is an experimental prototype, and it has its limitations.\nPlease carefully review any and all AI-generated content.",
+    "tos": "SlideDeck AI is an experimental prototype, and it has its limitations.\nAI-generated content may be incorrect. Please carefully review and verify the contents.",
     "tos2": "By using SlideDeck AI, you agree to fair and responsible usage.\nNo liability assumed by any party.",
     "ai_greetings": [
         "How may I help you today?",
         "Stuck with creating your presentation? Let me help you.",
         "Looks like you have a looming deadline. Can I help you get started with your slide deck?",
         "Hello! What topic do you have on your mind today?",
-        "Did you know that SlideDeck AI supports eight LLMs that are free to use and generate contents in different styles? Try them out from the dropdown list."
+        "Did you know that SlideDeck AI supports eight LLMs that generate contents in different styles?",
+        "Did you know that SlideDeck AI can create a presentation based on any uploaded PDF file?"
     ],
-    "chat_placeholder": "Write the topic or instructions here",
+    "chat_placeholder": "Write the topic or instructions here. You can also upload a PDF file.",
     "like_feedback": "If you like SlideDeck AI, please consider leaving a heart ❤\uFE0F on the [Hugging Face Space](https://huggingface.co/spaces/barunsaha/slide-deck-ai/) or a star ⭐ on [GitHub](https://github.com/barun-saha/slide-deck-ai). Your [feedback](https://forms.gle/JECFBGhjvSj7moBx9) is appreciated."
 }

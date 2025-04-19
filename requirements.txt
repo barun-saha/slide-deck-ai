@@ -15,14 +15,15 @@ langchain-cohere==0.3.3
 langchain-together==0.3.0
 langchain-ollama==0.2.1
 langchain-openai==0.3.3
-streamlit~=1.38.0
+streamlit~=1.44.0
 
 python-pptx~=1.0.2
 json5~=0.9.14
 requests~=2.32.3
+pypdf~=5.4.0
 
 transformers>=4.48.0
-torch==2.4.0
+torch>=2.6.0
 
 lxml~=4.9.3
 tqdm~=4.66.5

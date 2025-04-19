@@ -21,6 +21,7 @@ from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
 
 import global_config as gcfg
+import helpers.file_manager as filem
 from global_config import GlobalConfig
 from helpers import llm_helper, pptx_helper, text_helper
 
@@ -141,6 +142,7 @@ APP_TEXT = _load_strings()
 CHAT_MESSAGES = 'chat_messages'
 DOWNLOAD_FILE_KEY = 'download_file_name'
 IS_IT_REFINEMENT = 'is_it_refinement'
+ADDITIONAL_INFO = 'additional_info'
 
 
 logger = logging.getLogger(__name__)
@@ -266,8 +268,17 @@ def set_up_chat_ui():
 
     if prompt := st.chat_input(
         placeholder=APP_TEXT['chat_placeholder'],
-        max_chars=GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH
+        max_chars=GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH,
+        accept_file=True,
+        file_type=['pdf', ],
     ):
+        prompt_text = prompt.text or ''
+        if prompt['files']:
+            # Apparently, Streamlit stores uploaded files in memory and clears on browser close
+            # https://docs.streamlit.io/knowledge-base/using-streamlit/where-file-uploader-store-when-deleted
+            st.session_state[ADDITIONAL_INFO] = filem.get_pdf_contents(prompt['files'][0])
+            print(f'{prompt["files"]=}')
+
         provider, llm_name = llm_helper.get_provider_model(
             llm_provider_to_use,
             use_ollama=RUN_IN_OFFLINE_MODE
@@ -279,20 +290,20 @@ def set_up_chat_ui():
         api_ver = api_version.strip()
 
         if not are_all_inputs_valid(
-                prompt, provider, llm_name, user_key,
+                prompt_text, provider, llm_name, user_key,
                 az_deployment, az_endpoint, api_ver
         ):
             return
 
         logger.info(
             'User input: %s | #characters: %d | LLM: %s',
-            prompt, len(prompt), llm_name
+            prompt_text, len(prompt_text), llm_name
         )
-        st.chat_message('user').write(prompt)
+        st.chat_message('user').write(prompt_text)
 
         if _is_it_refinement():
             user_messages = _get_user_messages()
-            user_messages.append(prompt)
+            user_messages.append(prompt_text)
             list_of_msgs = [
                 f'{idx + 1}. {msg}' for idx, msg in enumerate(user_messages)
             ]
@@ -300,10 +311,16 @@ def set_up_chat_ui():
                 **{
                     'instructions': '\n'.join(list_of_msgs),
                     'previous_content': _get_last_response(),
+                    'additional_info': st.session_state.get(ADDITIONAL_INFO, ''),
                 }
             )
         else:
-            formatted_template = prompt_template.format(**{'question': prompt})
+            formatted_template = prompt_template.format(
+                **{
+                    'question': prompt_text,
+                    'additional_info': st.session_state.get(ADDITIONAL_INFO, ''),
+                }
+            )
 
         progress_bar = st.progress(0, 'Preparing to call LLM...')
         response = ''
@@ -392,7 +409,7 @@ def set_up_chat_ui():
                 )
             return
 
-        history.add_user_message(prompt)
+        history.add_user_message(prompt_text)
         history.add_ai_message(response)
 
         # The content has been generated as JSON
