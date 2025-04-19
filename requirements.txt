@@ -23,7 +23,7 @@ requests~=2.32.3
 pypdf~=5.4.0
 
 transformers>=4.48.0
-torch>=2.6.0
+torch==2.4.1
 
 lxml~=4.9.3
 tqdm~=4.66.5
