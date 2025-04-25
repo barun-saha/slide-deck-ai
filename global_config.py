@@ -23,6 +23,7 @@ class GlobalConfig:
     PROVIDER_OLLAMA = 'ol'
     PROVIDER_TOGETHER_AI = 'to'
     PROVIDER_AZURE_OPENAI = 'az'
+    PROVIDER_OPENROUTER = 'or'
     VALID_PROVIDERS = {
         PROVIDER_COHERE,
         PROVIDER_GOOGLE_GEMINI,
@@ -30,6 +31,7 @@ class GlobalConfig:
         PROVIDER_OLLAMA,
         PROVIDER_TOGETHER_AI,
         PROVIDER_AZURE_OPENAI,
+        PROVIDER_OPENROUTER,
     }
     VALID_MODELS = {
         '[az]azure/open-ai': {
@@ -72,6 +74,19 @@ class GlobalConfig:
             'max_new_tokens': 4096,
             'paid': True,
         },
+        '[or]openai/gpt-3.5-turbo': {
+            'description': 'OpenAI GPT-3.5 Turbo (via OpenRouter)',
+            'max_new_tokens': 2048,
+        },
+        '[or]openrouter/gpt-4-omni': {
+            'description': 'OpenRouter GPT-4 Omni',
+            'max_new_tokens': 8192,
+            'paid': True,
+        },
+        '[or]openrouter/mixtral-8x22b-instruct': {
+            'description': 'Mixtral 8x22B Instruct (via OpenRouter)',
+            'max_new_tokens': 2048,
+        },
     }
     LLM_PROVIDER_HELP = (
         'LLM provider codes:\n\n'
@@ -79,13 +94,14 @@ class GlobalConfig:
         '- **[co]**: Cohere\n'
         '- **[gg]**: Google Gemini API\n'
         '- **[hf]**: Hugging Face Inference API\n'
-        '- **[to]**: Together AI\n\n'
+        '- **[to]**: Together AI\n'
+        '- **[or]**: OpenRouter\n\n'
         '[Find out more](https://github.com/barun-saha/slide-deck-ai?tab=readme-ov-file#summary-of-the-llms)'
     )
     DEFAULT_MODEL_INDEX = int(os.environ.get('DEFAULT_MODEL_INDEX', '4'))
     LLM_MODEL_TEMPERATURE = 0.2
     LLM_MODEL_MIN_OUTPUT_LENGTH = 100
-    LLM_MODEL_MAX_INPUT_LENGTH = 400  # characters
+    LLM_MODEL_MAX_INPUT_LENGTH = 10000  # characters
     MAX_PAGE_COUNT = 50
 
     LOG_LEVEL = 'DEBUG'

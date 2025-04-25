@@ -188,6 +188,41 @@ def get_langchain_llm(
             api_key=api_key,
         )
 
+    if provider == GlobalConfig.PROVIDER_OPENROUTER:
+        logger.debug('Getting LLM via OpenRouter: %s', model)
+        OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
+        OPENROUTER_API_KEY = api_key
+        import os
+        import requests
+
+        def openrouter_completion(prompt, model=model, api_key=OPENROUTER_API_KEY):
+            headers = {
+                "Authorization": f"Bearer {api_key}",
+                "Content-Type": "application/json",
+            }
+            # Optionally add analytics headers if available
+            site_url = os.getenv("OPENROUTER_SITE_URL")
+            app_name = os.getenv("OPENROUTER_SITE_NAME")
+            if site_url:
+                headers["HTTP-Referer"] = site_url
+            if app_name:
+                headers["X-Title"] = app_name
+            data = {
+                "model": model,
+                "messages": [
+                    {"role": "system", "content": "You are a helpful assistant summarizing technical support information. Provide a concise summary or key action points based on the provided context."},
+                    {"role": "user", "content": prompt},
+                ]
+            }
+            response = requests.post(
+                url=OPENROUTER_API_URL,
+                headers=headers,
+                json=data
+            )
+            response.raise_for_status()
+            return response.json()
+        return openrouter_completion
+
     if provider == GlobalConfig.PROVIDER_COHERE:
         from langchain_cohere.llms import Cohere
 

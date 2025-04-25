@@ -345,20 +345,30 @@ def set_up_chat_ui():
                 )
                 return
 
-            for chunk in llm.stream(formatted_template):
-                if isinstance(chunk, str):
-                    response += chunk
-                else:
-                    response += chunk.content  # AIMessageChunk
+            if provider == GlobalConfig.PROVIDER_OPENROUTER:
+                # OpenRouter returns a function, not a LangChain LLM. Call it directly.
+                response_json = llm(formatted_template)
+                # Extract the text from the OpenAI-compatible response
+                try:
+                    response = response_json["choices"][0]["message"]["content"]
+                except Exception as ex:
+                    handle_error(f"Failed to parse OpenRouter response: {ex}\nRaw response: {response_json}", True)
+                    return
+            else:
+                for chunk in llm.stream(formatted_template):
+                    if isinstance(chunk, str):
+                        response += chunk
+                    else:
+                        response += chunk.content  # AIMessageChunk
 
-                # Update the progress bar with an approx progress percentage
-                progress_bar.progress(
-                    min(
-                        len(response) / gcfg.get_max_output_tokens(llm_provider_to_use),
-                        0.95
-                    ),
-                    text='Streaming content...this might take a while...'
-                )
+                    # Update the progress bar with an approx progress percentage
+                    progress_bar.progress(
+                        min(
+                            len(response) / gcfg.get_max_output_tokens(llm_provider_to_use),
+                            0.95
+                        ),
+                        text='Streaming content...this might take a while...'
+                    )
         except (httpx.ConnectError, requests.exceptions.ConnectionError):
             handle_error(
                 'A connection error occurred while streaming content from the LLM endpoint.'
