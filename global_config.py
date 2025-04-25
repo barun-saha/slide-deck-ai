@@ -92,9 +92,8 @@ class GlobalConfig:
     COUNT_TOKENS = False
     APP_STRINGS_FILE = 'strings.json'
     PRELOAD_DATA_FILE = 'examples/example_02.json'
-    SLIDES_TEMPLATE_FILE = 'langchain_templates/template_combined.txt'
-    INITIAL_PROMPT_TEMPLATE = 'langchain_templates/chat_prompts/initial_template_v4_two_cols_img.txt'
-    REFINEMENT_PROMPT_TEMPLATE = 'langchain_templates/chat_prompts/refinement_template_v4_two_cols_img.txt'
+    INITIAL_PROMPT_TEMPLATE = 'prompts/initial_template_v4_two_cols_img.txt'
+    REFINEMENT_PROMPT_TEMPLATE = 'prompts/refinement_template_v4_two_cols_img.txt'
 
     LLM_PROGRESS_MAX = 90
     ICONS_DIR = 'icons/png128/'

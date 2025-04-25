@@ -157,7 +157,7 @@ def get_langchain_llm(
         return GoogleGenerativeAI(
             model=model,
             temperature=GlobalConfig.LLM_MODEL_TEMPERATURE,
-            max_tokens=max_new_tokens,
+            # max_tokens=max_new_tokens,
             timeout=None,
             max_retries=2,
             google_api_key=api_key,
@@ -182,7 +182,7 @@ def get_langchain_llm(
             api_version=azure_api_version,
             azure_endpoint=azure_endpoint_url,
             temperature=GlobalConfig.LLM_MODEL_TEMPERATURE,
-            max_tokens=max_new_tokens,
+            # max_tokens=max_new_tokens,
             timeout=None,
             max_retries=1,
             api_key=api_key,
