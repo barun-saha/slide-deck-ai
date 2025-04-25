@@ -25,7 +25,7 @@ In this slide, each line of text will begin with the name of a relevant icon enc
 Insert icons only in this slide.
 Do not repeat any icons or the icons slide.
 
-Your output, i.e., the content of each slide should be vert detailed and descriptive but not way too verbose.
+The content of each slide should be detailed and descriptive but not way too verbose.
 Avoid writing like a report, but also avoid very short bullet points with just 3-4 words.
 Each bullet point should be detailed and explanatory, not just short phrases.
 
