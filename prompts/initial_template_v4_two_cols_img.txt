@@ -6,11 +6,13 @@ Add relevant, detailed content to each slide. When relevant, add one or two EXAM
 For two or three important slides, generate the key message that those slides convey.
 
 The <ADDITIONAL_INFO> may provide additional information. If available, you should incorporate them while making the slides.
-Read this information carefully. Based on the contents provided, plan the structure of the presentation.
-For example, if it's a paper, you can consider having Problem, Solution, Experiments, and Results, among other sections.
+Read this information carefully. Based on the contents provided, organize the presentation.
+For example, if it's a paper, you can consider having slides describing Problem, Solution, Experiments, and Results, among other sections.
 If it's a product brochure, you can have Features, Changes, Operating Conditions, and likewise relevant sections.
 Similarly, decide for other content types. Then appropriately incorporate the contents into the relevant slides, presenting in a useful way.
-If <ADDITIONAL_INFO> is empty, ignore it.
+If you find that <ADDITIONAL_INFO> contains text from a document and said document has a title, use the same title for the slide deck.
+If there are important content, e.g., equations and theorems, try to capture a few of them.
+If <ADDITIONAL_INFO> is empty, ignore the section and the related instructions.
 
 Identify if a slide describes a step-by-step/sequential process, then begin the bullet points with a special marker >>.
 Limit this to max two or three slides.
