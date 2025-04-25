@@ -6,6 +6,7 @@ import logging
 import os
 import pathlib
 import random
+import re
 import tempfile
 from typing import List, Union
 
@@ -30,6 +31,18 @@ load_dotenv()
 
 
 RUN_IN_OFFLINE_MODE = os.getenv('RUN_IN_OFFLINE_MODE', 'False').lower() == 'true'
+
+
+# --- API Key Environment Variable Mapping ---
+PROVIDER_ENV_KEYS = {
+    GlobalConfig.PROVIDER_OPENROUTER: "OPENROUTER_API_KEY",
+    GlobalConfig.PROVIDER_COHERE: "COHERE_API_KEY",
+    GlobalConfig.PROVIDER_HUGGING_FACE: "HUGGINGFACEHUB_API_TOKEN",
+    GlobalConfig.PROVIDER_GOOGLE_GEMINI: "GOOGLE_API_KEY",
+    GlobalConfig.PROVIDER_TOGETHER_AI: "TOGETHER_API_KEY",
+    GlobalConfig.PROVIDER_AZURE_OPENAI: "AZURE_OPENAI_API_KEY",
+    # Add more as needed
+}
 
 
 @st.cache_data
@@ -182,14 +195,29 @@ with st.sidebar:
             on_change=reset_api_key
         ).split(' ')[0]
 
-        # The API key/access token
+        # --- Automatically fetch API key from .env if available ---
+        # Extract provider code from model string, e.g. '[or]...' -> 'or'
+        provider_match = re.match(r'\[(.*?)\]', llm_provider_to_use)
+        selected_provider = provider_match.group(1) if provider_match else llm_provider_to_use
+        env_key_name = PROVIDER_ENV_KEYS.get(selected_provider)
+        default_api_key = os.getenv(env_key_name, "") if env_key_name else ""
+
+        # --- Session state sync workaround for Streamlit widget key issues ---
+        # Only set st.session_state['api_key_input'] if not already set by user
+        if default_api_key and (
+            'api_key_input' not in st.session_state or not st.session_state['api_key_input']
+        ):
+            st.session_state['api_key_input'] = default_api_key
+
         api_key_token = st.text_input(
             label=(
                 '3: Paste your API key/access token:\n\n'
                 '*Mandatory* for all providers.'
             ),
+            value=default_api_key,
             type='password',
-            key='api_key_input'
+            key='api_key_input',
+            disabled=bool(default_api_key),  # disable input if key is present
         )
 
         # Additional configs for Azure OpenAI
