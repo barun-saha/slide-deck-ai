@@ -11,7 +11,8 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 from langchain_core.language_models import BaseLLM, BaseChatModel
-
+from langchain_openai import ChatOpenAI
+import os
 
 sys.path.append('..')
 
@@ -189,39 +190,19 @@ def get_langchain_llm(
         )
 
     if provider == GlobalConfig.PROVIDER_OPENROUTER:
+        # Use langchain-openai's ChatOpenAI for OpenRouter
         logger.debug('Getting LLM via OpenRouter: %s', model)
-        OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
-        OPENROUTER_API_KEY = api_key
-        import os
-        import requests
-
-        def openrouter_completion(prompt, model=model, api_key=OPENROUTER_API_KEY):
-            headers = {
-                "Authorization": f"Bearer {api_key}",
-                "Content-Type": "application/json",
-            }
-            # Optionally add analytics headers if available
-            site_url = os.getenv("OPENROUTER_SITE_URL")
-            app_name = os.getenv("OPENROUTER_SITE_NAME")
-            if site_url:
-                headers["HTTP-Referer"] = site_url
-            if app_name:
-                headers["X-Title"] = app_name
-            data = {
-                "model": model,
-                "messages": [
-                    {"role": "system", "content": "You are a helpful assistant summarizing technical support information. Provide a concise summary or key action points based on the provided context."},
-                    {"role": "user", "content": prompt},
-                ]
-            }
-            response = requests.post(
-                url=OPENROUTER_API_URL,
-                headers=headers,
-                json=data
-            )
-            response.raise_for_status()
-            return response.json()
-        return openrouter_completion
+        openrouter_api_key = api_key or os.environ.get("OPENROUTER_API_KEY")
+        base_url = "https://openrouter.ai/api/v1"
+        # NOTE: model should be passed as model_name
+        return ChatOpenAI(
+            base_url=base_url,
+            openai_api_key=openrouter_api_key,
+            model_name=model,
+            temperature=GlobalConfig.LLM_MODEL_TEMPERATURE,
+            max_tokens=max_new_tokens,
+            streaming=True,
+        )
 
     if provider == GlobalConfig.PROVIDER_COHERE:
         from langchain_cohere.llms import Cohere
