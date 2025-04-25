@@ -196,17 +196,13 @@ with st.sidebar:
         ).split(' ')[0]
 
         # --- Automatically fetch API key from .env if available ---
-        # Extract provider code from model string, e.g. '[or]...' -> 'or'
         provider_match = re.match(r'\[(.*?)\]', llm_provider_to_use)
         selected_provider = provider_match.group(1) if provider_match else llm_provider_to_use
         env_key_name = PROVIDER_ENV_KEYS.get(selected_provider)
         default_api_key = os.getenv(env_key_name, "") if env_key_name else ""
 
-        # --- Session state sync workaround for Streamlit widget key issues ---
-        # Only set st.session_state['api_key_input'] if not already set by user
-        if default_api_key and (
-            'api_key_input' not in st.session_state or not st.session_state['api_key_input']
-        ):
+        # Always sync session state to env value if needed (auto-fill on provider change)
+        if default_api_key and st.session_state.get('api_key_input', None) != default_api_key:
             st.session_state['api_key_input'] = default_api_key
 
         api_key_token = st.text_input(
@@ -214,10 +210,9 @@ with st.sidebar:
                 '3: Paste your API key/access token:\n\n'
                 '*Mandatory* for all providers.'
             ),
-            value=default_api_key,
-            type='password',
             key='api_key_input',
-            disabled=bool(default_api_key),  # disable input if key is present
+            type='password',
+            disabled=bool(default_api_key),
         )
 
         # Additional configs for Azure OpenAI
