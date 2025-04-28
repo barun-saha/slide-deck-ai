@@ -82,11 +82,7 @@ class GlobalConfig:
             'description': 'OpenRouter GPT-4 Omni',
             'max_new_tokens': 8192,
             'paid': True,
-        },
-        '[or]openrouter/mixtral-8x22b-instruct': {
-            'description': 'Mixtral 8x22B Instruct (via OpenRouter)',
-            'max_new_tokens': 2048,
-        },
+        }
     }
     LLM_PROVIDER_HELP = (
         'LLM provider codes:\n\n'
