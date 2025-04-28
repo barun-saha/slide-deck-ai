@@ -52,6 +52,7 @@ FOREGROUND_IMAGE_PROBABILITY = 0.8
 
 SLIDE_NUMBER_REGEX = re.compile(r"^slide[ ]+\d+:", re.IGNORECASE)
 ICONS_REGEX = re.compile(r"\[\[(.*?)\]\]\s*(.*)")
+BOLD_ITALICS_PATTERN = re.compile(r'(\*\*(.*?)\*\*|\*(.*?)\*)')
 
 ICON_COLORS = [
     pptx.dml.color.RGBColor.from_string('800000'),  # Maroon
@@ -80,6 +81,61 @@ def remove_slide_number_from_heading(header: str) -> str:
         header = header[idx + 1:]
 
     return header
+
+
+def add_bulleted_items(text_frame: pptx.text.text.TextFrame, flat_items_list: list):
+    """
+    Add a list of texts as bullet points and apply formatting.
+
+    :param text_frame: The text frame where text is to be displayed.
+    :param flat_items_list: The list of items to be displayed.
+    """
+
+    for idx, an_item in enumerate(flat_items_list):
+        if idx == 0:
+            paragraph = text_frame.paragraphs[0]  # First paragraph for title text
+        else:
+            paragraph = text_frame.add_paragraph()
+            paragraph.level = an_item[1]
+
+        format_text(paragraph, an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER))
+
+
+def format_text(frame_paragraph, text):
+    """
+    Apply bold and italic formatting while preserving the original word order
+     without duplication.
+    """
+
+    matches = list(BOLD_ITALICS_PATTERN.finditer(text))
+    last_index = 0  # Track position in the text
+    # Group 0: Full match (e.g., **bold** or *italic*)
+    # Group 1: The outer parentheses (captures either bold or italic match, because of |)
+    # Group 2: The bold text inside **bold**
+    # Group 3: The italic text inside *italic*
+    for match in matches:
+        start, end = match.span()
+        # Add unformatted text before the formatted section
+        if start > last_index:
+            run = frame_paragraph.add_run()
+            run.text = text[last_index:start]
+
+        # Extract formatted text
+        if match.group(2):  # Bold
+            run = frame_paragraph.add_run()
+            run.text = match.group(2)
+            run.font.bold = True
+        elif match.group(3):  # Italics
+            run = frame_paragraph.add_run()
+            run.text = match.group(3)
+            run.font.italic = True
+
+        last_index = end  # Update position
+
+    # Add any remaining unformatted text
+    if last_index < len(text):
+        run = frame_paragraph.add_run()
+        run.text = text[last_index:]
 
 
 def generate_powerpoint_presentation(
@@ -280,16 +336,8 @@ def _handle_default_display(
     # The bullet_points may contain a nested hierarchy of JSON arrays
     # In some scenarios, it may contain objects (dictionaries) because the LLM generated so
     #  ^ The second scenario is not covered
-
     flat_items_list = get_flat_list_of_contents(slide_json['bullet_points'], level=0)
-
-    for idx, an_item in enumerate(flat_items_list):
-        if idx == 0:
-            text_frame.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
-        else:
-            paragraph = text_frame.add_paragraph()
-            paragraph.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
-            paragraph.level = an_item[1]
+    add_bulleted_items(text_frame, flat_items_list)
 
     _handle_key_message(
         the_slide=slide,
@@ -345,14 +393,7 @@ def _handle_display_image__in_foreground(
                 text_col: SlidePlaceholder = slide.shapes.placeholders[idx]
 
     flat_items_list = get_flat_list_of_contents(slide_json['bullet_points'], level=0)
-
-    for idx, an_item in enumerate(flat_items_list):
-        if idx == 0:
-            text_col.text_frame.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
-        else:
-            paragraph = text_col.text_frame.add_paragraph()
-            paragraph.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
-            paragraph.level = an_item[1]
+    add_bulleted_items(text_col.text_frame, flat_items_list)
 
     if not img_keywords:
         # No keywords, so no image search and addition
@@ -418,14 +459,7 @@ def _handle_display_image__in_background(
     title_shape.text = remove_slide_number_from_heading(slide_json['heading'])
 
     flat_items_list = get_flat_list_of_contents(slide_json['bullet_points'], level=0)
-
-    for idx, an_item in enumerate(flat_items_list):
-        if idx == 0:
-            body_shape.text_frame.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
-        else:
-            paragraph = body_shape.text_frame.add_paragraph()
-            paragraph.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
-            paragraph.level = an_item[1]
+    add_bulleted_items(body_shape.text_frame, flat_items_list)
 
     if not img_keywords:
         # No keywords, so no image search and addition
@@ -537,7 +571,6 @@ def _handle_icons_ideas(
 
             # Set the icon's background shape color
             shape.fill.fore_color.rgb = shape.line.color.rgb = random.choice(ICON_COLORS)
-
             # Add the icon image on top of the colored shape
             slide.shapes.add_picture(icon_path, left, top, height=ICON_SIZE)
 
@@ -550,9 +583,9 @@ def _handle_icons_ideas(
                 height=text_box_size
             )
             text_frame = text_box.text_frame
-            text_frame.text = accompanying_text
             text_frame.word_wrap = True
             text_frame.paragraphs[0].alignment = pptx.enum.text.PP_ALIGN.CENTER
+            format_text(text_frame.paragraphs[0], accompanying_text)
 
             # Center the text vertically
             text_frame.vertical_anchor = pptx.enum.text.MSO_ANCHOR.MIDDLE
@@ -685,13 +718,7 @@ def _handle_double_col_layout(
                 if not left_heading:
                     left_col_frame.text = double_col_content[0]['heading']
 
-                for idx, an_item in enumerate(flat_items_list):
-                    if left_heading and idx == 0:
-                        left_col_frame.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
-                    else:
-                        paragraph = left_col_frame.add_paragraph()
-                        paragraph.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
-                        paragraph.level = an_item[1]
+                add_bulleted_items(left_col_frame, flat_items_list)
 
             if 'heading' in double_col_content[1] and right_heading:
                 right_heading.text = double_col_content[1]['heading']
@@ -703,13 +730,7 @@ def _handle_double_col_layout(
                 if not right_heading:
                     right_col_frame.text = double_col_content[1]['heading']
 
-                for idx, an_item in enumerate(flat_items_list):
-                    if right_col_frame and idx == 0:
-                        right_col_frame.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
-                    else:
-                        paragraph = right_col_frame.add_paragraph()
-                        paragraph.text = an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER)
-                        paragraph.level = an_item[1]
+                add_bulleted_items(right_col_frame, flat_items_list)
 
             _handle_key_message(
                 the_slide=slide,
@@ -792,7 +813,11 @@ def _handle_step_by_step_process(
 
             for step in steps:
                 shape = shapes.add_shape(MSO_AUTO_SHAPE_TYPE.CHEVRON, left, top, width, height)
-                shape.text = step.removeprefix(STEP_BY_STEP_PROCESS_MARKER)
+                text_frame = shape.text_frame
+                text_frame.clear()
+                paragraph = text_frame.paragraphs[0]
+                paragraph.alignment = pptx.enum.text.PP_ALIGN.LEFT
+                format_text(paragraph, step.removeprefix(STEP_BY_STEP_PROCESS_MARKER))
                 left += width - INCHES_0_4
         elif 4 < n_steps <= 6:
             # Vertical display
@@ -817,7 +842,11 @@ def _handle_step_by_step_process(
 
             for step in steps:
                 shape = shapes.add_shape(MSO_AUTO_SHAPE_TYPE.PENTAGON, left, top, width, height)
-                shape.text = step.removeprefix(STEP_BY_STEP_PROCESS_MARKER)
+                text_frame = shape.text_frame
+                text_frame.clear()
+                paragraph = text_frame.paragraphs[0]
+                paragraph.alignment = pptx.enum.text.PP_ALIGN.LEFT
+                format_text(paragraph, step.removeprefix(STEP_BY_STEP_PROCESS_MARKER))
                 top += height + INCHES_0_3
                 left += INCHES_0_5
 
@@ -851,7 +880,7 @@ def _handle_key_message(
             width=width,
             height=height
         )
-        shape.text = slide_json['key_message']
+        format_text(shape.text_frame.paragraphs[0], slide_json['key_message'])
 
 
 def _get_slide_width_height_inches(presentation: pptx.Presentation) -> Tuple[float, float]:
@@ -864,7 +893,6 @@ def _get_slide_width_height_inches(presentation: pptx.Presentation) -> Tuple[flo
 
     slide_width_inch = EMU_TO_INCH_SCALING_FACTOR * presentation.slide_width
     slide_height_inch = EMU_TO_INCH_SCALING_FACTOR * presentation.slide_height
-    # logger.debug('Slide width: %f, height: %f', slide_width_inch, slide_height_inch)
 
     return slide_width_inch, slide_height_inch
 
@@ -877,7 +905,7 @@ if __name__ == '__main__':
     {
       "heading": "Introduction to AI Applications",
       "bullet_points": [
-        "Artificial Intelligence (AI) is transforming various industries",
+        "Artificial Intelligence (AI) is *transforming* various industries",
         "AI applications range from simple decision-making tools to complex systems",
         "AI can be categorized into types: Rule-based, Instance-based, and Model-based"
       ],
@@ -887,9 +915,9 @@ if __name__ == '__main__':
     {
       "heading": "AI in Everyday Life",
       "bullet_points": [
-        "Virtual assistants like Siri, Alexa, and Google Assistant",
-        "Recommender systems in Netflix, Amazon, and Spotify",
-        "Fraud detection in banking and credit card transactions"
+        "**Virtual assistants** like Siri, Alexa, and Google Assistant",
+        "**Recommender systems** in Netflix, Amazon, and Spotify",
+        "**Fraud detection** in banking and *credit card* transactions"
       ],
       "key_message": "AI is integrated into our daily lives through various services",
       "img_keywords": "virtual assistants, recommender systems, fraud detection"
@@ -939,11 +967,11 @@ if __name__ == '__main__':
     {
       "heading": "Step-by-Step: AI Development Process",
       "bullet_points": [
-        ">> Define the problem and objectives",
-        ">> Collect and preprocess data",
-        ">> Select and train the AI model",
-        ">> Evaluate and optimize the model",
-        ">> Deploy and monitor the AI system"
+        ">> **Step 1:** Define the problem and objectives",
+        ">> **Step 2:** Collect and preprocess data",
+        ">> **Step 3:** Select and train the AI model",
+        ">> **Step 4:** Evaluate and optimize the model",
+        ">> **Step 5:** Deploy and monitor the AI system"
       ],
       "key_message": "Developing AI involves a structured process from problem definition to deployment",
       "img_keywords": ""
@@ -951,11 +979,11 @@ if __name__ == '__main__':
     {
       "heading": "AI Icons: Key Aspects",
       "bullet_points": [
-        "[[brain]] Human-like intelligence and decision-making",
-        "[[robot]] Automation and physical tasks",
+        "[[brain]] Human-like *intelligence* and decision-making",
+        "[[robot]] Automation and physical *tasks*",
         "[[]] Data processing and cloud computing",
-        "[[lightbulb]] Insights and predictions",
-        "[[globe2]] Global connectivity and impact"
+        "[[lightbulb]] Insights and *predictions*",
+        "[[globe2]] Global connectivity and *impact*"
       ],
       "key_message": "AI encompasses various aspects, from human-like intelligence to global impact",
       "img_keywords": "AI aspects, intelligence, automation, data processing, global impact"
@@ -968,7 +996,7 @@ if __name__ == '__main__':
         "Invest in AI education and workforce development",
         "Call to action: Explore AI applications and contribute to shaping its future"
       ],
-      "key_message": "AI offers immense potential, and we must embrace it responsibly",
+      "key_message": "AI offers *immense potential*, and we must embrace it responsibly",
       "img_keywords": "AI transformation, ethical considerations, AI education, future of AI"
     }
   ]
