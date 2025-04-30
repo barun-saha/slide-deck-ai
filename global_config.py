@@ -97,7 +97,7 @@ class GlobalConfig:
     DEFAULT_MODEL_INDEX = int(os.environ.get('DEFAULT_MODEL_INDEX', '4'))
     LLM_MODEL_TEMPERATURE = 0.2
     MAX_PAGE_COUNT = 50
-    LLM_MODEL_MAX_INPUT_LENGTH = 20000  # characters
+    LLM_MODEL_MAX_INPUT_LENGTH = 1000  # characters
 
     LOG_LEVEL = 'DEBUG'
     COUNT_TOKENS = False
