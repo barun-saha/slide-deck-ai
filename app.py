@@ -172,19 +172,6 @@ with st.sidebar:
         horizontal=True
     )
 
-    # --- LLM Max Input Length Config ---
-    # Only set session state if not already set by user
-    if 'llm_max_input_length' not in st.session_state:
-        st.session_state['llm_max_input_length'] = 400
-    llm_max_input_length = st.sidebar.number_input(
-        'Max LLM Input Length (characters)',
-        min_value=100,
-        max_value=20000,
-        step=100,
-        key='llm_max_input_length',
-        help='Maximum number of characters allowed for the LLM input prompt.'
-    )
-
     if RUN_IN_OFFLINE_MODE:
         llm_provider_to_use = st.text_input(
             label='2: Enter Ollama model name to use (e.g., mistral:v0.2):',
@@ -304,7 +291,7 @@ def set_up_chat_ui():
 
     if prompt := st.chat_input(
         placeholder=APP_TEXT['chat_placeholder'],
-        max_chars=st.session_state.get('llm_max_input_length', 400),
+        max_chars=GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH,
         accept_file=True,
         file_type=['pdf', ],
     ):
