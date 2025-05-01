@@ -3,6 +3,7 @@ A set of configurations used by the app.
 """
 import logging
 import os
+import re
 
 from dataclasses import dataclass
 from dotenv import load_dotenv

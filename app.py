@@ -6,7 +6,6 @@ import logging
 import os
 import pathlib
 import random
-import re
 import tempfile
 from typing import List, Union
 
