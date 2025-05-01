@@ -20,10 +20,10 @@ class GlobalConfig:
     PROVIDER_COHERE = 'co'
     PROVIDER_GOOGLE_GEMINI = 'gg'
     PROVIDER_HUGGING_FACE = 'hf'
-    PROVIDER_OLLAMA = 'ol'
-    PROVIDER_TOGETHER_AI = 'to'
     PROVIDER_AZURE_OPENAI = 'az'
+    PROVIDER_OLLAMA = 'ol'
     PROVIDER_OPENROUTER = 'or'
+    PROVIDER_TOGETHER_AI = 'to'
     VALID_PROVIDERS = {
         PROVIDER_COHERE,
         PROVIDER_GOOGLE_GEMINI,
@@ -32,6 +32,14 @@ class GlobalConfig:
         PROVIDER_TOGETHER_AI,
         PROVIDER_AZURE_OPENAI,
         PROVIDER_OPENROUTER,
+    }
+    PROVIDER_ENV_KEYS = {
+        PROVIDER_COHERE: "COHERE_API_KEY",
+        PROVIDER_GOOGLE_GEMINI: "GOOGLE_API_KEY",
+        PROVIDER_HUGGING_FACE: "HUGGINGFACEHUB_API_TOKEN",
+        PROVIDER_AZURE_OPENAI: "AZURE_OPENAI_API_KEY",
+        PROVIDER_OPENROUTER: "OPENROUTER_API_KEY",
+        PROVIDER_TOGETHER_AI: "TOGETHER_API_KEY",
     }
     VALID_MODELS = {
         '[az]azure/open-ai': {
@@ -64,6 +72,16 @@ class GlobalConfig:
             'max_new_tokens': 8192,
             'paid': False,
         },
+        '[or]google/gemini-2.0-flash-001': {
+            'description': 'Google Gemini-2.0-flash-001 (via OpenRouter)',
+            'max_new_tokens': 8192,
+            'paid': True,
+        },
+        '[or]openai/gpt-3.5-turbo': {
+            'description': 'OpenAI GPT-3.5 Turbo (via OpenRouter)',
+            'max_new_tokens': 4096,
+            'paid': True,
+        },
         '[to]meta-llama/Llama-3.3-70B-Instruct-Turbo': {
             'description': 'detailed, slower',
             'max_new_tokens': 4096,
@@ -73,15 +91,6 @@ class GlobalConfig:
             'description': 'shorter, faster',
             'max_new_tokens': 4096,
             'paid': True,
-        },
-        '[or]openai/gpt-3.5-turbo': {
-            'description': 'OpenAI GPT-3.5 Turbo (via OpenRouter)',
-            'max_new_tokens': 2048,
-        },
-        '[or]openrouter/gpt-4-omni': {
-            'description': 'OpenRouter GPT-4 Omni',
-            'max_new_tokens': 8192,
-            'paid': True,
         }
     }
     LLM_PROVIDER_HELP = (
@@ -90,8 +99,8 @@ class GlobalConfig:
         '- **[co]**: Cohere\n'
         '- **[gg]**: Google Gemini API\n'
         '- **[hf]**: Hugging Face Inference API\n'
-        '- **[to]**: Together AI\n'
         '- **[or]**: OpenRouter\n\n'
+        '- **[to]**: Together AI\n'
         '[Find out more](https://github.com/barun-saha/slide-deck-ai?tab=readme-ov-file#summary-of-the-llms)'
     )
     DEFAULT_MODEL_INDEX = int(os.environ.get('DEFAULT_MODEL_INDEX', '4'))

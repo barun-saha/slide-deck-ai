@@ -11,7 +11,6 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 from langchain_core.language_models import BaseLLM, BaseChatModel
-from langchain_openai import ChatOpenAI
 import os
 
 sys.path.append('..')
@@ -191,10 +190,12 @@ def get_langchain_llm(
 
     if provider == GlobalConfig.PROVIDER_OPENROUTER:
         # Use langchain-openai's ChatOpenAI for OpenRouter
+        from langchain_openai import ChatOpenAI
+        
         logger.debug('Getting LLM via OpenRouter: %s', model)
-        openrouter_api_key = api_key or os.environ.get("OPENROUTER_API_KEY")
-        base_url = "https://openrouter.ai/api/v1"
-        # NOTE: model should be passed as model_name
+        openrouter_api_key = api_key
+        base_url = 'https://openrouter.ai/api/v1'
+       
         return ChatOpenAI(
             base_url=base_url,
             openai_api_key=openrouter_api_key,

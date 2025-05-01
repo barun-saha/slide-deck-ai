@@ -26,24 +26,11 @@ import helpers.file_manager as filem
 from global_config import GlobalConfig
 from helpers import llm_helper, pptx_helper, text_helper
 
-
 load_dotenv()
-
 
 RUN_IN_OFFLINE_MODE = os.getenv('RUN_IN_OFFLINE_MODE', 'False').lower() == 'true'
 
-
-# --- API Key Environment Variable Mapping ---
-PROVIDER_ENV_KEYS = {
-    GlobalConfig.PROVIDER_OPENROUTER: "OPENROUTER_API_KEY",
-    GlobalConfig.PROVIDER_COHERE: "COHERE_API_KEY",
-    GlobalConfig.PROVIDER_HUGGING_FACE: "HUGGINGFACEHUB_API_TOKEN",
-    GlobalConfig.PROVIDER_GOOGLE_GEMINI: "GOOGLE_API_KEY",
-    GlobalConfig.PROVIDER_TOGETHER_AI: "TOGETHER_API_KEY",
-    GlobalConfig.PROVIDER_AZURE_OPENAI: "AZURE_OPENAI_API_KEY",
-    # Add more as needed
-}
-
+PROVIDER_REGEX = re.compile(r'\[(.*?)\]')
 
 @st.cache_data
 def _load_strings() -> dict:
@@ -196,9 +183,9 @@ with st.sidebar:
         ).split(' ')[0]
 
         # --- Automatically fetch API key from .env if available ---
-        provider_match = re.match(r'\[(.*?)\]', llm_provider_to_use)
+        provider_match = PROVIDER_REGEX.match(llm_provider_to_use)
         selected_provider = provider_match.group(1) if provider_match else llm_provider_to_use
-        env_key_name = PROVIDER_ENV_KEYS.get(selected_provider)
+        env_key_name = GlobalConfig.PROVIDER_ENV_KEYS.get(selected_provider)
         default_api_key = os.getenv(env_key_name, "") if env_key_name else ""
 
         # Always sync session state to env value if needed (auto-fill on provider change)
@@ -608,3 +595,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
