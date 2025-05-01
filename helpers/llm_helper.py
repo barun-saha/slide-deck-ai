@@ -11,7 +11,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 from langchain_core.language_models import BaseLLM, BaseChatModel
-
+import os
 
 sys.path.append('..')
 
@@ -23,6 +23,7 @@ OLLAMA_MODEL_REGEX = re.compile(r'[a-zA-Z0-9._:-]+$')
 # 94 characters long, only containing alphanumeric characters, hyphens, and underscores
 API_KEY_REGEX = re.compile(r'^[a-zA-Z0-9_-]{6,94}$')
 REQUEST_TIMEOUT = 35
+OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1'
 
 
 logger = logging.getLogger(__name__)
@@ -186,6 +187,22 @@ def get_langchain_llm(
             timeout=None,
             max_retries=1,
             api_key=api_key,
+        )
+
+    if provider == GlobalConfig.PROVIDER_OPENROUTER:
+        # Use langchain-openai's ChatOpenAI for OpenRouter
+        from langchain_openai import ChatOpenAI
+        
+        logger.debug('Getting LLM via OpenRouter: %s', model)
+        openrouter_api_key = api_key
+       
+        return ChatOpenAI(
+            base_url=OPENROUTER_BASE_URL,
+            openai_api_key=openrouter_api_key,
+            model_name=model,
+            temperature=GlobalConfig.LLM_MODEL_TEMPERATURE,
+            max_tokens=max_new_tokens,
+            streaming=True,
         )
 
     if provider == GlobalConfig.PROVIDER_COHERE:

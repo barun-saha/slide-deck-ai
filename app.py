@@ -25,9 +25,7 @@ import helpers.file_manager as filem
 from global_config import GlobalConfig
 from helpers import llm_helper, pptx_helper, text_helper
 
-
 load_dotenv()
-
 
 RUN_IN_OFFLINE_MODE = os.getenv('RUN_IN_OFFLINE_MODE', 'False').lower() == 'true'
 
@@ -182,14 +180,24 @@ with st.sidebar:
             on_change=reset_api_key
         ).split(' ')[0]
 
-        # The API key/access token
+        # --- Automatically fetch API key from .env if available ---
+        provider_match = GlobalConfig.PROVIDER_REGEX.match(llm_provider_to_use)
+        selected_provider = provider_match.group(1) if provider_match else llm_provider_to_use
+        env_key_name = GlobalConfig.PROVIDER_ENV_KEYS.get(selected_provider)
+        default_api_key = os.getenv(env_key_name, "") if env_key_name else ""
+
+        # Always sync session state to env value if needed (auto-fill on provider change)
+        if default_api_key and st.session_state.get('api_key_input', None) != default_api_key:
+            st.session_state['api_key_input'] = default_api_key
+
         api_key_token = st.text_input(
             label=(
                 '3: Paste your API key/access token:\n\n'
                 '*Mandatory* for all providers.'
             ),
+            key='api_key_input',
             type='password',
-            key='api_key_input'
+            disabled=bool(default_api_key),
         )
 
         # Additional configs for Azure OpenAI
@@ -349,7 +357,11 @@ def set_up_chat_ui():
                 if isinstance(chunk, str):
                     response += chunk
                 else:
-                    response += chunk.content  # AIMessageChunk
+                    content = getattr(chunk, 'content', None)
+                    if content is not None:
+                        response += content
+                    else:
+                        response += str(chunk)
 
                 # Update the progress bar with an approx progress percentage
                 progress_bar.progress(
@@ -581,3 +593,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
