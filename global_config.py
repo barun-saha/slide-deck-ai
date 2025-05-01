@@ -41,6 +41,7 @@ class GlobalConfig:
         PROVIDER_OPENROUTER: "OPENROUTER_API_KEY",
         PROVIDER_TOGETHER_AI: "TOGETHER_API_KEY",
     }
+    PROVIDER_REGEX = re.compile(r'\[(.*?)\]')
     VALID_MODELS = {
         '[az]azure/open-ai': {
             'description': 'faster, detailed',

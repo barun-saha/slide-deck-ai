@@ -30,7 +30,6 @@ load_dotenv()
 
 RUN_IN_OFFLINE_MODE = os.getenv('RUN_IN_OFFLINE_MODE', 'False').lower() == 'true'
 
-PROVIDER_REGEX = re.compile(r'\[(.*?)\]')
 
 @st.cache_data
 def _load_strings() -> dict:
@@ -183,7 +182,7 @@ with st.sidebar:
         ).split(' ')[0]
 
         # --- Automatically fetch API key from .env if available ---
-        provider_match = PROVIDER_REGEX.match(llm_provider_to_use)
+        provider_match = GlobalConfig.PROVIDER_REGEX.match(llm_provider_to_use)
         selected_provider = provider_match.group(1) if provider_match else llm_provider_to_use
         env_key_name = GlobalConfig.PROVIDER_ENV_KEYS.get(selected_provider)
         default_api_key = os.getenv(env_key_name, "") if env_key_name else ""
