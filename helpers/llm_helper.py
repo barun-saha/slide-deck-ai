@@ -23,6 +23,7 @@ OLLAMA_MODEL_REGEX = re.compile(r'[a-zA-Z0-9._:-]+$')
 # 94 characters long, only containing alphanumeric characters, hyphens, and underscores
 API_KEY_REGEX = re.compile(r'^[a-zA-Z0-9_-]{6,94}$')
 REQUEST_TIMEOUT = 35
+OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1'
 
 
 logger = logging.getLogger(__name__)
@@ -194,10 +195,9 @@ def get_langchain_llm(
         
         logger.debug('Getting LLM via OpenRouter: %s', model)
         openrouter_api_key = api_key
-        base_url = 'https://openrouter.ai/api/v1'
        
         return ChatOpenAI(
-            base_url=base_url,
+            base_url=OPENROUTER_BASE_URL,
             openai_api_key=openrouter_api_key,
             model_name=model,
             temperature=GlobalConfig.LLM_MODEL_TEMPERATURE,
