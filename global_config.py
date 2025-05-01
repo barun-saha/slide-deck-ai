@@ -167,7 +167,7 @@ class GlobalConfig:
         ' You do not need to upload the same file again to continue'
         ' the interaction and refining—the contents of the PDF file will be retained in the'
         ' same interactive session.'
-        '\n\nCurrently, paid or *free-to-use* LLMs from five different providers are supported.'
+        '\n\nCurrently, paid or *free-to-use* LLMs from six different providers are supported.'
         ' A [summary of the supported LLMs]('
         'https://github.com/barun-saha/slide-deck-ai/blob/main/README.md#summary-of-the-llms)'
         ' is available for reference. SlideDeck AI does **NOT** store your API keys.'

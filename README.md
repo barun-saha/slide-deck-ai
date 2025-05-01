@@ -40,7 +40,7 @@ Clicking on the button will download the file.
 
 # Summary of the LLMs
 
-SlideDeck AI allows the use of different LLMs from five online providers—Azure OpenAI, Hugging Face, Google, Cohere, and Together AI. The latter four service providers offer generous free usage of relevant LLMs without requiring any billing information.  
+SlideDeck AI allows the use of different LLMs from six online providers—Azure OpenAI, Hugging Face, Google, Cohere, Together AI, and OpenRouter. Most of these service providers offer generous free usage of relevant LLMs without requiring any billing information.  
 
 Based on several experiments, SlideDeck AI generally recommends the use of Mistral NeMo, Gemini Flash, and GPT-4o to generate the slide decks.
 
@@ -124,3 +124,12 @@ Finally, the focus is on using offline LLMs, not going completely offline. So, I
 # Award
 
 SlideDeck AI has won the 3rd Place in the [Llama 2 Hackathon with Clarifai](https://lablab.ai/event/llama-2-hackathon-with-clarifai) in 2023.
+
+
+# Contributors
+
+SlideDeck AI welcomes the very first community contribution from [Srinivasan Ragothaman](https://github.com/rsrini7), who added OpenRouter support and API keys mapping from the `.env` file. Thank you!
+
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors)
+
+
