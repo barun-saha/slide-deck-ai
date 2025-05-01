@@ -37,6 +37,8 @@ A history of instructions is maintained.
 5. Every time SlideDeck AI generates a PowerPoint presentation, a download button is provided.
 Clicking on the button will download the file.
 
+In addition, SlideDeck AI can also create a presentation based on PDF files.
+
 
 # Summary of the LLMs
 
