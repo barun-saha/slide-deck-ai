@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 def get_pdf_contents(
         pdf_file: st.runtime.uploaded_file_manager.UploadedFile,
+        page_range: tuple[int, int],
         max_pages: int = GlobalConfig.MAX_PAGE_COUNT
 ) -> str:
     """
@@ -30,11 +31,17 @@ def get_pdf_contents(
     """
 
     reader = PdfReader(pdf_file)
-    n_pages = min(max_pages, len(reader.pages))
-    text = ''
 
-    for page in range(n_pages):
-        page = reader.pages[page]
+    total_pages = len(reader.pages)
+    n_pages = min(max_pages, total_pages)
+
+    start, end = page_range
+    start = max(1, start)
+    end = min(n_pages, end)
+
+    text = ''
+    for page_num in range(start - 1, end):
+        page = reader.pages[page_num]
         text += page.extract_text()
 
     return text

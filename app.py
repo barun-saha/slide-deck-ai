@@ -222,6 +222,12 @@ with st.sidebar:
                 value='2024-05-01-preview',
             )
 
+        page_range_slider = st.slider(label=('4: Specify a page range to examine:\n\n'
+                                            '(min=1, max=50)'),
+                                    min_value=1, max_value=50,
+                                    value=(1, 50))
+        st.session_state['page_range'] = page_range_slider
+
 
 def build_ui():
     """
@@ -284,7 +290,10 @@ def set_up_chat_ui():
         if prompt['files']:
             # Apparently, Streamlit stores uploaded files in memory and clears on browser close
             # https://docs.streamlit.io/knowledge-base/using-streamlit/where-file-uploader-store-when-deleted
-            st.session_state[ADDITIONAL_INFO] = filem.get_pdf_contents(prompt['files'][0])
+            page_range = st.session_state.get('page_range', (1, 50))  # fallback default
+            st.session_state[ADDITIONAL_INFO] = filem.get_pdf_contents(
+                prompt['files'][0], page_range
+            )
             print(f'{prompt["files"]=}')
 
         provider, llm_name = llm_helper.get_provider_model(
