@@ -221,12 +221,43 @@ with st.sidebar:
                 ),
                 value='2024-05-01-preview',
             )
+        
+        from pypdf import PdfReader
 
-        page_range_slider = st.slider(label=('4: Specify a page range to examine:\n\n'
-                                            '(min=1, max=50)'),
-                                    min_value=1, max_value=50,
-                                    value=(1, 50))
-        st.session_state['page_range'] = page_range_slider
+        uploaded_pdf = st.file_uploader("1: Upload a PDF file", type=["pdf"])
+
+        # Detect file change: update session state
+        if uploaded_pdf:
+            # Unique hash for reset logic
+            new_file_hash = hash(uploaded_pdf.getvalue())
+
+            # If file is newly uploaded or changed
+            if st.session_state.get("current_pdf_hash") != new_file_hash:
+                reader = PdfReader(uploaded_pdf)
+                total_pages = len(reader.pages)
+
+                st.session_state["pdf_page_count"] = total_pages
+                st.session_state["current_pdf_hash"] = new_file_hash
+
+                # Force slider reset
+                st.session_state.pop("page_range", None)
+
+        # Set default page count if no file uploaded
+        page_count = st.session_state.get("pdf_page_count", 50)
+        max_slider = min(50, page_count)
+
+        # Show slider only after file upload
+        if "pdf_page_count" in st.session_state:
+            page_range_slider = st.slider(
+                label="2: Specify a page range to examine:",
+                min_value=1,
+                max_value=max_slider,
+                value=(1, max_slider),
+                key="page_range"  # persistent + resettable
+            )
+        else:
+            st.info("📄 Upload a PDF to specify a page range.")
+
 
 
 def build_ui():
@@ -283,18 +314,17 @@ def set_up_chat_ui():
     if prompt := st.chat_input(
         placeholder=APP_TEXT['chat_placeholder'],
         max_chars=GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH,
-        accept_file=True,
+        accept_file=False,
         file_type=['pdf', ],
     ):
-        prompt_text = prompt.text or ''
-        if prompt['files']:
-            # Apparently, Streamlit stores uploaded files in memory and clears on browser close
-            # https://docs.streamlit.io/knowledge-base/using-streamlit/where-file-uploader-store-when-deleted
-            page_range = st.session_state.get('page_range', (1, 50))  # fallback default
+        logger.info(f"type {type(prompt)}")
+        prompt_text = prompt
+        
+        if uploaded_pdf and "page_range" in st.session_state:
             st.session_state[ADDITIONAL_INFO] = filem.get_pdf_contents(
-                prompt['files'][0], page_range
+                uploaded_pdf,
+                st.session_state["page_range"]
             )
-            print(f'{prompt["files"]=}')
 
         provider, llm_name = llm_helper.get_provider_model(
             llm_provider_to_use,
