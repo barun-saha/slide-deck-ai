@@ -33,17 +33,8 @@ def get_pdf_contents(
 
     reader = PdfReader(pdf_file)
 
-    # get number of pages
-    total_pages = len(reader.pages)
-    n_pages = min(max_pages, total_pages)  # set n_pages to min of 50 or the pdf length if the pdf is shorter than 50 pages 
-
-    # ensure validity
     start, end = page_range                # set start and end per the range (user-specified values)
-    start = max(1, start)                  # set start to max of 1, or user-spec start
-    end = min(n_pages, end)                # set end to min of n_pages, or user-spec end  
 
-    logger.info(f"start={start}")
-    logger.info(f"end={end}")
     text = ''
     for page_num in range(start - 1, end):
         page = reader.pages[page_num]

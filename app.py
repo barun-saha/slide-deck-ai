@@ -222,42 +222,43 @@ with st.sidebar:
                 value='2024-05-01-preview',
             )
         
+
         from pypdf import PdfReader
+        uploaded_pdf = st.file_uploader("4: Upload a PDF file", type=["pdf"])
 
-        uploaded_pdf = st.file_uploader("1: Upload a PDF file", type=["pdf"])
+        # Check if user cleared the file input
+        if uploaded_pdf is None and "current_pdf_hash" in st.session_state:
+            st.session_state.pop("current_pdf_hash", None)
+            st.session_state.pop("pdf_page_count", None)
+            st.session_state.pop("page_range", None)
+            st.session_state.pop("additional_info", None)  # optional: clear extracted text too
 
-        # Detect file change: update session state
+        # Handle file upload and range tracking
         if uploaded_pdf:
-            # Unique hash for reset logic
             new_file_hash = hash(uploaded_pdf.getvalue())
 
-            # If file is newly uploaded or changed
             if st.session_state.get("current_pdf_hash") != new_file_hash:
                 reader = PdfReader(uploaded_pdf)
                 total_pages = len(reader.pages)
 
                 st.session_state["pdf_page_count"] = total_pages
                 st.session_state["current_pdf_hash"] = new_file_hash
-
-                # Force slider reset
                 st.session_state.pop("page_range", None)
 
-        # Set default page count if no file uploaded
         page_count = st.session_state.get("pdf_page_count", 50)
-        max_slider = min(50, page_count)
+        max_slider = min(50, page_count)                            # enforce 50 page limmit
 
-        # Show slider only after file upload
         if "pdf_page_count" in st.session_state:
+            # make the range slider
             page_range_slider = st.slider(
-                label="2: Specify a page range to examine:",
+                label="5: Specify a page range to examine:",
                 min_value=1,
                 max_value=max_slider,
                 value=(1, max_slider),
-                key="page_range"  # persistent + resettable
+                key="page_range"
             )
         else:
             st.info("📄 Upload a PDF to specify a page range.")
-
 
 
 def build_ui():
@@ -320,6 +321,7 @@ def set_up_chat_ui():
         logger.info(f"type {type(prompt)}")
         prompt_text = prompt
         
+        # if the user uploaded a pdf and specified a range, get the contents
         if uploaded_pdf and "page_range" in st.session_state:
             st.session_state[ADDITIONAL_INFO] = filem.get_pdf_contents(
                 uploaded_pdf,
