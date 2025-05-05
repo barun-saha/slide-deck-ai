@@ -231,16 +231,16 @@ with st.sidebar:
             st.session_state.pop("current_pdf_hash", None)
             st.session_state.pop("pdf_page_count", None)
             st.session_state.pop("page_range", None)
-            st.session_state.pop("additional_info", None)  # optional: clear extracted text too
 
         # Handle file upload and range tracking
         if uploaded_pdf:
             new_file_hash = hash(uploaded_pdf.getvalue())
 
-            if st.session_state.get("current_pdf_hash") != new_file_hash:
+            if st.session_state.get("current_pdf_hash") != new_file_hash:  # if new file
                 reader = PdfReader(uploaded_pdf)
                 total_pages = len(reader.pages)
 
+                # update states
                 st.session_state["pdf_page_count"] = total_pages
                 st.session_state["current_pdf_hash"] = new_file_hash
                 st.session_state.pop("page_range", None)
