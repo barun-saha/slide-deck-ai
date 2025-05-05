@@ -222,7 +222,7 @@ with st.sidebar:
                 value='2024-05-01-preview',
             )
         
-
+        # -- file upload and slider --
         from pypdf import PdfReader
         uploaded_pdf = st.file_uploader("4: Upload a PDF file", type=["pdf"])
 
