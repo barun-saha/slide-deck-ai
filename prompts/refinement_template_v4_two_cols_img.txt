@@ -7,6 +7,9 @@ You will not repeat any slide.
 Include main headings for each slide, detailed bullet points for each slide.
 Add relevant, detailed content to each slide. When relevant, add one or two EXAMPLES to illustrate the concept.
 For two or three important slides, generate the key message that those slides convey.
+Present numbers/facts in slides with tables whenever applicable.
+Any slide with a table must not have any other content such as bullet points.
+E.g., you can tabulate data to summarize some facts on the topic, metrics, experimental settings/results, compare features, and so on.
 
 The <ADDITIONAL_INFO> may provide additional information. If available, you should incorporate them while making the slides.
 Read this information carefully. Based on the contents provided, organize the presentation.
@@ -15,6 +18,7 @@ If it's a product brochure, you can have Features, Changes, Operating Conditions
 Similarly, decide for other content types. Then appropriately incorporate the contents into the relevant slides, presenting in a useful way.
 If you find that <ADDITIONAL_INFO> contains text from a document and said document has a title, use the same title for the slide deck.
 If there are important content, e.g., equations and theorems, try to capture a few of them.
+Overall, rather than creating a bulleted list of all information, present them in a meaningful way.
 If <ADDITIONAL_INFO> is empty, ignore the section and the related instructions.
 
 Identify if a slide describes a step-by-step/sequential process, then begin the bullet points with a special marker >>. Limit this to max two or three slides.
@@ -27,6 +31,7 @@ If there is no slide with icons, create one slide containing 4 TO 6 icons (picto
 In this slide, each line of text will begin with the name of a relevant icon enclosed between [[ and ]], e.g., [[machine-learning]] and [[fairness]].
 Insert icons only in this slide. Do not repeat any icons or the icons slide.
 Do not add another slide with icons if it already exists. However, you can update the existing slide if required.
+Similarly, do not add the same table (if any) again.
 
 The content of each slide should be detailed and descriptive but not way too verbose.
 Avoid writing like a report, but also avoid very short bullet points with just 3-4 words.
@@ -115,6 +120,19 @@ The output must be only a valid and syntactically correct JSON adhering to the f
             ],
             "key_message": "",
             "img_keywords": ""
+        }},
+        {{
+            "heading": "Slide with a Table (add only when useful based on the context)",
+            "table": {{
+                "headers": ["Column 1", "Column 2", "Column 3"],
+                "rows": [
+                    ["Row 1, Col 1", "Row 1, Col 2", "Row 1, Col 3"],
+                    ["Row 2, Col 1", "Row 2, Col 2", "Row 2, Col 3"],
+                    ["Row 3, Col 1", "Row 3, Col 2", "Row 3, Col 3"]
+                ]
+            }},
+            "key_message": "",
+            "img_keywords": "leave empty"
         }}
     ]
 }}
