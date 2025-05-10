@@ -180,6 +180,14 @@ def generate_powerpoint_presentation(
             )
 
             if not is_processing_done:
+                is_processing_done = _handle_table(
+                    presentation=presentation,
+                    slide_json=a_slide,
+                    slide_width_inch=slide_width_inch,
+                    slide_height_inch=slide_height_inch
+                )
+
+            if not is_processing_done:
                 is_processing_done = _handle_double_col_layout(
                     presentation=presentation,
                     slide_json=a_slide,
@@ -853,6 +861,51 @@ def _handle_step_by_step_process(
     return True
 
 
+def _handle_table(
+        presentation: pptx.Presentation,
+        slide_json: dict,
+        slide_width_inch: float,
+        slide_height_inch: float
+) -> bool:
+    """
+    Add a table to a slide, if available.
+
+    :param presentation: The presentation object.
+    :param slide_json: The content of the slide as JSON data.
+    :param slide_width_inch: The width of the slide in inches.
+    :param slide_height_inch: The height of the slide in inches.
+    :return True if this slide has a step-by-step process depiction added; False otherwise.
+    """
+
+    if 'table' not in slide_json or not slide_json['table']:
+        return False
+
+    headers = slide_json['table'].get('headers', [])
+    rows = slide_json['table'].get('rows', [])
+    bullet_slide_layout = presentation.slide_layouts[1]
+    slide = presentation.slides.add_slide(bullet_slide_layout)
+    shapes = slide.shapes
+    shapes.title.text = remove_slide_number_from_heading(slide_json['heading'])
+    left = slide.placeholders[1].left
+    top = slide.placeholders[1].top
+    width = slide.placeholders[1].width
+    height = slide.placeholders[1].height
+    table = slide.shapes.add_table(len(rows) + 1, len(headers), left, top, width, height).table
+
+    # Set headers
+    for col_idx, header_text in enumerate(headers):
+        table.cell(0, col_idx).text = header_text
+        table.cell(0, col_idx).text_frame.paragraphs[
+            0].font.bold = True  # Make header bold
+
+    # Fill in rows
+    for row_idx, row_data in enumerate(rows, start=1):
+        for col_idx, cell_text in enumerate(row_data):
+            table.cell(row_idx, col_idx).text = cell_text
+
+    return True
+
+
 def _handle_key_message(
         the_slide: pptx.slide.Slide,
         slide_json: dict,
@@ -987,6 +1040,22 @@ if __name__ == '__main__':
       ],
       "key_message": "AI encompasses various aspects, from human-like intelligence to global impact",
       "img_keywords": "AI aspects, intelligence, automation, data processing, global impact"
+    },
+    {
+        "heading": "AI vs. ML vs. DL: A Tabular Comparison",
+        "table": {
+            "headers": ["Feature", "AI", "ML", "DL"],
+            "rows": [
+                ["Definition", "Creating intelligent agents", "Learning from data", "Deep neural networks"],
+                ["Approach", "Rule-based, expert systems", "Algorithms, statistical models", "Deep neural networks"],
+                ["Data Requirements", "Varies", "Large datasets", "Massive datasets"],
+                ["Complexity", "Varies", "Moderate", "High"],
+                ["Computational Cost", "Low to Moderate", "Moderate", "High"],
+                ["Examples", "Chess, recommendation systems", "Spam filters, image recognition", "Image recognition, NLP"]
+            ]
+        },
+        "key_message": "This table provides a concise comparison of the key features of AI, ML, and DL.",
+        "img_keywords": "AI, ML, DL, comparison, table, features"
     },
     {
       "heading": "Conclusion: Embracing AI's Potential",
