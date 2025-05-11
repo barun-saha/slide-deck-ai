@@ -13,8 +13,10 @@ import httpx
 import huggingface_hub
 import json5
 import ollama
+from pypdf import PdfReader
 import requests
 import streamlit as st
+from streamlit_float import * # for floating UI elements
 from dotenv import load_dotenv
 from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 from langchain_core.messages import HumanMessage
@@ -29,6 +31,7 @@ load_dotenv()
 
 RUN_IN_OFFLINE_MODE = os.getenv('RUN_IN_OFFLINE_MODE', 'False').lower() == 'true'
 
+float_init()  # Initialize streamlit_float
 
 @st.cache_data
 def _load_strings() -> dict:
@@ -141,7 +144,7 @@ CHAT_MESSAGES = 'chat_messages'
 DOWNLOAD_FILE_KEY = 'download_file_name'
 IS_IT_REFINEMENT = 'is_it_refinement'
 ADDITIONAL_INFO = 'additional_info'
-
+UPLOAD_CONTAINER_OPEN = 'upload_container_open'
 
 logger = logging.getLogger(__name__)
 
@@ -221,45 +224,6 @@ with st.sidebar:
                 ),
                 value='2024-05-01-preview',
             )
-        
-        # -- file upload and slider --
-        from pypdf import PdfReader
-        uploaded_pdf = st.file_uploader("4: Upload a PDF file", type=["pdf"])
-
-        # Check if user cleared the file input
-        if uploaded_pdf is None and "current_pdf_hash" in st.session_state:
-            st.session_state.pop("current_pdf_hash", None)
-            st.session_state.pop("pdf_page_count", None)
-            st.session_state.pop("page_range", None)
-
-        # Handle file upload and range tracking
-        if uploaded_pdf:
-            new_file_hash = hash(uploaded_pdf.getvalue())
-
-            if st.session_state.get("current_pdf_hash") != new_file_hash:  # if new file
-                reader = PdfReader(uploaded_pdf)
-                total_pages = len(reader.pages)
-
-                # update states
-                st.session_state["pdf_page_count"] = total_pages
-                st.session_state["current_pdf_hash"] = new_file_hash
-                st.session_state.pop("page_range", None)
-
-        page_count = st.session_state.get("pdf_page_count", 50)
-        max_slider = min(50, page_count)                            # enforce 50 page limmit
-
-        if "pdf_page_count" in st.session_state:
-            # make the range slider
-            page_range_slider = st.slider(
-                label="5: Specify a page range to examine:",
-                min_value=1,
-                max_value=max_slider,
-                value=(1, max_slider),
-                key="page_range"
-            )
-        else:
-            st.info("📄 Upload a PDF to specify a page range.")
-
 
 def build_ui():
     """
@@ -312,15 +276,67 @@ def set_up_chat_ui():
     for msg in history.messages:
         st.chat_message(msg.type).code(msg.content, language='json')
 
-    if prompt := st.chat_input(
-        placeholder=APP_TEXT['chat_placeholder'],
-        max_chars=GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH,
-        accept_file=False,
-        file_type=['pdf', ],
-    ):
-        logger.info(f"type {type(prompt)}")
-        prompt_text = prompt
+    prompt_container = st.container()
+    with prompt_container:
+        # Chat input below the uploader
+        prompt = st.chat_input(
+            placeholder=APP_TEXT['chat_placeholder'],
+            max_chars=GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH,
+        )
+    prompt_container.float("bottom:20px;z-index:999;font-size:10pt;")
+
+    # Use a container for the file uploader and slider
+    if UPLOAD_CONTAINER_OPEN not in st.session_state:
+        st.session_state[UPLOAD_CONTAINER_OPEN] = True
+
+    # Use a container with fixed height for the file uploader
+    # This will create a container that acts as a sticky element
+    
+    # Custom CSS 
+    st.markdown(
+        '''
+        <style>
+            div[data-testid="stFileUploaderDropzoneInstructions"]{
+                height:30px;
+            }
+        </style>
+        ''',
+        unsafe_allow_html=True
+    )
+    upload_container = st.container()
+    with upload_container:
+        expander = st.expander("📄 Upload PDF", expanded=st.session_state[UPLOAD_CONTAINER_OPEN])
+        with expander:
+            # File upload widget spans full width but with reduced height
+            uploaded_pdf = st.file_uploader(
+                "",
+                type=["pdf"],
+                label_visibility="visible",
+            )
+
+        # -- PDF Processing and Slider Logic --
+        if uploaded_pdf:
+            reader = PdfReader(uploaded_pdf)
+            total_pages = len(reader.pages)
+            st.session_state["pdf_page_count"] = total_pages
+
+            # Slider for page range
+            max_slider = min(50, total_pages)  # enforce 50 page limit
+
+            with st.sidebar:
+                st.slider(
+                    label="5: Specify a page range to examine:",
+                    min_value=1,
+                    max_value=max_slider,
+                    value=(1, max_slider),
+                    key="page_range"
+                )
         
+    upload_container.float("bottom:70px;width:40%;font-size:10pt;right:7.5%;")  # position above chat input
+
+    if prompt:
+        prompt_text = prompt
+
         # if the user uploaded a pdf and specified a range, get the contents
         if uploaded_pdf and "page_range" in st.session_state:
             st.session_state[ADDITIONAL_INFO] = filem.get_pdf_contents(
@@ -614,7 +630,6 @@ def _display_download_button(file_path: pathlib.Path):
 
     :param file_path: The path of the .pptx file.
     """
-
     with open(file_path, 'rb') as download_file:
         st.download_button(
             'Download PPTX file ⬇️',
@@ -634,4 +649,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
