@@ -144,7 +144,6 @@ CHAT_MESSAGES = 'chat_messages'
 DOWNLOAD_FILE_KEY = 'download_file_name'
 IS_IT_REFINEMENT = 'is_it_refinement'
 ADDITIONAL_INFO = 'additional_info'
-UPLOAD_CONTAINER_OPEN = 'upload_container_open'
 
 logger = logging.getLogger(__name__)
 
@@ -252,6 +251,41 @@ def build_ui():
 
     set_up_chat_ui()
 
+def apply_custom_css():
+    # Custom CSS so that the file upload area is kind of transparent, remains near the bottom but is
+    # a little enlarged for ease of use, and the extra things that are normally part of st.file_uploader, 
+    # i.e. the "Drag and Drop File Here" label, the pdf's name and size label, upload icon, and browse files button, 
+    # are hidden. What this CSS does is produce a simple 'zone' that the user can click or drop a file on. 
+    st.markdown(
+        '''
+        <style>
+            
+            div[data-testid="stFileUploader"]{
+                position:relative;
+                opacity:0.5;
+                width:200%;
+                height:100px;
+                left:-105%;
+            }
+            section[data-testid="stFileUploaderDropzone"]{
+                position:absolute;
+                width:100%;
+                height:100%;
+                top:0;
+            }
+            div[data-testid="stFileUploaderDropzoneInstructions"]{
+                display:none;
+            }
+            div[data-testid="stFileUploaderFile"]{
+                display:none;
+            }
+            div[data-testid="stFileUploaderFileName"]{
+                display:none;
+            }
+        </style>
+        ''',
+        unsafe_allow_html=True
+    )
 
 def set_up_chat_ui():
     """
@@ -276,6 +310,7 @@ def set_up_chat_ui():
     for msg in history.messages:
         st.chat_message(msg.type).code(msg.content, language='json')
 
+    # container to hold chat field
     prompt_container = st.container()
     with prompt_container:
         # Chat input below the uploader
@@ -283,56 +318,44 @@ def set_up_chat_ui():
             placeholder=APP_TEXT['chat_placeholder'],
             max_chars=GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH,
         )
-    prompt_container.float("bottom:20px;z-index:999;font-size:10pt;")
+    # make it stick near bottom 
+    prompt_container.float("bottom:40px;width:50%;z-index:999;font-size:10pt;")
 
-    # Use a container for the file uploader and slider
-    if UPLOAD_CONTAINER_OPEN not in st.session_state:
-        st.session_state[UPLOAD_CONTAINER_OPEN] = True
+    # some CSS to simplify the look of the upload area
+    apply_custom_css()
 
-    # Use a container with fixed height for the file uploader
-    # This will create a container that acts as a sticky element
-    
-    # Custom CSS 
-    st.markdown(
-        '''
-        <style>
-            div[data-testid="stFileUploaderDropzoneInstructions"]{
-                height:30px;
-            }
-        </style>
-        ''',
-        unsafe_allow_html=True
-    )
+    # container to hold uploader
     upload_container = st.container()
     with upload_container:
-        expander = st.expander("📄 Upload PDF", expanded=st.session_state[UPLOAD_CONTAINER_OPEN])
-        with expander:
-            # File upload widget spans full width but with reduced height
-            uploaded_pdf = st.file_uploader(
-                "",
-                type=["pdf"],
-                label_visibility="visible",
+        uploaded_pdf = st.file_uploader(
+            "",
+            type=["pdf"],
+            label_visibility="visible",
+        )
+
+    # PDF Processing and Slider Logic
+    if uploaded_pdf:
+        reader = PdfReader(uploaded_pdf)
+        total_pages = len(reader.pages)
+        st.session_state["pdf_page_count"] = total_pages
+
+        # Slider for page range
+        max_slider = min(50, total_pages)  # enforce 50 page limit
+
+        with st.sidebar:
+            # display the pdf's name
+            st.text(f"PDF Uploaded: {uploaded_pdf.name}")
+            
+            st.slider(
+                label="4: Specify a page range to examine:",
+                min_value=1,
+                max_value=max_slider,
+                value=(1, max_slider),
+                key="page_range"
             )
 
-        # -- PDF Processing and Slider Logic --
-        if uploaded_pdf:
-            reader = PdfReader(uploaded_pdf)
-            total_pages = len(reader.pages)
-            st.session_state["pdf_page_count"] = total_pages
-
-            # Slider for page range
-            max_slider = min(50, total_pages)  # enforce 50 page limit
-
-            with st.sidebar:
-                st.slider(
-                    label="5: Specify a page range to examine:",
-                    min_value=1,
-                    max_value=max_slider,
-                    value=(1, max_slider),
-                    key="page_range"
-                )
-        
-    upload_container.float("bottom:70px;width:40%;font-size:10pt;right:7.5%;")  # position above chat input
+    # make container stay near bottom too, but surround the chat and have dotted border for the visual cue
+    upload_container.float("border-style:dashed solid;bottom:10px;width:150%;height:100px;font-size:10pt;left:0;")
 
     if prompt:
         prompt_text = prompt
@@ -631,12 +654,16 @@ def _display_download_button(file_path: pathlib.Path):
     :param file_path: The path of the .pptx file.
     """
     with open(file_path, 'rb') as download_file:
+        print("entered")
+        print(f"filepath={file_path}")
         st.download_button(
             'Download PPTX file ⬇️',
             data=download_file,
             file_name='Presentation.pptx',
             key=datetime.datetime.now()
         )
+    
+    print("download")
 
 
 def main():
