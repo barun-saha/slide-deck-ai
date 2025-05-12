@@ -317,6 +317,7 @@ def set_up_chat_ui():
         prompt = st.chat_input(
             placeholder=APP_TEXT['chat_placeholder'],
             max_chars=GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH,
+            file_type=['pdf', ],
         )
     # make it stick near bottom 
     prompt_container.float("bottom:40px;width:50%;z-index:999;font-size:10pt;")
