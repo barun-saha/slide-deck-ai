@@ -32,13 +32,9 @@ def get_pdf_contents(
     """
 
     reader = PdfReader(pdf_file)
-    n_pages = len(reader.pages)
 
     start, end = page_range                # set start and end per the range (user-specified values)
-    start = max(1, start)
-    end = min(n_pages, end)
-    if start >= end:
-        start = 1
+    
     print(f"starting at {start}, ending {end}")
 
     text = ''
@@ -47,3 +43,16 @@ def get_pdf_contents(
         text += page.extract_text()
 
     return text
+
+def validate_page_range(pdf_file: st.runtime.uploaded_file_manager.UploadedFile,
+                        start:int, end:int) -> tuple[int, int]:
+    
+    n_pages = len(PdfReader(pdf_file).pages)
+    #start, end = st.session_state["page_range_slider"]
+    start = max(1, start)
+    end = min(n_pages, end)
+
+    if start >= end:
+        start = 1
+
+    return (start, end)
