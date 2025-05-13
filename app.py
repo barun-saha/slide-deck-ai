@@ -13,10 +13,8 @@ import httpx
 import huggingface_hub
 import json5
 import ollama
-from pypdf import PdfReader
 import requests
 import streamlit as st
-from streamlit_float import * # for floating UI elements
 from dotenv import load_dotenv
 from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 from langchain_core.messages import HumanMessage
@@ -31,7 +29,6 @@ load_dotenv()
 
 RUN_IN_OFFLINE_MODE = os.getenv('RUN_IN_OFFLINE_MODE', 'False').lower() == 'true'
 
-float_init()  # Initialize streamlit_float
 
 @st.cache_data
 def _load_strings() -> dict:
@@ -145,6 +142,7 @@ DOWNLOAD_FILE_KEY = 'download_file_name'
 IS_IT_REFINEMENT = 'is_it_refinement'
 ADDITIONAL_INFO = 'additional_info'
 
+
 logger = logging.getLogger(__name__)
 
 texts = list(GlobalConfig.PPTX_TEMPLATE_FILES.keys())
@@ -224,6 +222,11 @@ with st.sidebar:
                 value='2024-05-01-preview',
             )
 
+        page_range_slider = st.slider("7: Specify a page range:",
+                  1, 50, [1, 50])
+        st.session_state["page_range_slider"] = page_range_slider
+
+
 def build_ui():
     """
     Display the input elements for content generation.
@@ -251,47 +254,12 @@ def build_ui():
 
     set_up_chat_ui()
 
-def apply_custom_css():
-    # Custom CSS so that the file upload area is kind of transparent, remains near the bottom but is
-    # a little enlarged for ease of use, and the extra things that are normally part of st.file_uploader, 
-    # i.e. the "Drag and Drop File Here" label, the pdf's name and size label, upload icon, and browse files button, 
-    # are hidden. What this CSS does is produce a simple 'zone' that the user can click or drop a file on. 
-    st.markdown(
-        '''
-        <style>
-            
-            div[data-testid="stFileUploader"]{
-                position:relative;
-                opacity:0.5;
-                width:200%;
-                height:100px;
-                left:-105%;
-            }
-            section[data-testid="stFileUploaderDropzone"]{
-                position:absolute;
-                width:100%;
-                height:100%;
-                top:0;
-            }
-            div[data-testid="stFileUploaderDropzoneInstructions"]{
-                display:none;
-            }
-            div[data-testid="stFileUploaderFile"]{
-                display:none;
-            }
-            div[data-testid="stFileUploaderFileName"]{
-                display:none;
-            }
-        </style>
-        ''',
-        unsafe_allow_html=True
-    )
 
 def set_up_chat_ui():
     """
     Prepare the chat interface and related functionality.
     """
-
+    print(f"slider={st.session_state["page_range_slider"][0], st.session_state["page_range_slider"][1]}")
     with st.expander('Usage Instructions'):
         st.markdown(GlobalConfig.CHAT_USAGE_INSTRUCTIONS)
 
@@ -310,63 +278,28 @@ def set_up_chat_ui():
     for msg in history.messages:
         st.chat_message(msg.type).code(msg.content, language='json')
 
-    # container to hold chat field
-    prompt_container = st.container()
-    with prompt_container:
-        # Chat input below the uploader
-        prompt = st.chat_input(
-            placeholder=APP_TEXT['chat_placeholder'],
-            max_chars=GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH,
-            file_type=['pdf', ],
-        )
-    # make it stick near bottom 
-    prompt_container.float("bottom:40px;width:50%;z-index:999;font-size:10pt;")
+    if prompt := st.chat_input(
+        placeholder=APP_TEXT['chat_placeholder'],
+        max_chars=GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH,
+        accept_file=True,
+        file_type=['pdf', ],
+    ):
+        prompt_text = prompt.text or ''
+        if prompt['files']:
+            uploaded_pdf = prompt['files'][0]
+            # pdf_length = filem.get_pdf_length(uploaded_pdf)
+            # valid_pdf_length = min(50, pdf_length)
 
-    # some CSS to simplify the look of the upload area
-    apply_custom_css()
+            # st.session_state["page_range_slider"] = list(st.session_state["page_range_slider"])
+            # st.session_state["page_range_slider"][1] = valid_pdf_length
+            # print(f"length={pdf_length}, validated={valid_pdf_length}={st.session_state["page_range_slider"][-1]}")
 
-    # container to hold uploader
-    upload_container = st.container()
-    with upload_container:
-        uploaded_pdf = st.file_uploader(
-            "",
-            type=["pdf"],
-            label_visibility="visible",
-        )
-
-    # PDF Processing and Slider Logic
-    if uploaded_pdf:
-        reader = PdfReader(uploaded_pdf)
-        total_pages = len(reader.pages)
-        st.session_state["pdf_page_count"] = total_pages
-
-        # Slider for page range
-        max_slider = min(50, total_pages)  # enforce 50 page limit
-
-        with st.sidebar:
-            # display the pdf's name
-            st.text(f"PDF Uploaded: {uploaded_pdf.name}")
-            
-            st.slider(
-                label="4: Specify a page range to examine:",
-                min_value=1,
-                max_value=max_slider,
-                value=(1, max_slider),
-                key="page_range"
-            )
-
-    # make container stay near bottom too, but surround the chat and have dotted border for the visual cue
-    upload_container.float("border-style:dashed solid;bottom:10px;width:150%;height:100px;font-size:10pt;left:0;")
-
-    if prompt:
-        prompt_text = prompt
-
-        # if the user uploaded a pdf and specified a range, get the contents
-        if uploaded_pdf and "page_range" in st.session_state:
-            st.session_state[ADDITIONAL_INFO] = filem.get_pdf_contents(
-                uploaded_pdf,
-                st.session_state["page_range"]
-            )
+            # print(f"fname={uploaded_pdf.name}")
+            # Apparently, Streamlit stores uploaded files in memory and clears on browser close
+            # https://docs.streamlit.io/knowledge-base/using-streamlit/where-file-uploader-store-when-deleted
+            st.session_state[ADDITIONAL_INFO] = filem.get_pdf_contents(uploaded_pdf, 
+                                                                        st.session_state["page_range_slider"])
+            print(f"extracting={st.session_state["page_range_slider"]}")
 
         provider, llm_name = llm_helper.get_provider_model(
             llm_provider_to_use,
@@ -654,17 +587,14 @@ def _display_download_button(file_path: pathlib.Path):
 
     :param file_path: The path of the .pptx file.
     """
+
     with open(file_path, 'rb') as download_file:
-        print("entered")
-        print(f"filepath={file_path}")
         st.download_button(
             'Download PPTX file ⬇️',
             data=download_file,
             file_name='Presentation.pptx',
             key=datetime.datetime.now()
         )
-    
-    print("download")
 
 
 def main():

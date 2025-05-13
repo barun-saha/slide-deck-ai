@@ -32,8 +32,14 @@ def get_pdf_contents(
     """
 
     reader = PdfReader(pdf_file)
+    n_pages = len(reader.pages)
 
     start, end = page_range                # set start and end per the range (user-specified values)
+    start = max(1, start)
+    end = min(n_pages, end)
+    if start >= end:
+        start = 1
+    print(f"starting at {start}, ending {end}")
 
     text = ''
     for page_num in range(start - 1, end):
