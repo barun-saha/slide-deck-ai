@@ -223,6 +223,7 @@ with st.sidebar:
                 value='2024-05-01-preview',
             )
 
+        # make slider with initial values
         page_range_slider = st.slider("7: Specify a page range:",
                   1, 50, [1, 50])
         st.session_state["page_range_slider"] = page_range_slider
@@ -260,7 +261,7 @@ def set_up_chat_ui():
     """
     Prepare the chat interface and related functionality.
     """
-    print(f"slider={st.session_state["page_range_slider"][0], st.session_state["page_range_slider"][1]}")
+    # set start and end page
     st.session_state["start_page"] = st.session_state["page_range_slider"][0]
     st.session_state["end_page"] = st.session_state["page_range_slider"][1]
 
