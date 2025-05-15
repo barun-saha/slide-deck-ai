@@ -35,6 +35,6 @@
         "Did you know that SlideDeck AI supports eight LLMs that generate contents in different styles?",
         "Did you know that SlideDeck AI can create a presentation based on any uploaded PDF file?"
     ],
-    "chat_placeholder": "Write the topic or instructions here. Click or drop to upload a PDF in this area.",
+    "chat_placeholder": "Click or drop to upload a PDF and write the topic or instructions here.",
     "like_feedback": "If you like SlideDeck AI, please consider leaving a heart ❤\uFE0F on the [Hugging Face Space](https://huggingface.co/spaces/barunsaha/slide-deck-ai/) or a star ⭐ on [GitHub](https://github.com/barun-saha/slide-deck-ai). Your [feedback](https://forms.gle/JECFBGhjvSj7moBx9) is appreciated."
 }

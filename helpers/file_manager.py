@@ -62,7 +62,7 @@ def validate_page_range(pdf_file: st.runtime.uploaded_file_manager.UploadedFile,
     # set end to min of pdf length or specified end (whichever's lower)
     end = min(n_pages, end)
 
-    if start >= end:  # if the start is higher than the end, make it 1
+    if start > end:  # if the start is higher than the end, make it 1
         start = 1
 
     return (start, end)
