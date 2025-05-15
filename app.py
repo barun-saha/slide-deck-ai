@@ -291,8 +291,9 @@ def set_up_chat_ui():
     ):
         prompt_text = prompt.text or ''
         if prompt['files']:
+            # store uploaded pdf in session state
             uploaded_pdf = prompt['files'][0]
-            st.session_state["pdf_file"] = uploaded_pdf
+            st.session_state["pdf_file"] = uploaded_pdf  
             # Apparently, Streamlit stores uploaded files in memory and clears on browser close
             # https://docs.streamlit.io/knowledge-base/using-streamlit/where-file-uploader-store-when-deleted
 
@@ -300,7 +301,7 @@ def set_up_chat_ui():
             st.session_state["start_page"], st.session_state["end_page"] = filem.validate_page_range(uploaded_pdf, 
                                                                                                      st.session_state["start_page"],
                                                                                                      st.session_state["end_page"])
-            # update sidebar text
+            # show sidebar text for page selection and file name
             with st.sidebar:
                 st.text(f"Extracting pages {st.session_state["start_page"]} to {st.session_state["end_page"]} in {uploaded_pdf.name}")
 
@@ -315,7 +316,7 @@ def set_up_chat_ui():
                 st.session_state["start_page"], st.session_state["end_page"] = filem.validate_page_range(st.session_state["pdf_file"], 
                                                                                                     st.session_state["start_page"],
                                                                                                     st.session_state["end_page"])
-                # update sidebar text
+                # update sidebar text for name and page selection
                 with st.sidebar:
                     st.text(f"Extracting pages {st.session_state["start_page"]} to {st.session_state["end_page"]} in {st.session_state["pdf_file"].name}")
 

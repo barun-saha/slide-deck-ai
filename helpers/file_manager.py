@@ -46,13 +46,23 @@ def get_pdf_contents(
 
 def validate_page_range(pdf_file: st.runtime.uploaded_file_manager.UploadedFile,
                         start:int, end:int) -> tuple[int, int]:
-    
+    """
+    Validate the page range.
+
+    :param pdf_file: The uploaded PDF file.
+    :param start: The start page 
+    :param max_pages: The end page
+    :return: The validated page range tuple
+    """
     n_pages = len(PdfReader(pdf_file).pages)
-    #start, end = st.session_state["page_range_slider"]
+
+    # set start to max of 1 or specified start (whichever's higher)
     start = max(1, start)
+
+    # set end to min of pdf length or specified end (whichever's lower)
     end = min(n_pages, end)
 
-    if start >= end:
+    if start >= end:  # if the start is higher than the end, make it 1
         start = 1
 
     return (start, end)
