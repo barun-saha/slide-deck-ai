@@ -13,7 +13,6 @@ import httpx
 import huggingface_hub
 import json5
 import ollama
-from pypdf import PdfReader
 import requests
 import streamlit as st
 from dotenv import load_dotenv
@@ -224,9 +223,9 @@ with st.sidebar:
             )
 
         # make slider with initial values
-        page_range_slider = st.slider("7: Specify a page range:",
-                  1, 50, [1, 50])
-        st.session_state["page_range_slider"] = page_range_slider
+        page_range_slider = st.slider('7: Specify a page range for the PDF file:',
+                  1, GlobalConfig.MAX_ALLOWED_PAGES, [1, GlobalConfig.MAX_ALLOWED_PAGES])
+        st.session_state['page_range_slider'] = page_range_slider
 
 
 def build_ui():
@@ -262,8 +261,8 @@ def set_up_chat_ui():
     Prepare the chat interface and related functionality.
     """
     # set start and end page
-    st.session_state["start_page"] = st.session_state["page_range_slider"][0]
-    st.session_state["end_page"] = st.session_state["page_range_slider"][1]
+    st.session_state['start_page'] = st.session_state['page_range_slider'][0]
+    st.session_state['end_page'] = st.session_state['page_range_slider'][1]
 
     with st.expander('Usage Instructions'):
         st.markdown(GlobalConfig.CHAT_USAGE_INSTRUCTIONS)
@@ -293,38 +292,27 @@ def set_up_chat_ui():
         if prompt['files']:
             # store uploaded pdf in session state
             uploaded_pdf = prompt['files'][0]
-            st.session_state["pdf_file"] = uploaded_pdf  
+            st.session_state['pdf_file'] = uploaded_pdf  
             # Apparently, Streamlit stores uploaded files in memory and clears on browser close
             # https://docs.streamlit.io/knowledge-base/using-streamlit/where-file-uploader-store-when-deleted
 
-            # get validated page range 
-            st.session_state["start_page"], st.session_state["end_page"] = filem.validate_page_range(uploaded_pdf, 
-                                                                                                     st.session_state["start_page"],
-                                                                                                     st.session_state["end_page"])
-            # show sidebar text for page selection and file name
-            with st.sidebar:
-                st.text(f"Extracting pages {st.session_state["start_page"]} to {st.session_state["end_page"]} in {uploaded_pdf.name}")
+        # get validated page range 
+        st.session_state['start_page'], st.session_state['end_page'] = filem.validate_page_range(
+                                                                                st.session_state['pdf_file'], 
+                                                                                st.session_state['start_page'],
+                                                                                st.session_state['end_page']
+                                                                            )
+        # show sidebar text for page selection and file name
+        with st.sidebar:
+            st.text(f'Extracting pages {st.session_state['start_page']} to {st.session_state['end_page']} in {st.session_state['pdf_file'].name}')
 
-            # get pdf contents
-            st.session_state[ADDITIONAL_INFO] = filem.get_pdf_contents(uploaded_pdf, 
-                                                                        (st.session_state["start_page"], 
-                                                                         st.session_state["end_page"]))
-        else:
-            # if we're using the same file (nothing new uploaded)
-            if "start_page" in st.session_state and "end_page" in st.session_state and "pdf_file" in st.session_state:
-                # validate the page range 
-                st.session_state["start_page"], st.session_state["end_page"] = filem.validate_page_range(st.session_state["pdf_file"], 
-                                                                                                    st.session_state["start_page"],
-                                                                                                    st.session_state["end_page"])
-                # update sidebar text for name and page selection
-                with st.sidebar:
-                    st.text(f"Extracting pages {st.session_state["start_page"]} to {st.session_state["end_page"]} in {st.session_state["pdf_file"].name}")
-
-                # get contents
-                st.session_state[ADDITIONAL_INFO] = filem.get_pdf_contents(st.session_state["pdf_file"], 
-                                                                            (st.session_state["start_page"], st.session_state["end_page"]))
-            
-
+        # get pdf contents
+        st.session_state[ADDITIONAL_INFO] = filem.get_pdf_contents(
+                                                    st.session_state['pdf_file'], 
+                                                    (st.session_state['start_page'], 
+                                                    st.session_state['end_page'])
+                                                )
+        
         provider, llm_name = llm_helper.get_provider_model(
             llm_provider_to_use,
             use_ollama=RUN_IN_OFFLINE_MODE

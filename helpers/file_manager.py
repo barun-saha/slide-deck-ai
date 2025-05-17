@@ -19,23 +19,19 @@ logger = logging.getLogger(__name__)
 
 def get_pdf_contents(
         pdf_file: st.runtime.uploaded_file_manager.UploadedFile,
-        page_range: tuple[int, int],
-        max_pages: int = GlobalConfig.MAX_PAGE_COUNT
-) -> str:
+        page_range: tuple[int, int]) -> str:
     """
     Extract the text contents from a PDF file.
 
     :param pdf_file: The uploaded PDF file.
     :param page_range: The range of pages to extract contents from.
-    :param max_pages: The max no. of pages to extract contents from.
     :return: The contents.
     """
 
     reader = PdfReader(pdf_file)
 
-    start, end = page_range                # set start and end per the range (user-specified values)
+    start, end = page_range  # set start and end per the range (user-specified values)
     
-    print(f"starting at {start}, ending {end}")
 
     text = ''
     for page_num in range(start - 1, end):
@@ -51,7 +47,7 @@ def validate_page_range(pdf_file: st.runtime.uploaded_file_manager.UploadedFile,
 
     :param pdf_file: The uploaded PDF file.
     :param start: The start page 
-    :param max_pages: The end page
+    :param end: The end page
     :return: The validated page range tuple
     """
     n_pages = len(PdfReader(pdf_file).pages)
@@ -65,4 +61,4 @@ def validate_page_range(pdf_file: st.runtime.uploaded_file_manager.UploadedFile,
     if start > end:  # if the start is higher than the end, make it 1
         start = 1
 
-    return (start, end)
+    return start, end
