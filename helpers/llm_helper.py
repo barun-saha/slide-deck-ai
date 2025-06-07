@@ -95,11 +95,13 @@ def is_valid_llm_provider_model(
     if not provider or not model or provider not in GlobalConfig.VALID_PROVIDERS:
         return False
 
-    if not api_key:
-        return False
+    if provider != GlobalConfig.PROVIDER_OLLAMA:
+        # No API key is required for offline Ollama models
+        if not api_key:
+            return False
 
-    if api_key and API_KEY_REGEX.match(api_key) is None:
-        return False
+        if api_key and API_KEY_REGEX.match(api_key) is None:
+            return False
 
     if provider == GlobalConfig.PROVIDER_AZURE_OPENAI:
         valid_url = urllib3.util.parse_url(azure_endpoint_url)
