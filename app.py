@@ -159,11 +159,11 @@ with st.sidebar:
 
     if RUN_IN_OFFLINE_MODE:
         llm_provider_to_use = st.text_input(
-            label='2: Enter Ollama model name to use (e.g., mistral:v0.2):',
+            label='2: Enter Ollama model name to use (e.g., gemma3:1b):',
             help=(
                 'Specify a correct, locally available LLM, found by running `ollama list`, for'
-                ' example `mistral:v0.2` and `mistral-nemo:latest`. Having an Ollama-compatible'
-                ' and supported GPU is strongly recommended.'
+                ' example, `gemma3:1b`, `mistral:v0.2`, and `mistral-nemo:latest`. Having an'
+                ' Ollama-compatible and supported GPU is strongly recommended.'
             )
         )
         api_key_token: str = ''
