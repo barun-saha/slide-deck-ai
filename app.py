@@ -296,23 +296,26 @@ def set_up_chat_ui():
             # Apparently, Streamlit stores uploaded files in memory and clears on browser close
             # https://docs.streamlit.io/knowledge-base/using-streamlit/where-file-uploader-store-when-deleted
 
-        # get validated page range 
-        st.session_state['start_page'], st.session_state['end_page'] = filem.validate_page_range(
-                                                                                st.session_state['pdf_file'], 
-                                                                                st.session_state['start_page'],
-                                                                                st.session_state['end_page']
-                                                                            )
-        # show sidebar text for page selection and file name
-        with st.sidebar:
-            st.text(f'Extracting pages {st.session_state['start_page']} to {st.session_state['end_page']} in {st.session_state['pdf_file'].name}')
+        # # check if pdf file is uploaded 
+        # # (we can use the same file if the user doesn't upload a new one)
+        if 'pdf_file' in st.session_state:  
+            # get validated page range 
+            st.session_state['start_page'], st.session_state['end_page'] = filem.validate_page_range(
+                                                                                    st.session_state['pdf_file'], 
+                                                                                    st.session_state['start_page'],
+                                                                                    st.session_state['end_page']
+                                                                                )
+            # show sidebar text for page selection and file name
+            with st.sidebar:
+                st.text(f'Extracting pages {st.session_state["start_page"]} to {st.session_state["end_page"]} in {st.session_state["pdf_file"].name}')
 
-        # get pdf contents
-        st.session_state[ADDITIONAL_INFO] = filem.get_pdf_contents(
-                                                    st.session_state['pdf_file'], 
-                                                    (st.session_state['start_page'], 
-                                                    st.session_state['end_page'])
-                                                )
-        
+            # get pdf contents
+            st.session_state[ADDITIONAL_INFO] = filem.get_pdf_contents(
+                                                        st.session_state['pdf_file'], 
+                                                        (st.session_state['start_page'], 
+                                                        st.session_state['end_page'])
+                                                    )
+            
         provider, llm_name = llm_helper.get_provider_model(
             llm_provider_to_use,
             use_ollama=RUN_IN_OFFLINE_MODE

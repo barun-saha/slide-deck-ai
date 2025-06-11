@@ -32,7 +32,7 @@ def get_pdf_contents(
 
     start, end = page_range  # set start and end per the range (user-specified values)
     
-
+    print(f"Name: {pdf_file.name} Page range: {start} to {end}")
     text = ''
     for page_num in range(start - 1, end):
         page = reader.pages[page_num]
