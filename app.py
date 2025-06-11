@@ -222,7 +222,7 @@ with st.sidebar:
                 value='2024-05-01-preview',
             )
 
-        # make slider with initial values
+        # Make slider with initial values
         page_range_slider = st.slider('7: Specify a page range for the PDF file:',
                   1, GlobalConfig.MAX_ALLOWED_PAGES, [1, GlobalConfig.MAX_ALLOWED_PAGES])
         st.session_state['page_range_slider'] = page_range_slider
@@ -260,7 +260,7 @@ def set_up_chat_ui():
     """
     Prepare the chat interface and related functionality.
     """
-    # set start and end page
+    # Set start and end page
     st.session_state['start_page'] = st.session_state['page_range_slider'][0]
     st.session_state['end_page'] = st.session_state['page_range_slider'][1]
 
@@ -290,14 +290,14 @@ def set_up_chat_ui():
     ):
         prompt_text = prompt.text or ''
         if prompt['files']:
-            # store uploaded pdf in session state
+            # Store uploaded pdf in session state
             uploaded_pdf = prompt['files'][0]
             st.session_state['pdf_file'] = uploaded_pdf  
             # Apparently, Streamlit stores uploaded files in memory and clears on browser close
             # https://docs.streamlit.io/knowledge-base/using-streamlit/where-file-uploader-store-when-deleted
 
-        # # check if pdf file is uploaded 
-        # # (we can use the same file if the user doesn't upload a new one)
+        # Check if pdf file is uploaded 
+        # (we can use the same file if the user doesn't upload a new one)
         if 'pdf_file' in st.session_state:  
             # get validated page range 
             st.session_state['start_page'], st.session_state['end_page'] = filem.validate_page_range(
@@ -305,11 +305,11 @@ def set_up_chat_ui():
                                                                                     st.session_state['start_page'],
                                                                                     st.session_state['end_page']
                                                                                 )
-            # show sidebar text for page selection and file name
+            #Show sidebar text for page selection and file name
             with st.sidebar:
                 st.text(f'Extracting pages {st.session_state["start_page"]} to {st.session_state["end_page"]} in {st.session_state["pdf_file"].name}')
 
-            # get pdf contents
+            # Get pdf contents
             st.session_state[ADDITIONAL_INFO] = filem.get_pdf_contents(
                                                         st.session_state['pdf_file'], 
                                                         (st.session_state['start_page'], 
