@@ -299,15 +299,22 @@ def set_up_chat_ui():
         # Check if pdf file is uploaded 
         # (we can use the same file if the user doesn't upload a new one)
         if 'pdf_file' in st.session_state:  
-            # get validated page range 
+            # Get validated page range 
             st.session_state['start_page'], st.session_state['end_page'] = filem.validate_page_range(
                                                                                     st.session_state['pdf_file'], 
                                                                                     st.session_state['start_page'],
                                                                                     st.session_state['end_page']
                                                                                 )
-            #Show sidebar text for page selection and file name
+            # Show sidebar text for page selection and file name
             with st.sidebar:
-                st.text(f'Extracting pages {st.session_state["start_page"]} to {st.session_state["end_page"]} in {st.session_state["pdf_file"].name}')
+                if st.session_state['end_page'] is None:  # If the PDF has only one page
+                    st.text('Extracting page %d in %s' % (
+                        st.session_state['start_page'], st.session_state['pdf_file'].name
+                    ))
+                else:
+                    st.text('Extracting pages %d to %d in %s' % (
+                        st.session_state['start_page'], st.session_state['end_page'], st.session_state['pdf_file'].name
+                    ))
 
             # Get pdf contents
             st.session_state[ADDITIONAL_INFO] = filem.get_pdf_contents(
@@ -315,7 +322,6 @@ def set_up_chat_ui():
                                                         (st.session_state['start_page'], 
                                                         st.session_state['end_page'])
                                                     )
-            
         provider, llm_name = llm_helper.get_provider_model(
             llm_provider_to_use,
             use_ollama=RUN_IN_OFFLINE_MODE

@@ -30,14 +30,19 @@ def get_pdf_contents(
 
     reader = PdfReader(pdf_file)
 
-    start, end = page_range  # set start and end per the range (user-specified values)
-    
-    print(f"Name: {pdf_file.name} Page range: {start} to {end}")
-    text = ''
-    for page_num in range(start - 1, end):
-        page = reader.pages[page_num]
-        text += page.extract_text()
+    start, end = page_range  # Set start and end per the range (user-specified values)
 
+    text = ''
+
+    if end is None:
+        # If end is None (where PDF has only 1 page or start = end), extract start
+        end = start
+
+    # Get the text from the specified page range
+    for page_num in range(start - 1, end):
+        text += reader.pages[page_num].extract_text()
+
+    
     return text
 
 def validate_page_range(pdf_file: st.runtime.uploaded_file_manager.UploadedFile,
@@ -52,13 +57,17 @@ def validate_page_range(pdf_file: st.runtime.uploaded_file_manager.UploadedFile,
     """
     n_pages = len(PdfReader(pdf_file).pages)
 
-    # set start to max of 1 or specified start (whichever's higher)
+    # Set start to max of 1 or specified start (whichever's higher)
     start = max(1, start)
 
-    # set end to min of pdf length or specified end (whichever's lower)
+    # Set end to min of pdf length or specified end (whichever's lower)
     end = min(n_pages, end)
 
-    if start > end:  # if the start is higher than the end, make it 1
+    if start > end:  # If the start is higher than the end, make it 1
         start = 1
+
+    if start == end:
+        # If start = end (including when PDF is 1 page long), set end to None
+        return start, None
 
     return start, end
