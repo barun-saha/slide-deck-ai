@@ -62,7 +62,7 @@ def _get_prompt_template(is_refinement: bool) -> str:
 
 def are_all_inputs_valid(
         user_prompt: str,
-        selected_provider: str,
+        provider: str,
         selected_model: str,
         user_key: str,
         azure_deployment_url: str = '',
@@ -73,7 +73,7 @@ def are_all_inputs_valid(
     Validate user input and LLM selection.
 
     :param user_prompt: The prompt.
-    :param selected_provider: The LLM provider.
+    :param provider: The LLM provider.
     :param selected_model: Name of the model.
     :param user_key: User-provided API key.
     :param azure_deployment_url: Azure OpenAI deployment URL.
@@ -91,12 +91,12 @@ def are_all_inputs_valid(
         )
         return False
 
-    if not selected_provider or not selected_model:
+    if not provider or not selected_model:
         handle_error('No valid LLM provider and/or model name found!', False)
         return False
 
     if not llm_helper.is_valid_llm_provider_model(
-            selected_provider, selected_model, user_key,
+            provider, selected_model, user_key,
             azure_endpoint_name, azure_deployment_url, azure_api_version
     ):
         handle_error(
@@ -186,7 +186,7 @@ with st.sidebar:
         env_key_name = GlobalConfig.PROVIDER_ENV_KEYS.get(selected_provider)
         default_api_key = os.getenv(env_key_name, "") if env_key_name else ""
 
-        # Always sync session state to env value if needed (auto-fill on provider change)
+        # Always sync session state to env value if needed (autofill on provider change)
         if default_api_key and st.session_state.get('api_key_input', None) != default_api_key:
             st.session_state['api_key_input'] = default_api_key
 
@@ -222,10 +222,13 @@ with st.sidebar:
                 value='2024-05-01-preview',
             )
 
-        # Make slider with initial values
-        page_range_slider = st.slider('7: Specify a page range for the PDF file:',
-                  1, GlobalConfig.MAX_ALLOWED_PAGES, [1, GlobalConfig.MAX_ALLOWED_PAGES])
-        st.session_state['page_range_slider'] = page_range_slider
+    # Make slider with initial values
+    page_range_slider = st.slider(
+        'Specify a page range for the PDF file:',
+        1, GlobalConfig.MAX_ALLOWED_PAGES,
+        [1, GlobalConfig.MAX_ALLOWED_PAGES]
+    )
+    st.session_state['page_range_slider'] = page_range_slider
 
 
 def build_ui():
@@ -292,36 +295,40 @@ def set_up_chat_ui():
         if prompt['files']:
             # Store uploaded pdf in session state
             uploaded_pdf = prompt['files'][0]
-            st.session_state['pdf_file'] = uploaded_pdf  
+            st.session_state['pdf_file'] = uploaded_pdf
             # Apparently, Streamlit stores uploaded files in memory and clears on browser close
             # https://docs.streamlit.io/knowledge-base/using-streamlit/where-file-uploader-store-when-deleted
 
-        # Check if pdf file is uploaded 
+        # Check if pdf file is uploaded
         # (we can use the same file if the user doesn't upload a new one)
-        if 'pdf_file' in st.session_state:  
-            # Get validated page range 
-            st.session_state['start_page'], st.session_state['end_page'] = filem.validate_page_range(
-                                                                                    st.session_state['pdf_file'], 
-                                                                                    st.session_state['start_page'],
-                                                                                    st.session_state['end_page']
-                                                                                )
+        if 'pdf_file' in st.session_state:
+            # Get validated page range
+            (
+                st.session_state['start_page'],
+                st.session_state['end_page']
+            ) = filem.validate_page_range(
+                st.session_state['pdf_file'],
+                st.session_state['start_page'],
+                st.session_state['end_page']
+            )
             # Show sidebar text for page selection and file name
             with st.sidebar:
                 if st.session_state['end_page'] is None:  # If the PDF has only one page
-                    st.text('Extracting page %d in %s' % (
-                        st.session_state['start_page'], st.session_state['pdf_file'].name
-                    ))
+                    st.text(
+                        f'Extracting page {st.session_state["start_page"]} in'
+                        f' {st.session_state["pdf_file"].name}'
+                    )
                 else:
-                    st.text('Extracting pages %d to %d in %s' % (
-                        st.session_state['start_page'], st.session_state['end_page'], st.session_state['pdf_file'].name
-                    ))
+                    st.text(
+                        f'Extracting pages {st.session_state["start_page"]} to'
+                        f' {st.session_state["end_page"]} in {st.session_state["pdf_file"].name}'
+                    )
 
             # Get pdf contents
             st.session_state[ADDITIONAL_INFO] = filem.get_pdf_contents(
-                                                        st.session_state['pdf_file'], 
-                                                        (st.session_state['start_page'], 
-                                                        st.session_state['end_page'])
-                                                    )
+                st.session_state['pdf_file'],
+                (st.session_state['start_page'], st.session_state['end_page'])
+            )
         provider, llm_name = llm_helper.get_provider_model(
             llm_provider_to_use,
             use_ollama=RUN_IN_OFFLINE_MODE
