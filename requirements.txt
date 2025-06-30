@@ -31,7 +31,7 @@ numpy
 scikit-learn~=1.5.1
 
 certifi==2024.8.30
-urllib3==2.2.3
+urllib3>=2.5.0
 
 anyio==4.4.0
 
