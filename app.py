@@ -224,7 +224,7 @@ with st.sidebar:
 
     # Make slider with initial values
     page_range_slider = st.slider(
-        'Specify a page range for the PDF file:',
+        'Specify a page range for the uploaded PDF file (if any):',
         1, GlobalConfig.MAX_ALLOWED_PAGES,
         [1, GlobalConfig.MAX_ALLOWED_PAGES]
     )
