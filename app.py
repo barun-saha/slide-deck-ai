@@ -164,6 +164,12 @@ texts = list(GlobalConfig.PPTX_TEMPLATE_FILES.keys())
 captions = [GlobalConfig.PPTX_TEMPLATE_FILES[x]['caption'] for x in texts]
 
 with st.sidebar:
+    # Reset button at the top of sidebar
+    if st.button("🔄 Reset Chat", help="Clear chat history and start a new conversation", use_container_width=True):
+        reset_chat_history()
+    
+    st.markdown("---")  # Separator
+    
     # The PPT templates
     pptx_template = st.sidebar.radio(
         '1: Select a presentation template:',
@@ -330,12 +336,7 @@ def set_up_chat_ui():
         file_type=['pdf', ],
     )
     
-    # Reset button below the chat input using bottom container
-    with bottom():
-        col1, col2, col3 = st.columns([1, 1, 1])
-        with col2:
-            if st.button("🔄 Reset Chat", help="Clear chat history and start a new conversation", use_container_width=True):
-                reset_chat_history()
+
 
     if prompt:
         prompt_text = prompt.text or ''
