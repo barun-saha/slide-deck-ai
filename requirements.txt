@@ -16,6 +16,7 @@ langchain-together==0.3.0
 langchain-ollama==0.2.1
 langchain-openai==0.3.3
 streamlit==1.44.1
+streamlit-extras>=0.3.0
 
 python-pptx~=1.0.2
 json5~=0.9.14

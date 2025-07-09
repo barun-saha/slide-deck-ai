@@ -19,6 +19,7 @@ from dotenv import load_dotenv
 from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
+from streamlit_extras.bottom_container import bottom
 
 import global_config as gcfg
 import helpers.file_manager as filem
@@ -132,6 +133,23 @@ def reset_api_key():
     """
 
     st.session_state.api_key_input = ''
+
+
+def reset_chat_history():
+    """
+    Clear the chat history and related session state variables.
+    """
+    if CHAT_MESSAGES in st.session_state:
+        del st.session_state[CHAT_MESSAGES]
+    if IS_IT_REFINEMENT in st.session_state:
+        del st.session_state[IS_IT_REFINEMENT]
+    if ADDITIONAL_INFO in st.session_state:
+        del st.session_state[ADDITIONAL_INFO]
+    if 'pdf_file' in st.session_state:
+        del st.session_state['pdf_file']
+    if DOWNLOAD_FILE_KEY in st.session_state:
+        del st.session_state[DOWNLOAD_FILE_KEY]
+    st.rerun()
 
 
 APP_TEXT = _load_strings()
@@ -285,12 +303,22 @@ def set_up_chat_ui():
     for msg in history.messages:
         st.chat_message(msg.type).code(msg.content, language='json')
 
-    if prompt := st.chat_input(
+    # Chat input at the bottom
+    prompt = st.chat_input(
         placeholder=APP_TEXT['chat_placeholder'],
         max_chars=GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH,
         accept_file=True,
         file_type=['pdf', ],
-    ):
+    )
+    
+    # Reset button below the chat input using bottom container
+    with bottom():
+        col1, col2, col3 = st.columns([1, 1, 1])
+        with col2:
+            if st.button("🔄 Reset Chat", help="Clear chat history and start a new conversation", use_container_width=True):
+                reset_chat_history()
+
+    if prompt:
         prompt_text = prompt.text or ''
         if prompt['files']:
             # Store uploaded pdf in session state
