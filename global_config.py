@@ -64,6 +64,16 @@ class GlobalConfig:
             'max_new_tokens': 8192,
             'paid': True,
         },
+        '[gg]gemini-2.5-flash': {
+            'description': 'fast, detailed',
+            'max_new_tokens': 8192,
+            'paid': True,
+        },
+        '[gg]gemini-2.5-flash-lite': {
+            'description': 'fastest, detailed',
+            'max_new_tokens': 8192,
+            'paid': True,
+        },
         '[hf]mistralai/Mistral-7B-Instruct-v0.2': {
             'description': 'faster, shorter',
             'max_new_tokens': 8192,
