@@ -135,9 +135,10 @@ SlideDeck AI has won the 3rd Place in the [Llama 2 Hackathon with Clarifai](http
 SlideDeck AI is glad to have the following community contributions:
 - [Srinivasan Ragothaman](https://github.com/rsrini7): added OpenRouter support and API keys mapping from the `.env` file.
 - [Aditya](https://github.com/AdiBak): added support for page range selection for PDF files.
+- [Sagar Bharatbhai Bharadia](https://github.com/sagarbharadia17): added support for Gemini 2.5 Flash Lite and Gemini 2.5 Flash LLMs.
 
 Thank you all for your contributions!
 
-[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors)
+[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors)
 
 
