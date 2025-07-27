@@ -109,6 +109,8 @@ pip install -r requirements.txt
 streamlit run ./app.py  # Run the application
 ```
 
+💡If you have cloned the repository locally but cannot open and view the PPTX templates, you may need to run `git lfs pull` to download the template files. Without this, although content generation will work, the slide deck cannot be created.
+
 The `.env` file should be created inside the `slide-deck-ai` directory. 
 
 The UI is similar to the online mode. However, rather than selecting an LLM from a list, one has to write the name of the Ollama model to be used in a textbox. There is no API key asked here.
