@@ -28,7 +28,7 @@ class GlobalConfig:
     VALID_PROVIDERS = {
         PROVIDER_COHERE,
         PROVIDER_GOOGLE_GEMINI,
-        PROVIDER_HUGGING_FACE,
+        # PROVIDER_HUGGING_FACE,
         PROVIDER_OLLAMA,
         PROVIDER_TOGETHER_AI,
         PROVIDER_AZURE_OPENAI,
@@ -74,16 +74,16 @@ class GlobalConfig:
             'max_new_tokens': 8192,
             'paid': True,
         },
-        '[hf]mistralai/Mistral-7B-Instruct-v0.2': {
-            'description': 'faster, shorter',
-            'max_new_tokens': 8192,
-            'paid': False,
-        },
-        '[hf]mistralai/Mistral-Nemo-Instruct-2407': {
-            'description': 'longer response',
-            'max_new_tokens': 8192,
-            'paid': False,
-        },
+        # '[hf]mistralai/Mistral-7B-Instruct-v0.2': {
+        #     'description': 'faster, shorter',
+        #     'max_new_tokens': 8192,
+        #     'paid': False,
+        # },
+        # '[hf]mistralai/Mistral-Nemo-Instruct-2407': {
+        #     'description': 'longer response',
+        #     'max_new_tokens': 8192,
+        #     'paid': False,
+        # },
         '[or]google/gemini-2.0-flash-001': {
             'description': 'Google Gemini-2.0-flash-001 (via OpenRouter)',
             'max_new_tokens': 8192,
@@ -110,9 +110,9 @@ class GlobalConfig:
         '- **[az]**: Azure OpenAI\n'
         '- **[co]**: Cohere\n'
         '- **[gg]**: Google Gemini API\n'
-        '- **[hf]**: Hugging Face Inference API\n'
+        # '- **[hf]**: Hugging Face Inference API\n'
         '- **[or]**: OpenRouter\n\n'
-        '- **[to]**: Together AI\n'
+        '- **[to]**: Together AI\n\n'
         '[Find out more](https://github.com/barun-saha/slide-deck-ai?tab=readme-ov-file#summary-of-the-llms)'
     )
     DEFAULT_MODEL_INDEX = int(os.environ.get('DEFAULT_MODEL_INDEX', '4'))
