@@ -42,7 +42,7 @@ In addition, SlideDeck AI can also create a presentation based on PDF files.
 
 # Summary of the LLMs
 
-SlideDeck AI allows the use of different LLMs from six online providers—Azure OpenAI, Hugging Face, Google, Cohere, Together AI, and OpenRouter. Most of these service providers offer generous free usage of relevant LLMs without requiring any billing information.  
+SlideDeck AI allows the use of different LLMs from several online providers—Azure OpenAI, Google, Cohere, Together AI, and OpenRouter. Most of these service providers offer generous free usage of relevant LLMs without requiring any billing information.  
 
 Based on several experiments, SlideDeck AI generally recommends the use of Mistral NeMo, Gemini Flash, and GPT-4o to generate the slide decks.
 
@@ -50,8 +50,6 @@ The supported LLMs offer different styles of content generation. Use one of the 
 
 | LLM                              | Provider (code) | Requires API key                                                                                                         | Characteristics          |
 |:---------------------------------| :------- |:-------------------------------------------------------------------------------------------------------------------------|:-------------------------|
-| Mistral 7B Instruct v0.2         | Hugging Face (`hf`) | Mandatory; [get here](https://huggingface.co/settings/tokens)                                                            | Faster, shorter content  |
-| Mistral NeMo Instruct 2407       | Hugging Face (`hf`) | Mandatory; [get here](https://huggingface.co/settings/tokens)                                                            | Slower, longer content   |
 | Gemini 2.0 Flash                 | Google Gemini API (`gg`) | Mandatory; [get here](https://aistudio.google.com/apikey)                                                                | Faster, longer content   |
 | Gemini 2.0 Flash Lite            | Google Gemini API (`gg`) | Mandatory; [get here](https://aistudio.google.com/apikey)                                                                | Fastest, longer content  |
 | Gemini 2.5 Flash                 | Google Gemini API (`gg`) | Mandatory; [get here](https://aistudio.google.com/apikey)                                                                | Faster, longer content   |
@@ -78,10 +76,8 @@ SlideDeck AI uses a subset of icons from [bootstrap-icons-1.11.3](https://github
 
 # Local Development
 
-SlideDeck AI uses LLMs via different providers, such as Hugging Face, Google, and Gemini.
-To run this project by yourself, you need to provide the `HUGGINGFACEHUB_API_TOKEN` API key,
-for example, in a `.env` file. Alternatively, you can provide the access token in the app's user interface itself (UI). For other LLM providers, the API key can only be specified in the UI.  For image search, the `PEXEL_API_KEY` should be made available as an environment variable. 
-Visit the respective websites to obtain the API keys.
+SlideDeck AI uses LLMs via different providers. To run this project by yourself, you need to use an appropriate API key, for example, in a `.env` file.
+Alternatively, you can provide the access token in the app's user interface itself (UI).
 
 ## Offline LLMs Using Ollama
 
