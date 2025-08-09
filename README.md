@@ -56,10 +56,11 @@ The supported LLMs offer different styles of content generation. Use one of the 
 | Gemini 2.5 Flash Lite            | Google Gemini API (`gg`) | Mandatory; [get here](https://aistudio.google.com/apikey)                                                                | Fastest, longer content  |
 | GPT                              | Azure OpenAI (`az`)      | Mandatory; [get here](https://ai.azure.com/resource/playground)  NOTE: You need to have your subscription/billing set up | Faster, longer content   |
 | Command R+                       | Cohere (`co`) | Mandatory; [get here](https://dashboard.cohere.com/api-keys)                                                             | Shorter, simpler content |
-| Gemini-2.0-flash-001             | OpenRouter (`or`) | Mandatory; [get here](https://openrouter.ai/settings/keys)                                                                            | Faster, longer content |
-| GPT-3.5 Turbo                    | OpenRouter (`or`) | Mandatory; [get here](https://openrouter.ai/settings/keys)                                                                            | Faster, longer content |
-| Llama 3.3 70B Instruct Turbo     | Together AI (`to`) | Mandatory; [get here](https://api.together.ai/settings/api-keys)                                                         | Detailed, slower         |
-| Llama 3.1 8B Instruct Turbo 128K | Together AI (`to`) | Mandatory; [get here](https://api.together.ai/settings/api-keys)                                                         | Shorter                  |
+| Gemini-2.0-flash-001             | OpenRouter (`or`) | Mandatory; [get here](https://openrouter.ai/settings/keys)                                                                            | Faster, longer content   |
+| GPT-3.5 Turbo                    | OpenRouter (`or`) | Mandatory; [get here](https://openrouter.ai/settings/keys)                                                                            | Faster, longer content   |
+| DeepSeek V3-0324                 | Together AI (`to`) | Mandatory; [get here](https://api.together.ai/settings/api-keys)                                                         | Slower, medium-length    |
+| Llama 3.3 70B Instruct Turbo     | Together AI (`to`) | Mandatory; [get here](https://api.together.ai/settings/api-keys)                                                         | Slower, detailed         |
+| Llama 3.1 8B Instruct Turbo 128K | Together AI (`to`) | Mandatory; [get here](https://api.together.ai/settings/api-keys)                                                         | Faster, shorter          |
 
 **IMPORTANT**: SlideDeck AI does **NOT** store your API keys/tokens or transmit them elsewhere. If you provide your API key, it is only used to invoke the relevant LLM to generate contents. That's it! This is an 
 Open-Source project, so feel free to audit the code and convince yourself. 

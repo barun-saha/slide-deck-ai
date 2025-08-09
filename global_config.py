@@ -94,13 +94,18 @@ class GlobalConfig:
             'max_new_tokens': 4096,
             'paid': True,
         },
+        '[to]deepseek-ai/DeepSeek-V3': {
+            'description': 'slower, medium',
+            'max_new_tokens': 8192,
+            'paid': True,
+        },
         '[to]meta-llama/Llama-3.3-70B-Instruct-Turbo': {
-            'description': 'detailed, slower',
+            'description': 'slower, detailed',
             'max_new_tokens': 4096,
             'paid': True,
         },
         '[to]meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo-128K': {
-            'description': 'shorter, faster',
+            'description': 'faster, shorter',
             'max_new_tokens': 4096,
             'paid': True,
         }
