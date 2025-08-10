@@ -26,10 +26,9 @@ Also, add at least one slide with a double column layout by generating appropria
 In addition, for each slide, add image keywords based on the content of the respective slides.
 These keywords will be later used to search for images from the Web relevant to the slide content.
 
-If there is no slide with icons, create one slide containing 4 TO 6 icons (pictograms) illustrating
- some key ideas/aspects/concepts relevant to the topic.
+If there is no slide with icons, create one slide containing 4 TO 6 icons (pictograms) illustrating some key ideas/aspects/concepts relevant to the topic.
 In this slide, each line of text will begin with the name of a relevant icon enclosed between [[ and ]], e.g., [[machine-learning]] and [[fairness]].
-Insert icons only in this slide. Do not repeat any icons or the icons slide.
+Insert icons only in this slide. Do not repeat any icons or the icons slide. Icon names must not be Unicode emojis.
 Do not add another slide with icons if it already exists. However, you can update the existing slide if required.
 Similarly, do not add the same table (if any) again.
 
@@ -41,6 +40,7 @@ You can use Markdown-like styles for bold & italics.
 ALWAYS add a concluding slide at the end, containing a list of the key takeaways and an optional call-to-action if relevant to the context.
 Unless explicitly instructed with the topic, create 10 to 12 slides. You must never create more than 15 to 20 slides.
 
+`img_keywords` MUST always be in English.
 
 ### List of instructions:
 {instructions}
