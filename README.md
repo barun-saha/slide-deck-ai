@@ -90,14 +90,14 @@ In addition, the `RUN_IN_OFFLINE_MODE` environment variable needs to be set to `
 
 ```bash
 # Environment initialization, especially on Debian
+sudo apt update -y
 sudo apt install python-is-python3 -y
-sudo apt install git git-lfs -y
+sudo apt install git -y
 # Change the package name based on the Python version installed: python -V
 sudo apt install python3.11-venv -y
-python -m venv venv
 
 # Install Git Large File Storage (LFS)
-sudo apt install git-lfs
+sudo apt install git-lfs -y
 git lfs install
 
 ollama list  # View locally available LLMs
