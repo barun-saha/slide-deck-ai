@@ -166,10 +166,23 @@ logger = logging.getLogger(__name__)
 texts = list(GlobalConfig.PPTX_TEMPLATE_FILES.keys())
 captions = [GlobalConfig.PPTX_TEMPLATE_FILES[x]['caption'] for x in texts]
 
+# CSS to reduce spacing around the new chat button
+st.markdown("""
+    <style>
+    div[data-testid="stHorizontalBlock"] {
+        position: absolute;
+        top: -25px !important;
+        width: 100% !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 with st.sidebar:
-    # Reset button at the top of sidebar
-    if st.button("🔄 Reset Chat", help="Clear chat history and start a new conversation", use_container_width=True):
-        reset_chat_history()
+    # New Chat button at the top of sidebar
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button("New Chat 🔄", help="Start a new conversation", key="new_chat_button"):
+            reset_chat_history()
     
     st.markdown("---")  # Separator
     
