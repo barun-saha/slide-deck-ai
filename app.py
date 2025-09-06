@@ -181,7 +181,7 @@ with st.sidebar:
     # New Chat button at the top of sidebar
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        if st.button("New Chat 🔄", help="Start a new conversation", key="new_chat_button"):
+        if st.button("New Chat 💬", help="Start a new conversation", key="new_chat_button"):
             reset_chat_history()
     
     st.markdown("---")  # Separator
