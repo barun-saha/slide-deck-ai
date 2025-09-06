@@ -149,7 +149,7 @@ def reset_chat_history():
         del st.session_state['pdf_file']
     if DOWNLOAD_FILE_KEY in st.session_state:
         del st.session_state[DOWNLOAD_FILE_KEY]
-    st.rerun()
+    st.rerun()  # Reload the app
 
 
 APP_TEXT = _load_strings()
@@ -167,7 +167,8 @@ texts = list(GlobalConfig.PPTX_TEMPLATE_FILES.keys())
 captions = [GlobalConfig.PPTX_TEMPLATE_FILES[x]['caption'] for x in texts]
 
 # CSS to reduce spacing around the new chat button
-st.markdown("""
+st.markdown(
+    """
     <style>
     div[data-testid="stHorizontalBlock"] {
         position: absolute;
@@ -175,16 +176,17 @@ st.markdown("""
         width: 100% !important;
     }
     </style>
-""", unsafe_allow_html=True)
+    """, 
+    unsafe_allow_html=True)
 
 with st.sidebar:
     # New Chat button at the top of sidebar
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        if st.button("New Chat 💬", help="Start a new conversation", key="new_chat_button"):
-            reset_chat_history()
+        if st.button('New Chat 💬', help='Start a new conversation', key='new_chat_button'):
+            reset_chat_history()  # Reset the chat history when the button is clicked
     
-    st.markdown("---")  # Separator
+    st.markdown('---')  # Separator
     
     # The PPT templates
     pptx_template = st.sidebar.radio(
