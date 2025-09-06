@@ -19,6 +19,7 @@ from dotenv import load_dotenv
 from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
+from streamlit_extras.bottom_container import bottom
 
 import global_config as gcfg
 import helpers.file_manager as filem
@@ -134,6 +135,23 @@ def reset_api_key():
     st.session_state.api_key_input = ''
 
 
+def reset_chat_history():
+    """
+    Clear the chat history and related session state variables.
+    """
+    if CHAT_MESSAGES in st.session_state:
+        del st.session_state[CHAT_MESSAGES]
+    if IS_IT_REFINEMENT in st.session_state:
+        del st.session_state[IS_IT_REFINEMENT]
+    if ADDITIONAL_INFO in st.session_state:
+        del st.session_state[ADDITIONAL_INFO]
+    if 'pdf_file' in st.session_state:
+        del st.session_state['pdf_file']
+    if DOWNLOAD_FILE_KEY in st.session_state:
+        del st.session_state[DOWNLOAD_FILE_KEY]
+    st.rerun()
+
+
 APP_TEXT = _load_strings()
 
 # Session variables
@@ -148,7 +166,26 @@ logger = logging.getLogger(__name__)
 texts = list(GlobalConfig.PPTX_TEMPLATE_FILES.keys())
 captions = [GlobalConfig.PPTX_TEMPLATE_FILES[x]['caption'] for x in texts]
 
+# CSS to reduce spacing around the new chat button
+st.markdown("""
+    <style>
+    div[data-testid="stHorizontalBlock"] {
+        position: absolute;
+        top: -25px !important;
+        width: 100% !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 with st.sidebar:
+    # New Chat button at the top of sidebar
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        if st.button("New Chat 💬", help="Start a new conversation", key="new_chat_button"):
+            reset_chat_history()
+    
+    st.markdown("---")  # Separator
+    
     # The PPT templates
     pptx_template = st.sidebar.radio(
         '1: Select a presentation template:',
@@ -285,12 +322,17 @@ def set_up_chat_ui():
     for msg in history.messages:
         st.chat_message(msg.type).code(msg.content, language='json')
 
-    if prompt := st.chat_input(
+    # Chat input at the bottom
+    prompt = st.chat_input(
         placeholder=APP_TEXT['chat_placeholder'],
         max_chars=GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH,
         accept_file=True,
         file_type=['pdf', ],
-    ):
+    )
+    
+
+
+    if prompt:
         prompt_text = prompt.text or ''
         if prompt['files']:
             # Store uploaded pdf in session state
