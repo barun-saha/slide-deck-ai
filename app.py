@@ -19,7 +19,6 @@ from dotenv import load_dotenv
 from langchain_community.chat_message_histories import StreamlitChatMessageHistory
 from langchain_core.messages import HumanMessage
 from langchain_core.prompts import ChatPromptTemplate
-from streamlit_extras.bottom_container import bottom
 
 import global_config as gcfg
 import helpers.file_manager as filem
@@ -139,16 +138,23 @@ def reset_chat_history():
     """
     Clear the chat history and related session state variables.
     """
-    if CHAT_MESSAGES in st.session_state:
-        del st.session_state[CHAT_MESSAGES]
-    if IS_IT_REFINEMENT in st.session_state:
-        del st.session_state[IS_IT_REFINEMENT]
-    if ADDITIONAL_INFO in st.session_state:
-        del st.session_state[ADDITIONAL_INFO]
-    if 'pdf_file' in st.session_state:
-        del st.session_state['pdf_file']
-    if DOWNLOAD_FILE_KEY in st.session_state:
-        del st.session_state[DOWNLOAD_FILE_KEY]
+    # Clear session state variables using pop with None default
+    st.session_state.pop(CHAT_MESSAGES, None)
+    st.session_state.pop(IS_IT_REFINEMENT, None)
+    st.session_state.pop(ADDITIONAL_INFO, None)
+    st.session_state.pop(PDF_FILE_KEY, None)
+    
+    # Safely remove previously generated temp PPTX file
+    temp_pptx_path = st.session_state.pop(DOWNLOAD_FILE_KEY, None)
+    if temp_pptx_path:
+        try:
+            pptx_path = pathlib.Path(temp_pptx_path)
+            if pptx_path.exists() and pptx_path.is_file():
+                pptx_path.unlink()
+                logger.info(f"Removed temporary PPTX file: {pptx_path}")
+        except Exception as e:
+            logger.warning(f"Failed to remove temporary PPTX file {temp_pptx_path}: {e}")
+    
     st.rerun()  # Reload the app
 
 
@@ -159,6 +165,7 @@ CHAT_MESSAGES = 'chat_messages'
 DOWNLOAD_FILE_KEY = 'download_file_name'
 IS_IT_REFINEMENT = 'is_it_refinement'
 ADDITIONAL_INFO = 'additional_info'
+PDF_FILE_KEY = 'pdf_file'
 
 
 logger = logging.getLogger(__name__)
@@ -339,19 +346,19 @@ def set_up_chat_ui():
         if prompt['files']:
             # Store uploaded pdf in session state
             uploaded_pdf = prompt['files'][0]
-            st.session_state['pdf_file'] = uploaded_pdf
+            st.session_state[PDF_FILE_KEY] = uploaded_pdf
             # Apparently, Streamlit stores uploaded files in memory and clears on browser close
             # https://docs.streamlit.io/knowledge-base/using-streamlit/where-file-uploader-store-when-deleted
 
         # Check if pdf file is uploaded
         # (we can use the same file if the user doesn't upload a new one)
-        if 'pdf_file' in st.session_state:
+        if PDF_FILE_KEY in st.session_state:
             # Get validated page range
             (
                 st.session_state['start_page'],
                 st.session_state['end_page']
             ) = filem.validate_page_range(
-                st.session_state['pdf_file'],
+                st.session_state[PDF_FILE_KEY],
                 st.session_state['start_page'],
                 st.session_state['end_page']
             )
@@ -370,7 +377,7 @@ def set_up_chat_ui():
 
             # Get pdf contents
             st.session_state[ADDITIONAL_INFO] = filem.get_pdf_contents(
-                st.session_state['pdf_file'],
+                st.session_state[PDF_FILE_KEY],
                 (st.session_state['start_page'], st.session_state['end_page'])
             )
         provider, llm_name = llm_helper.get_provider_model(
