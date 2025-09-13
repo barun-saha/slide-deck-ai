@@ -28,12 +28,11 @@
     "tos": "SlideDeck AI is an experimental prototype, and it has its limitations.\nAI-generated content may be incorrect. Please carefully review and verify the contents.",
     "tos2": "By using SlideDeck AI, you agree to fair and responsible usage.\nNo liability assumed by any party.",
     "ai_greetings": [
-        "How may I help you today?",
-        "Stuck with creating your presentation? Let me help you.",
+        "Stuck with creating your presentation? Let me help you brainstorm.",
         "Need a verbose slide deck? Specify the verbosity level (1 to 10) in your instructions (default 7).",
-        "Hello! What topic do you have on your mind today?",
-        "Need to change the verbosity? Specify the verbosity level (1 to 10) in your instructions (default 7).",
-        "Did you know that SlideDeck AI can create a presentation based on any uploaded PDF file?"
+        "Did you know that SlideDeck AI can create a presentation based on any uploaded PDF file?",
+        "Want it shorter or more detailed? Set verbosity (1–10, default: 7) in your instructions.",
+        "Don't want the key message box in slide #3? Just ask me to remove it."
     ],
     "chat_placeholder": "Write the topic or instructions here. You can also upload a PDF file.",
     "like_feedback": "If you like SlideDeck AI, please consider leaving a heart ❤\uFE0F on the [Hugging Face Space](https://huggingface.co/spaces/barunsaha/slide-deck-ai/) or a star ⭐ on [GitHub](https://github.com/barun-saha/slide-deck-ai). Your [feedback](https://forms.gle/JECFBGhjvSj7moBx9) is appreciated."
