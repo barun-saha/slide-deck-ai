@@ -213,6 +213,10 @@ def generate_powerpoint_presentation(
 
         except Exception:
             # In case of any unforeseen error, try to salvage what is available
+            logger.error(
+                'An error occurred while processing a slide...continuing with the next one',
+                exc_info=True
+            )
             continue
 
     # The thank-you slide
@@ -485,6 +489,17 @@ def _handle_display_image__in_background(
                 top=0,
                 width=pptx.util.Inches(slide_width_inch),
             )
+
+            # Print the XML for debugging
+            blip = picture._element.xpath('.//a:blip')[0]
+            # Add transparency to the image through the blip properties
+            alpha_mod = blip.makeelement(
+                '{http://schemas.openxmlformats.org/drawingml/2006/main}alphaModFix'
+            )
+            alpha_mod.set('amt', '50000')  # 50% opacity
+            blip.append(alpha_mod)
+            logger.debug('Blip element after: %s', blip.xml)
+            picture._element.xpath('.//a:blip')[0].append(alpha_mod)
 
             _add_text_at_bottom(
                 slide=slide,
