@@ -8,7 +8,7 @@ E.g., if the user asks to reduce verbosity, you will make the content more conci
 If the user asks to increase verbosity, you will make the content more detailed. Otherwise, retain the existing verbosity level.
 If the user asks to add/remove some slides or remove the key message, you will do that, and so on.
 
-If the user asks edit or add contents to a particular slide, you will identify the slide, then read the instructions & current contents, and then update it.
+If the user asks to edit or add content for a particular slide, identify the slide, read the instructions and current contents, then update it.
 You will not repeat any slide.
 
 In the presentation, include main headings for each slide, detailed bullet points for each slide.
