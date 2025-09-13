@@ -356,7 +356,7 @@ def _handle_default_display(
 
 
 def _handle_display_image__in_foreground(
-        presentation: pptx.Presentation(),
+        presentation: pptx.Presentation,
         slide_json: dict,
         slide_width_inch: float,
         slide_height_inch: float
@@ -434,7 +434,7 @@ def _handle_display_image__in_foreground(
 
 
 def _handle_display_image__in_background(
-        presentation: pptx.Presentation(),
+        presentation: pptx.Presentation,
         slide_json: dict,
         slide_width_inch: float,
         slide_height_inch: float
@@ -508,7 +508,7 @@ def _handle_display_image__in_background(
 
 
 def _handle_icons_ideas(
-        presentation: pptx.Presentation(),
+        presentation: pptx.Presentation,
         slide_json: dict,
         slide_width_inch: float,
         slide_height_inch: float
@@ -656,7 +656,7 @@ def _add_text_at_bottom(
 
 
 def _handle_double_col_layout(
-        presentation: pptx.Presentation(),
+        presentation: pptx.Presentation,
         slide_json: dict,
         slide_width_inch: float,
         slide_height_inch: float
