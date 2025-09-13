@@ -469,7 +469,6 @@ def _handle_display_image__in_background(
         body_shape = slide.shapes.placeholders[placeholders[0][0]]
 
     title_shape.text = remove_slide_number_from_heading(slide_json['heading'])
-
     flat_items_list = get_flat_list_of_contents(slide_json['bullet_points'], level=0)
     add_bulleted_items(body_shape.text_frame, flat_items_list)
 
@@ -490,16 +489,38 @@ def _handle_display_image__in_background(
                 width=pptx.util.Inches(slide_width_inch),
             )
 
-            # Print the XML for debugging
-            blip = picture._element.xpath('.//a:blip')[0]
-            # Add transparency to the image through the blip properties
-            alpha_mod = blip.makeelement(
-                '{http://schemas.openxmlformats.org/drawingml/2006/main}alphaModFix'
-            )
-            alpha_mod.set('amt', '50000')  # 50% opacity
-            blip.append(alpha_mod)
-            logger.debug('Blip element after: %s', blip.xml)
-            picture._element.xpath('.//a:blip')[0].append(alpha_mod)
+            try:
+                # Find all blip elements to handle potential multiple instances
+                blip_elements = picture._element.xpath('.//a:blip')
+                if not blip_elements:
+                    logger.warning(
+                        'No blip element found in the picture. Transparency cannot be applied.'
+                    )
+                    return True
+
+                for blip in blip_elements:
+                    # Add transparency to the image through the blip properties
+                    alpha_mod = blip.makeelement(
+                        '{http://schemas.openxmlformats.org/drawingml/2006/main}alphaModFix'
+                    )
+                    # Opacity value between 0-100000
+                    alpha_mod.set('amt', '50000')  # 50% opacity
+
+                    # Check if alphaModFix already exists to avoid duplicates
+                    existing_alpha_mod = blip.find(
+                        '{http://schemas.openxmlformats.org/drawingml/2006/main}alphaModFix'
+                    )
+                    if existing_alpha_mod is not None:
+                        blip.remove(existing_alpha_mod)
+
+                    blip.append(alpha_mod)
+                    logger.debug('Added transparency to blip element: %s', blip.xml)
+
+            except Exception as ex:
+                logger.error(
+                    'Failed to apply transparency to the image: %s. Continuing without it.',
+                    str(ex)
+                )
 
             _add_text_at_bottom(
                 slide=slide,
@@ -510,14 +531,23 @@ def _handle_display_image__in_background(
             )
 
             # Move picture to background
-            # https://github.com/scanny/python-pptx/issues/49#issuecomment-137172836
-            slide.shapes._spTree.remove(picture._element)
-            slide.shapes._spTree.insert(2, picture._element)
+            try:
+                slide.shapes._spTree.remove(picture._element)
+                slide.shapes._spTree.insert(2, picture._element)
+            except Exception as ex:
+                logger.error(
+                    'Failed to move image to background: %s. Image will remain in foreground.',
+                    str(ex)
+                )
+
+            return True
+
     except Exception as ex:
         logger.error(
-            '*** Error occurred while running adding image to the slide background: %s',
+            '*** Error occurred while adding image to the slide background: %s',
             str(ex)
         )
+        return True
 
     return True
 
