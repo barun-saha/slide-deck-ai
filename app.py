@@ -144,19 +144,12 @@ def reset_chat_history():
     st.session_state.pop(ADDITIONAL_INFO, None)
     st.session_state.pop(PDF_FILE_KEY, None)
     
-    # Safely remove previously generated temp PPTX file
+    # Remove previously generated temp PPTX file
     temp_pptx_path = st.session_state.pop(DOWNLOAD_FILE_KEY, None)
     if temp_pptx_path:
-        try:
-            pptx_path = pathlib.Path(temp_pptx_path)
-            if pptx_path.exists() and pptx_path.is_file():
-                pptx_path.unlink()
-                logger.info(f"Removed temporary PPTX file: {pptx_path}")
-        except Exception as e:
-            logger.warning(f"Failed to remove temporary PPTX file {temp_pptx_path}: {e}")
-    
-    st.rerun()  # Reload the app
-
+        pptx_path = pathlib.Path(temp_pptx_path)
+        if pptx_path.exists() and pptx_path.is_file():
+            pptx_path.unlink()
 
 APP_TEXT = _load_strings()
 
@@ -173,27 +166,13 @@ logger = logging.getLogger(__name__)
 texts = list(GlobalConfig.PPTX_TEMPLATE_FILES.keys())
 captions = [GlobalConfig.PPTX_TEMPLATE_FILES[x]['caption'] for x in texts]
 
-# CSS to reduce spacing around the new chat button
-st.markdown(
-    """
-    <style>
-    div[data-testid="stHorizontalBlock"] {
-        position: absolute;
-        top: -25px !important;
-        width: 100% !important;
-    }
-    </style>
-    """, 
-    unsafe_allow_html=True)
 
 with st.sidebar:
     # New Chat button at the top of sidebar
-    col1, col2, col3 = st.columns([1, 2, 1])
+    col1, col2, col3 = st.columns([.17, 0.8, .1])
     with col2:
         if st.button('New Chat 💬', help='Start a new conversation', key='new_chat_button'):
             reset_chat_history()  # Reset the chat history when the button is clicked
-    
-    st.markdown('---')  # Separator
     
     # The PPT templates
     pptx_template = st.sidebar.radio(
@@ -338,8 +317,6 @@ def set_up_chat_ui():
         accept_file=True,
         file_type=['pdf', ],
     )
-    
-
 
     if prompt:
         prompt_text = prompt.text or ''
