@@ -22,7 +22,7 @@ streamlit==1.44.1
 python-pptx~=1.0.2
 json5~=0.9.14
 requests~=2.32.3
-pypdf~=5.4.0
+pypdf~=6.0.0
 
 transformers>=4.52.1
 torch>=2.6.0
