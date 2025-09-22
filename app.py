@@ -16,9 +16,47 @@ import ollama
 import requests
 import streamlit as st
 from dotenv import load_dotenv
-from langchain_community.chat_message_histories import StreamlitChatMessageHistory
-from langchain_core.messages import HumanMessage
-from langchain_core.prompts import ChatPromptTemplate
+# Custom message classes to replace LangChain components
+class ChatMessage:
+    def __init__(self, content: str, role: str):
+        self.content = content
+        self.role = role
+        self.type = role  # For compatibility with existing code
+
+class HumanMessage(ChatMessage):
+    def __init__(self, content: str):
+        super().__init__(content, "user")
+
+class AIMessage(ChatMessage):
+    def __init__(self, content: str):
+        super().__init__(content, "ai")
+
+class StreamlitChatMessageHistory:
+    def __init__(self, key: str):
+        self.key = key
+        if key not in st.session_state:
+            st.session_state[key] = []
+    
+    @property
+    def messages(self):
+        return st.session_state[self.key]
+    
+    def add_user_message(self, content: str):
+        st.session_state[self.key].append(HumanMessage(content))
+    
+    def add_ai_message(self, content: str):
+        st.session_state[self.key].append(AIMessage(content))
+
+class ChatPromptTemplate:
+    def __init__(self, template: str):
+        self.template = template
+    
+    @classmethod
+    def from_template(cls, template: str):
+        return cls(template)
+    
+    def format(self, **kwargs):
+        return self.template.format(**kwargs)
 
 import global_config as gcfg
 import helpers.file_manager as filem
@@ -376,7 +414,7 @@ def set_up_chat_ui():
         response = ''
 
         try:
-            llm = llm_helper.get_langchain_llm(
+            llm = llm_helper.get_litellm_llm(
                 provider=provider,
                 model=llm_name,
                 max_new_tokens=gcfg.get_max_output_tokens(llm_provider_to_use),

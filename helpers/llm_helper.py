@@ -1,22 +1,28 @@
 """
-Helper functions to access LLMs.
+Helper functions to access LLMs using LiteLLM.
 """
 import logging
 import re
 import sys
 import urllib3
-from typing import Tuple, Union
+from typing import Tuple, Union, Iterator
 
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
-from langchain_core.language_models import BaseLLM, BaseChatModel
 import os
 
 sys.path.append('..')
 
 from global_config import GlobalConfig
 
+try:
+    import litellm
+    from litellm import completion, acompletion
+except ImportError:
+    litellm = None
+    completion = None
+    acompletion = None
 
 LLM_PROVIDER_MODEL_REGEX = re.compile(r'\[(.*?)\](.*)')
 OLLAMA_MODEL_REGEX = re.compile(r'[a-zA-Z0-9._:-]+$')
@@ -24,7 +30,6 @@ OLLAMA_MODEL_REGEX = re.compile(r'[a-zA-Z0-9._:-]+$')
 API_KEY_REGEX = re.compile(r'^[a-zA-Z0-9_-]{6,94}$')
 REQUEST_TIMEOUT = 35
 OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1'
-
 
 logger = logging.getLogger(__name__)
 logging.getLogger('httpx').setLevel(logging.WARNING)
@@ -113,7 +118,121 @@ def is_valid_llm_provider_model(
     return True
 
 
-def get_langchain_llm(
+def get_litellm_model_name(provider: str, model: str) -> str:
+    """
+    Convert provider and model to LiteLLM model name format.
+
+    :param provider: The LLM provider.
+    :param model: The model name.
+    :return: LiteLLM formatted model name.
+    """
+    provider_prefix_map = {
+        GlobalConfig.PROVIDER_HUGGING_FACE: "huggingface",
+        GlobalConfig.PROVIDER_GOOGLE_GEMINI: "gemini",
+        GlobalConfig.PROVIDER_AZURE_OPENAI: "azure",
+        GlobalConfig.PROVIDER_OPENROUTER: "openrouter",
+        GlobalConfig.PROVIDER_COHERE: "cohere",
+        GlobalConfig.PROVIDER_TOGETHER_AI: "together_ai",
+        GlobalConfig.PROVIDER_OLLAMA: "ollama",
+    }
+    prefix = provider_prefix_map.get(provider)
+    if prefix:
+        return f"{prefix}/{model}"
+    return model
+
+
+def get_litellm_api_key(provider: str, api_key: str) -> str:
+    """
+    Get the appropriate API key for LiteLLM based on provider.
+
+    :param provider: The LLM provider.
+    :param api_key: The API key.
+    :return: The API key.
+    """
+    # All current providers just return the api_key, but this is left for future extensibility.
+    return api_key
+
+
+def stream_litellm_completion(
+        provider: str,
+        model: str,
+        messages: list,
+        max_tokens: int,
+        api_key: str = '',
+        azure_endpoint_url: str = '',
+        azure_deployment_name: str = '',
+        azure_api_version: str = '',
+) -> Iterator[str]:
+    """
+    Stream completion from LiteLLM.
+
+    :param provider: The LLM provider.
+    :param model: The name of the LLM.
+    :param messages: List of messages for the chat completion.
+    :param max_tokens: The maximum number of tokens to generate.
+    :param api_key: API key or access token to use.
+    :param azure_endpoint_url: Azure OpenAI endpoint URL.
+    :param azure_deployment_name: Azure OpenAI deployment name.
+    :param azure_api_version: Azure OpenAI API version.
+    :return: Iterator of response chunks.
+    """
+    
+    if litellm is None:
+        raise ImportError("LiteLLM is not installed. Please install it with: pip install litellm")
+    
+    # Convert to LiteLLM model name
+    litellm_model = get_litellm_model_name(provider, model)
+    
+    # Prepare the request parameters
+    request_params = {
+        "model": litellm_model,
+        "messages": messages,
+        "max_tokens": max_tokens,
+        "temperature": GlobalConfig.LLM_MODEL_TEMPERATURE,
+        "stream": True,
+    }
+    
+    # Set API key based on provider
+    if provider != GlobalConfig.PROVIDER_OLLAMA:
+        api_key_to_use = get_litellm_api_key(provider, api_key)
+        
+        if provider == GlobalConfig.PROVIDER_OPENROUTER:
+            request_params["api_key"] = api_key_to_use
+        elif provider == GlobalConfig.PROVIDER_COHERE:
+            request_params["api_key"] = api_key_to_use
+        elif provider == GlobalConfig.PROVIDER_TOGETHER_AI:
+            request_params["api_key"] = api_key_to_use
+        elif provider == GlobalConfig.PROVIDER_GOOGLE_GEMINI:
+            request_params["api_key"] = api_key_to_use
+        elif provider == GlobalConfig.PROVIDER_AZURE_OPENAI:
+            request_params["api_key"] = api_key_to_use
+            request_params["azure_endpoint"] = azure_endpoint_url
+            request_params["azure_deployment"] = azure_deployment_name
+            request_params["api_version"] = azure_api_version
+        elif provider == GlobalConfig.PROVIDER_HUGGING_FACE:
+            request_params["api_key"] = api_key_to_use
+    
+    logger.debug('Streaming completion via LiteLLM: %s', litellm_model)
+    
+    try:
+        response = litellm.completion(**request_params)
+        
+        for chunk in response:
+            if hasattr(chunk, 'choices') and chunk.choices:
+                choice = chunk.choices[0]
+                if hasattr(choice, 'delta') and hasattr(choice.delta, 'content'):
+                    if choice.delta.content:
+                        yield choice.delta.content
+                elif hasattr(choice, 'message') and hasattr(choice.message, 'content'):
+                    if choice.message.content:
+                        yield choice.message.content
+                        
+    except Exception as e:
+        logger.error(f"Error in LiteLLM completion: {e}")
+        raise
+
+
+def get_litellm_llm(
         provider: str,
         model: str,
         max_new_tokens: int,
@@ -121,131 +240,62 @@ def get_langchain_llm(
         azure_endpoint_url: str = '',
         azure_deployment_name: str = '',
         azure_api_version: str = '',
-) -> Union[BaseLLM, BaseChatModel, None]:
+) -> Union[object, None]:
     """
-    Get an LLM based on the provider and model specified.
+    Get a LiteLLM-compatible object for streaming.
 
-    :param provider: The LLM provider. Valid values are `hf` for Hugging Face.
+    :param provider: The LLM provider.
     :param model: The name of the LLM.
     :param max_new_tokens: The maximum number of tokens to generate.
     :param api_key: API key or access token to use.
     :param azure_endpoint_url: Azure OpenAI endpoint URL.
     :param azure_deployment_name: Azure OpenAI deployment name.
     :param azure_api_version: Azure OpenAI API version.
-    :return: An instance of the LLM or Chat model; `None` in case of any error.
+    :return: A LiteLLM-compatible object for streaming; `None` in case of any error.
     """
-
-    if provider == GlobalConfig.PROVIDER_HUGGING_FACE:
-        from langchain_community.llms.huggingface_endpoint import HuggingFaceEndpoint
-
-        logger.debug('Getting LLM via HF endpoint: %s', model)
-        return HuggingFaceEndpoint(
-            repo_id=model,
-            max_new_tokens=max_new_tokens,
-            top_k=40,
-            top_p=0.95,
-            temperature=GlobalConfig.LLM_MODEL_TEMPERATURE,
-            repetition_penalty=1.03,
-            streaming=True,
-            huggingfacehub_api_token=api_key,
-            return_full_text=False,
-            stop_sequences=['</s>'],
-        )
-
-    if provider == GlobalConfig.PROVIDER_GOOGLE_GEMINI:
-        from google.generativeai.types.safety_types import HarmBlockThreshold, HarmCategory
-        from langchain_google_genai import GoogleGenerativeAI
-
-        logger.debug('Getting LLM via Google Gemini: %s', model)
-        return GoogleGenerativeAI(
-            model=model,
-            temperature=GlobalConfig.LLM_MODEL_TEMPERATURE,
-            # max_tokens=max_new_tokens,
-            timeout=None,
-            max_retries=2,
-            google_api_key=api_key,
-            safety_settings={
-                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT:
-                    HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE,
-                HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT:
-                    HarmBlockThreshold.BLOCK_LOW_AND_ABOVE
-            }
-        )
-
-    if provider == GlobalConfig.PROVIDER_AZURE_OPENAI:
-        from langchain_openai import AzureChatOpenAI
-
-        logger.debug('Getting LLM via Azure OpenAI: %s', model)
-
-        # The `model` parameter is not used here; `azure_deployment` points to the desired name
-        return AzureChatOpenAI(
-            azure_deployment=azure_deployment_name,
-            api_version=azure_api_version,
-            azure_endpoint=azure_endpoint_url,
-            temperature=GlobalConfig.LLM_MODEL_TEMPERATURE,
-            # max_tokens=max_new_tokens,
-            timeout=None,
-            max_retries=1,
-            api_key=api_key,
-        )
-
-    if provider == GlobalConfig.PROVIDER_OPENROUTER:
-        # Use langchain-openai's ChatOpenAI for OpenRouter
-        from langchain_openai import ChatOpenAI
+    
+    if litellm is None:
+        logger.error("LiteLLM is not installed")
+        return None
+    
+    # Create a simple wrapper object that mimics the LangChain streaming interface
+    class LiteLLMWrapper:
+        def __init__(self, provider, model, max_tokens, api_key, azure_endpoint_url, azure_deployment_name, azure_api_version):
+            self.provider = provider
+            self.model = model
+            self.max_tokens = max_tokens
+            self.api_key = api_key
+            self.azure_endpoint_url = azure_endpoint_url
+            self.azure_deployment_name = azure_deployment_name
+            self.azure_api_version = azure_api_version
         
-        logger.debug('Getting LLM via OpenRouter: %s', model)
-        openrouter_api_key = api_key
-       
-        return ChatOpenAI(
-            base_url=OPENROUTER_BASE_URL,
-            openai_api_key=openrouter_api_key,
-            model_name=model,
-            temperature=GlobalConfig.LLM_MODEL_TEMPERATURE,
-            max_tokens=max_new_tokens,
-            streaming=True,
-        )
+        def stream(self, prompt: str):
+            messages = [{"role": "user", "content": prompt}]
+            return stream_litellm_completion(
+                provider=self.provider,
+                model=self.model,
+                messages=messages,
+                max_tokens=self.max_tokens,
+                api_key=self.api_key,
+                azure_endpoint_url=self.azure_endpoint_url,
+                azure_deployment_name=self.azure_deployment_name,
+                azure_api_version=self.azure_api_version,
+            )
+    
+    logger.debug('Creating LiteLLM wrapper for: %s', model)
+    return LiteLLMWrapper(
+        provider=provider,
+        model=model,
+        max_tokens=max_new_tokens,
+        api_key=api_key,
+        azure_endpoint_url=azure_endpoint_url,
+        azure_deployment_name=azure_deployment_name,
+        azure_api_version=azure_api_version,
+    )
 
-    if provider == GlobalConfig.PROVIDER_COHERE:
-        from langchain_cohere.llms import Cohere
 
-        logger.debug('Getting LLM via Cohere: %s', model)
-        return Cohere(
-            temperature=GlobalConfig.LLM_MODEL_TEMPERATURE,
-            max_tokens=max_new_tokens,
-            timeout_seconds=None,
-            max_retries=2,
-            cohere_api_key=api_key,
-            streaming=True,
-        )
-
-    if provider == GlobalConfig.PROVIDER_TOGETHER_AI:
-        from langchain_together import Together
-
-        logger.debug('Getting LLM via Together AI: %s', model)
-        return Together(
-            model=model,
-            temperature=GlobalConfig.LLM_MODEL_TEMPERATURE,
-            together_api_key=api_key,
-            max_tokens=max_new_tokens,
-            top_k=40,
-            top_p=0.90,
-        )
-
-    if provider == GlobalConfig.PROVIDER_OLLAMA:
-        from langchain_ollama.llms import OllamaLLM
-
-        logger.debug('Getting LLM via Ollama: %s', model)
-        return OllamaLLM(
-            model=model,
-            temperature=GlobalConfig.LLM_MODEL_TEMPERATURE,
-            num_predict=max_new_tokens,
-            format='json',
-            streaming=True,
-        )
-
-    return None
+# Keep the old function name for backward compatibility
+get_langchain_llm = get_litellm_llm
 
 
 if __name__ == '__main__':
