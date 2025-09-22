@@ -121,10 +121,6 @@ def is_valid_llm_provider_model(
 def get_litellm_model_name(provider: str, model: str) -> str:
     """
     Convert provider and model to LiteLLM model name format.
-
-    :param provider: The LLM provider.
-    :param model: The model name.
-    :return: LiteLLM formatted model name.
     """
     provider_prefix_map = {
         GlobalConfig.PROVIDER_HUGGING_FACE: "huggingface",
@@ -144,12 +140,18 @@ def get_litellm_model_name(provider: str, model: str) -> str:
 def get_litellm_api_key(provider: str, api_key: str) -> str:
     """
     Get the appropriate API key for LiteLLM based on provider.
-
-    :param provider: The LLM provider.
-    :param api_key: The API key.
-    :return: The API key.
     """
-    # All current providers just return the api_key, but this is left for future extensibility.
+    # All listed providers just return the api_key, so we can use a set for clarity
+    providers_with_api_key = {
+        GlobalConfig.PROVIDER_OPENROUTER,
+        GlobalConfig.PROVIDER_COHERE,
+        GlobalConfig.PROVIDER_TOGETHER_AI,
+        GlobalConfig.PROVIDER_GOOGLE_GEMINI,
+        GlobalConfig.PROVIDER_AZURE_OPENAI,
+        GlobalConfig.PROVIDER_HUGGING_FACE,
+    }
+    if provider in providers_with_api_key:
+        return api_key
     return api_key
 
 
@@ -192,25 +194,15 @@ def stream_litellm_completion(
         "stream": True,
     }
     
-    # Set API key based on provider
+    # Set API key and any provider-specific params
     if provider != GlobalConfig.PROVIDER_OLLAMA:
         api_key_to_use = get_litellm_api_key(provider, api_key)
-        
-        if provider == GlobalConfig.PROVIDER_OPENROUTER:
-            request_params["api_key"] = api_key_to_use
-        elif provider == GlobalConfig.PROVIDER_COHERE:
-            request_params["api_key"] = api_key_to_use
-        elif provider == GlobalConfig.PROVIDER_TOGETHER_AI:
-            request_params["api_key"] = api_key_to_use
-        elif provider == GlobalConfig.PROVIDER_GOOGLE_GEMINI:
-            request_params["api_key"] = api_key_to_use
-        elif provider == GlobalConfig.PROVIDER_AZURE_OPENAI:
-            request_params["api_key"] = api_key_to_use
+        request_params["api_key"] = api_key_to_use
+
+        if provider == GlobalConfig.PROVIDER_AZURE_OPENAI:
             request_params["azure_endpoint"] = azure_endpoint_url
             request_params["azure_deployment"] = azure_deployment_name
             request_params["api_version"] = azure_api_version
-        elif provider == GlobalConfig.PROVIDER_HUGGING_FACE:
-            request_params["api_key"] = api_key_to_use
     
     logger.debug('Streaming completion via LiteLLM: %s', litellm_model)
     
