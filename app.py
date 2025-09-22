@@ -158,6 +158,7 @@ def reset_chat_history():
     st.rerun()  # Reload the app
 
 
+
 APP_TEXT = _load_strings()
 
 # Session variables
