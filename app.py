@@ -134,6 +134,24 @@ def reset_api_key():
     st.session_state.api_key_input = ''
 
 
+def reset_chat_history():
+    """
+    Clear the chat history and related session state variables.
+    """
+    # Clear session state variables using pop with None default
+    st.session_state.pop(CHAT_MESSAGES, None)
+    st.session_state.pop(IS_IT_REFINEMENT, None)
+    st.session_state.pop(ADDITIONAL_INFO, None)
+    st.session_state.pop(PDF_FILE_KEY, None)
+    
+    # Remove previously generated temp PPTX file
+    temp_pptx_path = st.session_state.pop(DOWNLOAD_FILE_KEY, None)
+    if temp_pptx_path:
+        pptx_path = pathlib.Path(temp_pptx_path)
+        if pptx_path.exists() and pptx_path.is_file():
+            pptx_path.unlink()
+
+
 APP_TEXT = _load_strings()
 
 # Session variables
@@ -141,6 +159,7 @@ CHAT_MESSAGES = 'chat_messages'
 DOWNLOAD_FILE_KEY = 'download_file_name'
 IS_IT_REFINEMENT = 'is_it_refinement'
 ADDITIONAL_INFO = 'additional_info'
+PDF_FILE_KEY = 'pdf_file'
 
 
 logger = logging.getLogger(__name__)
@@ -148,7 +167,14 @@ logger = logging.getLogger(__name__)
 texts = list(GlobalConfig.PPTX_TEMPLATE_FILES.keys())
 captions = [GlobalConfig.PPTX_TEMPLATE_FILES[x]['caption'] for x in texts]
 
+
 with st.sidebar:
+    # New Chat button at the top of sidebar
+    col1, col2, col3 = st.columns([.17, 0.8, .1])
+    with col2:
+        if st.button('New Chat 💬', help='Start a new conversation', key='new_chat_button'):
+            reset_chat_history()  # Reset the chat history when the button is clicked
+    
     # The PPT templates
     pptx_template = st.sidebar.radio(
         '1: Select a presentation template:',
@@ -285,29 +311,32 @@ def set_up_chat_ui():
     for msg in history.messages:
         st.chat_message(msg.type).code(msg.content, language='json')
 
-    if prompt := st.chat_input(
+    # Chat input at the bottom
+    prompt = st.chat_input(
         placeholder=APP_TEXT['chat_placeholder'],
         max_chars=GlobalConfig.LLM_MODEL_MAX_INPUT_LENGTH,
         accept_file=True,
         file_type=['pdf', ],
-    ):
+    )
+
+    if prompt:
         prompt_text = prompt.text or ''
         if prompt['files']:
             # Store uploaded pdf in session state
             uploaded_pdf = prompt['files'][0]
-            st.session_state['pdf_file'] = uploaded_pdf
+            st.session_state[PDF_FILE_KEY] = uploaded_pdf
             # Apparently, Streamlit stores uploaded files in memory and clears on browser close
             # https://docs.streamlit.io/knowledge-base/using-streamlit/where-file-uploader-store-when-deleted
 
         # Check if pdf file is uploaded
         # (we can use the same file if the user doesn't upload a new one)
-        if 'pdf_file' in st.session_state:
+        if PDF_FILE_KEY in st.session_state:
             # Get validated page range
             (
                 st.session_state['start_page'],
                 st.session_state['end_page']
             ) = filem.validate_page_range(
-                st.session_state['pdf_file'],
+                st.session_state[PDF_FILE_KEY],
                 st.session_state['start_page'],
                 st.session_state['end_page']
             )
@@ -326,7 +355,7 @@ def set_up_chat_ui():
 
             # Get pdf contents
             st.session_state[ADDITIONAL_INFO] = filem.get_pdf_contents(
-                st.session_state['pdf_file'],
+                st.session_state[PDF_FILE_KEY],
                 (st.session_state['start_page'], st.session_state['end_page'])
             )
         provider, llm_name = llm_helper.get_provider_model(
