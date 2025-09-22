@@ -218,8 +218,7 @@ def stream_litellm_completion(
         # For OpenRouter, set environment variable as per documentation
         if provider == GlobalConfig.PROVIDER_OPENROUTER:
             os.environ["OPENROUTER_API_KEY"] = api_key
-            # Optional: Set base URL if different from default
-            # os.environ["OPENROUTER_API_BASE"] = "https://openrouter.ai/api/v1"
+            # Don't add API key to request_params for OpenRouter
         elif provider == GlobalConfig.PROVIDER_AZURE_OPENAI:
             # For Azure OpenAI, set environment variables as per documentation
             os.environ["AZURE_API_KEY"] = api_key
