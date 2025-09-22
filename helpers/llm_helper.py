@@ -70,8 +70,20 @@ def get_provider_model(provider_model: str, use_ollama: bool) -> Tuple[str, str]
         if match:
             inside_brackets = match.group(1)
             outside_brackets = match.group(2)
+            
+            # Validate that the provider is in the valid providers list
+            if inside_brackets not in GlobalConfig.VALID_PROVIDERS:
+                logger.warning(f"Provider '{inside_brackets}' not in VALID_PROVIDERS: {GlobalConfig.VALID_PROVIDERS}")
+                return '', ''
+            
+            # Validate that the model name is not empty
+            if not outside_brackets.strip():
+                logger.warning(f"Empty model name for provider '{inside_brackets}'")
+                return '', ''
+            
             return inside_brackets, outside_brackets
 
+    logger.warning(f"Could not parse provider_model: '{provider_model}' (use_ollama={use_ollama})")
     return '', ''
 
 
@@ -183,7 +195,14 @@ def stream_litellm_completion(
         raise ImportError("LiteLLM is not installed. Please install it with: pip install litellm")
     
     # Convert to LiteLLM model name
-    litellm_model = get_litellm_model_name(provider, model)
+    if provider == GlobalConfig.PROVIDER_AZURE_OPENAI:
+        # For Azure OpenAI, use the deployment name as the model
+        # This is consistent with Azure OpenAI's requirement to use deployment names
+        if not azure_deployment_name:
+            raise ValueError("Azure deployment name is required for Azure OpenAI provider")
+        litellm_model = f"azure/{azure_deployment_name}"
+    else:
+        litellm_model = get_litellm_model_name(provider, model)
     
     # Prepare the request parameters
     request_params = {
@@ -196,13 +215,20 @@ def stream_litellm_completion(
     
     # Set API key and any provider-specific params
     if provider != GlobalConfig.PROVIDER_OLLAMA:
-        api_key_to_use = get_litellm_api_key(provider, api_key)
-        request_params["api_key"] = api_key_to_use
-
-        if provider == GlobalConfig.PROVIDER_AZURE_OPENAI:
-            request_params["azure_endpoint"] = azure_endpoint_url
-            request_params["azure_deployment"] = azure_deployment_name
-            request_params["api_version"] = azure_api_version
+        # For OpenRouter, set environment variable as per documentation
+        if provider == GlobalConfig.PROVIDER_OPENROUTER:
+            os.environ["OPENROUTER_API_KEY"] = api_key
+            # Optional: Set base URL if different from default
+            # os.environ["OPENROUTER_API_BASE"] = "https://openrouter.ai/api/v1"
+        elif provider == GlobalConfig.PROVIDER_AZURE_OPENAI:
+            # For Azure OpenAI, set environment variables as per documentation
+            os.environ["AZURE_API_KEY"] = api_key
+            os.environ["AZURE_API_BASE"] = azure_endpoint_url
+            os.environ["AZURE_API_VERSION"] = azure_api_version
+        else:
+            # For other providers, pass API key as parameter
+            api_key_to_use = get_litellm_api_key(provider, api_key)
+            request_params["api_key"] = api_key_to_use
     
     logger.debug('Streaming completion via LiteLLM: %s', litellm_model)
     

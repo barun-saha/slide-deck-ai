@@ -210,17 +210,39 @@ with st.sidebar:
         api_version: str = ''
     else:
         # The online LLMs
-        llm_provider_to_use = st.sidebar.selectbox(
+        selected_option = st.sidebar.selectbox(
             label='2: Select a suitable LLM to use:\n\n(Gemini and Mistral-Nemo are recommended)',
             options=[f'{k} ({v["description"]})' for k, v in GlobalConfig.VALID_MODELS.items()],
             index=GlobalConfig.DEFAULT_MODEL_INDEX,
             help=GlobalConfig.LLM_PROVIDER_HELP,
             on_change=reset_api_key
-        ).split(' ')[0]
+        )
+        
+        # Extract provider key more robustly using regex
+        provider_match = GlobalConfig.PROVIDER_REGEX.match(selected_option)
+        if provider_match:
+            llm_provider_to_use = selected_option  # Use full string for get_provider_model
+        else:
+            # Fallback: try to extract the key before the first space
+            llm_provider_to_use = selected_option.split(' ')[0]
+            logger.warning(f"Could not parse provider from selectbox option: {selected_option}")
 
         # --- Automatically fetch API key from .env if available ---
         provider_match = GlobalConfig.PROVIDER_REGEX.match(llm_provider_to_use)
-        selected_provider = provider_match.group(1) if provider_match else llm_provider_to_use
+        if provider_match:
+            selected_provider = provider_match.group(1)
+        else:
+            # If regex doesn't match, try to extract provider from the beginning
+            selected_provider = llm_provider_to_use.split(' ')[0] if ' ' in llm_provider_to_use else llm_provider_to_use
+            logger.warning(f"Provider regex did not match for: {llm_provider_to_use}, using: {selected_provider}")
+        
+        # Validate that the selected provider is valid
+        if selected_provider not in GlobalConfig.VALID_PROVIDERS:
+            logger.error(f"Invalid provider: {selected_provider}")
+            handle_error(f"Invalid provider selected: {selected_provider}", True)
+            st.error(f"Invalid provider selected: {selected_provider}")
+            st.stop()
+        
         env_key_name = GlobalConfig.PROVIDER_ENV_KEYS.get(selected_provider)
         default_api_key = os.getenv(env_key_name, "") if env_key_name else ""
 
@@ -371,6 +393,15 @@ def set_up_chat_ui():
             llm_provider_to_use,
             use_ollama=RUN_IN_OFFLINE_MODE
         )
+
+        # Validate that provider and model were parsed successfully
+        if not provider or not llm_name:
+            handle_error(
+                f'Failed to parse provider and model from: "{llm_provider_to_use}". '
+                f'Please select a valid LLM from the dropdown.',
+                True
+            )
+            return
 
         user_key = api_key_token.strip()
         az_deployment = azure_deployment.strip()
