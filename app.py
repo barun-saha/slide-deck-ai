@@ -16,7 +16,6 @@ import ollama
 import requests
 import streamlit as st
 from dotenv import load_dotenv
-from streamlit_extras.bottom_container import bottom
 
 import global_config as gcfg
 import helpers.file_manager as filem
