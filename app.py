@@ -16,52 +16,11 @@ import ollama
 import requests
 import streamlit as st
 from dotenv import load_dotenv
-# Custom message classes to replace LangChain components
-class ChatMessage:
-    def __init__(self, content: str, role: str):
-        self.content = content
-        self.role = role
-        self.type = role  # For compatibility with existing code
-
-class HumanMessage(ChatMessage):
-    def __init__(self, content: str):
-        super().__init__(content, "user")
-
-class AIMessage(ChatMessage):
-    def __init__(self, content: str):
-        super().__init__(content, "ai")
-
-class StreamlitChatMessageHistory:
-    def __init__(self, key: str):
-        self.key = key
-        if key not in st.session_state:
-            st.session_state[key] = []
-    
-    @property
-    def messages(self):
-        return st.session_state[self.key]
-    
-    def add_user_message(self, content: str):
-        st.session_state[self.key].append(HumanMessage(content))
-    
-    def add_ai_message(self, content: str):
-        st.session_state[self.key].append(AIMessage(content))
-
-class ChatPromptTemplate:
-    def __init__(self, template: str):
-        self.template = template
-    
-    @classmethod
-    def from_template(cls, template: str):
-        return cls(template)
-    
-    def format(self, **kwargs):
-        return self.template.format(**kwargs)
 
 import global_config as gcfg
 import helpers.file_manager as filem
 from global_config import GlobalConfig
-from helpers import llm_helper, pptx_helper, text_helper
+from helpers import chat_helper, llm_helper, pptx_helper, text_helper
 
 load_dotenv()
 
@@ -333,8 +292,8 @@ def set_up_chat_ui():
     st.info(APP_TEXT['like_feedback'])
     st.chat_message('ai').write(random.choice(APP_TEXT['ai_greetings']))
 
-    history = StreamlitChatMessageHistory(key=CHAT_MESSAGES)
-    prompt_template = ChatPromptTemplate.from_template(
+    history = chat_helper.StreamlitChatMessageHistory(key=CHAT_MESSAGES)
+    prompt_template = chat_helper.ChatPromptTemplate.from_template(
         _get_prompt_template(
             is_refinement=_is_it_refinement()
         )
@@ -653,7 +612,7 @@ def _get_user_messages() -> List[str]:
     """
 
     return [
-        msg.content for msg in st.session_state[CHAT_MESSAGES] if isinstance(msg, HumanMessage)
+        msg.content for msg in st.session_state[CHAT_MESSAGES] if isinstance(msg, chat_helper.HumanMessage)
     ]
 
 

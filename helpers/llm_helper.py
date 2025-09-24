@@ -73,17 +73,23 @@ def get_provider_model(provider_model: str, use_ollama: bool) -> Tuple[str, str]
             
             # Validate that the provider is in the valid providers list
             if inside_brackets not in GlobalConfig.VALID_PROVIDERS:
-                logger.warning(f"Provider '{inside_brackets}' not in VALID_PROVIDERS: {GlobalConfig.VALID_PROVIDERS}")
+                logger.warning(
+                    "Provider '%s' not in VALID_PROVIDERS: %s",
+                    inside_brackets, GlobalConfig.VALID_PROVIDERS
+                )
                 return '', ''
             
             # Validate that the model name is not empty
             if not outside_brackets.strip():
-                logger.warning(f"Empty model name for provider '{inside_brackets}'")
+                logger.warning("Empty model name for provider '%s'", inside_brackets)
                 return '', ''
             
             return inside_brackets, outside_brackets
 
-    logger.warning(f"Could not parse provider_model: '{provider_model}' (use_ollama={use_ollama})")
+    logger.warning(
+        "Could not parse provider_model: '%s' (use_ollama=%s)",
+        provider_model, use_ollama
+    )
     return '', ''
 
 
@@ -135,36 +141,18 @@ def get_litellm_model_name(provider: str, model: str) -> str:
     Convert provider and model to LiteLLM model name format.
     """
     provider_prefix_map = {
-        GlobalConfig.PROVIDER_HUGGING_FACE: "huggingface",
-        GlobalConfig.PROVIDER_GOOGLE_GEMINI: "gemini",
-        GlobalConfig.PROVIDER_AZURE_OPENAI: "azure",
-        GlobalConfig.PROVIDER_OPENROUTER: "openrouter",
-        GlobalConfig.PROVIDER_COHERE: "cohere",
-        GlobalConfig.PROVIDER_TOGETHER_AI: "together_ai",
-        GlobalConfig.PROVIDER_OLLAMA: "ollama",
+        GlobalConfig.PROVIDER_HUGGING_FACE: 'huggingface',
+        GlobalConfig.PROVIDER_GOOGLE_GEMINI: 'gemini',
+        GlobalConfig.PROVIDER_AZURE_OPENAI: 'azure',
+        GlobalConfig.PROVIDER_OPENROUTER: 'openrouter',
+        GlobalConfig.PROVIDER_COHERE: 'cohere',
+        GlobalConfig.PROVIDER_TOGETHER_AI: 'together_ai',
+        GlobalConfig.PROVIDER_OLLAMA: 'ollama',
     }
     prefix = provider_prefix_map.get(provider)
     if prefix:
-        return f"{prefix}/{model}"
+        return '%s/%s' % (prefix, model)
     return model
-
-
-def get_litellm_api_key(provider: str, api_key: str) -> str:
-    """
-    Get the appropriate API key for LiteLLM based on provider.
-    """
-    # All listed providers just return the api_key, so we can use a set for clarity
-    providers_with_api_key = {
-        GlobalConfig.PROVIDER_OPENROUTER,
-        GlobalConfig.PROVIDER_COHERE,
-        GlobalConfig.PROVIDER_TOGETHER_AI,
-        GlobalConfig.PROVIDER_GOOGLE_GEMINI,
-        GlobalConfig.PROVIDER_AZURE_OPENAI,
-        GlobalConfig.PROVIDER_HUGGING_FACE,
-    }
-    if provider in providers_with_api_key:
-        return api_key
-    return api_key
 
 
 def stream_litellm_completion(
@@ -200,34 +188,32 @@ def stream_litellm_completion(
         # This is consistent with Azure OpenAI's requirement to use deployment names
         if not azure_deployment_name:
             raise ValueError("Azure deployment name is required for Azure OpenAI provider")
-        litellm_model = f"azure/{azure_deployment_name}"
+        litellm_model = 'azure/%s' % azure_deployment_name
     else:
         litellm_model = get_litellm_model_name(provider, model)
     
     # Prepare the request parameters
     request_params = {
-        "model": litellm_model,
-        "messages": messages,
-        "max_tokens": max_tokens,
-        "temperature": GlobalConfig.LLM_MODEL_TEMPERATURE,
-        "stream": True,
+        'model': litellm_model,
+        'messages': messages,
+        'max_tokens': max_tokens,
+        'temperature': GlobalConfig.LLM_MODEL_TEMPERATURE,
+        'stream': True,
     }
     
     # Set API key and any provider-specific params
     if provider != GlobalConfig.PROVIDER_OLLAMA:
-        # For OpenRouter, set environment variable as per documentation
+        # For OpenRouter, pass API key as parameter
         if provider == GlobalConfig.PROVIDER_OPENROUTER:
-            os.environ["OPENROUTER_API_KEY"] = api_key
-            # Don't add API key to request_params for OpenRouter
+            request_params['api_key'] = api_key
         elif provider == GlobalConfig.PROVIDER_AZURE_OPENAI:
-            # For Azure OpenAI, set environment variables as per documentation
-            os.environ["AZURE_API_KEY"] = api_key
-            os.environ["AZURE_API_BASE"] = azure_endpoint_url
-            os.environ["AZURE_API_VERSION"] = azure_api_version
+            # For Azure OpenAI, pass credentials as parameters
+            request_params['api_key'] = api_key
+            request_params['azure_api_base'] = azure_endpoint_url
+            request_params['azure_api_version'] = azure_api_version
         else:
             # For other providers, pass API key as parameter
-            api_key_to_use = get_litellm_api_key(provider, api_key)
-            request_params["api_key"] = api_key_to_use
+            request_params['api_key'] = api_key
     
     logger.debug('Streaming completion via LiteLLM: %s', litellm_model)
     
@@ -245,7 +231,7 @@ def stream_litellm_completion(
                         yield choice.message.content
                         
     except Exception as e:
-        logger.error(f"Error in LiteLLM completion: {e}")
+        logger.error('Error in LiteLLM completion: %s', e)
         raise
 
 
@@ -277,7 +263,10 @@ def get_litellm_llm(
     
     # Create a simple wrapper object that mimics the LangChain streaming interface
     class LiteLLMWrapper:
-        def __init__(self, provider, model, max_tokens, api_key, azure_endpoint_url, azure_deployment_name, azure_api_version):
+        def __init__(
+                self, provider, model, max_tokens, api_key, azure_endpoint_url,
+                azure_deployment_name, azure_api_version
+        ):
             self.provider = provider
             self.model = model
             self.max_tokens = max_tokens
@@ -287,7 +276,7 @@ def get_litellm_llm(
             self.azure_api_version = azure_api_version
         
         def stream(self, prompt: str):
-            messages = [{"role": "user", "content": prompt}]
+            messages = [{'role': 'user', 'content': prompt}]
             return stream_litellm_completion(
                 provider=self.provider,
                 model=self.model,
