@@ -8,8 +8,6 @@ import urllib3
 from typing import Tuple, Union, Iterator
 
 import requests
-from requests.adapters import HTTPAdapter
-from urllib3.util import Retry
 import os
 
 sys.path.append('..')
@@ -18,35 +16,22 @@ from global_config import GlobalConfig
 
 try:
     import litellm
-    from litellm import completion, acompletion
+    from litellm import completion
 except ImportError:
     litellm = None
     completion = None
-    acompletion = None
+
 
 LLM_PROVIDER_MODEL_REGEX = re.compile(r'\[(.*?)\](.*)')
 OLLAMA_MODEL_REGEX = re.compile(r'[a-zA-Z0-9._:-]+$')
 # 94 characters long, only containing alphanumeric characters, hyphens, and underscores
 API_KEY_REGEX = re.compile(r'^[a-zA-Z0-9_-]{6,94}$')
-REQUEST_TIMEOUT = 35
-OPENROUTER_BASE_URL = 'https://openrouter.ai/api/v1'
+
 
 logger = logging.getLogger(__name__)
 logging.getLogger('httpx').setLevel(logging.WARNING)
 logging.getLogger('httpcore').setLevel(logging.WARNING)
 logging.getLogger('openai').setLevel(logging.ERROR)
-
-retries = Retry(
-    total=5,
-    backoff_factor=0.25,
-    backoff_jitter=0.3,
-    status_forcelist=[502, 503, 504],
-    allowed_methods={'POST'},
-)
-adapter = HTTPAdapter(max_retries=retries)
-http_session = requests.Session()
-http_session.mount('https://', adapter)
-http_session.mount('http://', adapter)
 
 
 def get_provider_model(provider_model: str, use_ollama: bool) -> Tuple[str, str]:
