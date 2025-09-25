@@ -145,5 +145,4 @@ dmypy.json
 cython_debug/
 
 .DS_Store
-.idea/
 .idea/**/.DS_Store
