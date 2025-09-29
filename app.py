@@ -223,9 +223,8 @@ with st.sidebar:
         
         # Validate that the selected provider is valid
         if selected_provider not in GlobalConfig.VALID_PROVIDERS:
-            logger.error(f"Invalid provider: {selected_provider}")
-            handle_error(f"Invalid provider selected: {selected_provider}", True)
-            st.error(f"Invalid provider selected: {selected_provider}")
+            logger.error('Invalid provider: %s', selected_provider)
+            handle_error(f'Invalid provider selected: {selected_provider}', True)
             st.stop()
         
         env_key_name = GlobalConfig.PROVIDER_ENV_KEYS.get(selected_provider)
@@ -610,7 +609,7 @@ def generate_slide_deck(json_str: str) -> Union[pathlib.Path, None]:
         )
     except Exception as ex:
         st.error(APP_TEXT['content_generation_error'])
-        logger.error('Caught a generic exception: %s', str(ex))
+        logger.exception('Caught a generic exception: %s', str(ex))
 
     return path
 

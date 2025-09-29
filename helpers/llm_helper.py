@@ -124,6 +124,13 @@ def is_valid_llm_provider_model(
 def get_litellm_model_name(provider: str, model: str) -> str:
     """
     Convert provider and model to LiteLLM model name format.
+    
+    Note: Azure OpenAI models are handled separately in stream_litellm_completion()
+    and should not be passed to this function.
+    
+    :param provider: The LLM provider.
+    :param model: The model name.
+    :return: LiteLLM-compatible model name, or None if provider is not supported.
     """
     provider_prefix_map = {
         GlobalConfig.PROVIDER_HUGGING_FACE: 'huggingface',
@@ -136,8 +143,9 @@ def get_litellm_model_name(provider: str, model: str) -> str:
     }
     prefix = provider_prefix_map.get(provider)
     if prefix:
-        return '%s/%s' % (prefix, model)
-    return model
+        return f'{prefix}/{model}'
+    # LiteLLM always expects a prefix for model names; if not found, return None
+    return None
 
 
 def stream_litellm_completion(
@@ -173,7 +181,7 @@ def stream_litellm_completion(
         # This is consistent with Azure OpenAI's requirement to use deployment names
         if not azure_deployment_name:
             raise ValueError("Azure deployment name is required for Azure OpenAI provider")
-        litellm_model = 'azure/%s' % azure_deployment_name
+        litellm_model = f'azure/{azure_deployment_name}'
     else:
         litellm_model = get_litellm_model_name(provider, model)
     
@@ -194,8 +202,8 @@ def stream_litellm_completion(
         elif provider == GlobalConfig.PROVIDER_AZURE_OPENAI:
             # For Azure OpenAI, pass credentials as parameters
             request_params['api_key'] = api_key
-            request_params['azure_api_base'] = azure_endpoint_url
-            request_params['azure_api_version'] = azure_api_version
+            request_params['api_base'] = azure_endpoint_url
+            request_params['api_version'] = azure_api_version
         else:
             # For other providers, pass API key as parameter
             request_params['api_key'] = api_key
@@ -216,7 +224,7 @@ def stream_litellm_completion(
                         yield choice.message.content
                         
     except Exception as e:
-        logger.error('Error in LiteLLM completion: %s', e)
+        logger.exception('Error in LiteLLM completion: %s', e)
         raise
 
 
@@ -243,8 +251,7 @@ def get_litellm_llm(
     """
     
     if litellm is None:
-        logger.error("LiteLLM is not installed")
-        return None
+        raise ImportError("LiteLLM is not installed. Please install it with: pip install litellm")
     
     # Create a simple wrapper object that mimics the LangChain streaming interface
     class LiteLLMWrapper:
