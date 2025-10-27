@@ -16,14 +16,11 @@ import ollama
 import requests
 import streamlit as st
 from dotenv import load_dotenv
-from langchain_community.chat_message_histories import StreamlitChatMessageHistory
-from langchain_core.messages import HumanMessage
-from langchain_core.prompts import ChatPromptTemplate
 
 import global_config as gcfg
 import helpers.file_manager as filem
 from global_config import GlobalConfig
-from helpers import llm_helper, pptx_helper, text_helper
+from helpers import chat_helper, llm_helper, pptx_helper, text_helper
 
 load_dotenv()
 
@@ -205,10 +202,23 @@ with st.sidebar:
             help=GlobalConfig.LLM_PROVIDER_HELP,
             on_change=reset_api_key
         ).split(' ')[0]
-
+        
         # --- Automatically fetch API key from .env if available ---
+        # Extract provider key using regex
         provider_match = GlobalConfig.PROVIDER_REGEX.match(llm_provider_to_use)
-        selected_provider = provider_match.group(1) if provider_match else llm_provider_to_use
+        if provider_match:
+            selected_provider = provider_match.group(1)
+        else:
+            # If regex doesn't match, try to extract provider from the beginning
+            selected_provider = llm_provider_to_use.split(' ')[0] if ' ' in llm_provider_to_use else llm_provider_to_use
+            logger.warning("Provider regex did not match for: %s, using: %s", llm_provider_to_use, selected_provider)
+        
+        # Validate that the selected provider is valid
+        if selected_provider not in GlobalConfig.VALID_PROVIDERS:
+            logger.error('Invalid provider: %s', selected_provider)
+            handle_error(f'Invalid provider selected: {selected_provider}', True)
+            st.stop()
+        
         env_key_name = GlobalConfig.PROVIDER_ENV_KEYS.get(selected_provider)
         default_api_key = os.getenv(env_key_name, "") if env_key_name else ""
 
@@ -299,8 +309,8 @@ def set_up_chat_ui():
     st.info(APP_TEXT['like_feedback'])
     st.chat_message('ai').write(random.choice(APP_TEXT['ai_greetings']))
 
-    history = StreamlitChatMessageHistory(key=CHAT_MESSAGES)
-    prompt_template = ChatPromptTemplate.from_template(
+    history = chat_helper.StreamlitChatMessageHistory(key=CHAT_MESSAGES)
+    prompt_template = chat_helper.ChatPromptTemplate.from_template(
         _get_prompt_template(
             is_refinement=_is_it_refinement()
         )
@@ -363,6 +373,15 @@ def set_up_chat_ui():
             use_ollama=RUN_IN_OFFLINE_MODE
         )
 
+        # Validate that provider and model were parsed successfully
+        if not provider or not llm_name:
+            handle_error(
+                f'Failed to parse provider and model from: "{llm_provider_to_use}". '
+                f'Please select a valid LLM from the dropdown.',
+                True
+            )
+            return
+
         user_key = api_key_token.strip()
         az_deployment = azure_deployment.strip()
         az_endpoint = azure_endpoint.strip()
@@ -405,7 +424,7 @@ def set_up_chat_ui():
         response = ''
 
         try:
-            llm = llm_helper.get_langchain_llm(
+            llm = llm_helper.get_litellm_llm(
                 provider=provider,
                 model=llm_name,
                 max_new_tokens=gcfg.get_max_output_tokens(llm_provider_to_use),
@@ -582,7 +601,7 @@ def generate_slide_deck(json_str: str) -> Union[pathlib.Path, None]:
         )
     except Exception as ex:
         st.error(APP_TEXT['content_generation_error'])
-        logger.error('Caught a generic exception: %s', str(ex))
+        logger.exception('Caught a generic exception: %s', str(ex))
 
     return path
 
@@ -613,7 +632,7 @@ def _get_user_messages() -> List[str]:
     """
 
     return [
-        msg.content for msg in st.session_state[CHAT_MESSAGES] if isinstance(msg, HumanMessage)
+        msg.content for msg in st.session_state[CHAT_MESSAGES] if isinstance(msg, chat_helper.HumanMessage)
     ]
 
 

@@ -7,16 +7,8 @@ jinja2>=3.1.6
 Pillow==10.3.0
 pyarrow~=16.0.0
 pydantic==2.9.1
-langchain~=0.3.27
-langchain-core~=0.3.35
-langchain-community~=0.3.27
-langchain-google-genai==2.0.10
-# google-ai-generativelanguage==0.6.15
+litellm>=1.55.0
 google-generativeai  # ~=0.8.3
-langchain-cohere~=0.4.4
-langchain-together~=0.3.0
-langchain-ollama~=0.3.6
-langchain-openai~=0.3.28
 streamlit==1.44.1
 
 python-pptx~=1.0.2
