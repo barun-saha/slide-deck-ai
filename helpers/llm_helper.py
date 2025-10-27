@@ -5,7 +5,7 @@ import logging
 import re
 import sys
 import urllib3
-from typing import Tuple, Union, Iterator
+from typing import Tuple, Union, Iterator, Optional
 
 import requests
 import os
@@ -121,7 +121,7 @@ def is_valid_llm_provider_model(
     return True
 
 
-def get_litellm_model_name(provider: str, model: str) -> str:
+def get_litellm_model_name(provider: str, model: str) -> Optional[str]:
     """
     Convert provider and model to LiteLLM model name format.
     
@@ -184,6 +184,8 @@ def stream_litellm_completion(
         litellm_model = f'azure/{azure_deployment_name}'
     else:
         litellm_model = get_litellm_model_name(provider, model)
+        if not litellm_model:
+            raise ValueError(f"Invalid model name: {model} for provider: {provider}")
     
     # Prepare the request parameters
     request_params = {
