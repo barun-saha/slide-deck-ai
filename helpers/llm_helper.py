@@ -7,8 +7,6 @@ import sys
 import urllib3
 from typing import Tuple, Union, Iterator, Optional
 
-import requests
-import os
 
 sys.path.append('..')
 
@@ -17,6 +15,14 @@ from global_config import GlobalConfig
 try:
     import litellm
     from litellm import completion
+
+    # Ask LiteLLM to suppress debug information if possible
+    try:
+        litellm.suppress_debug_info = True
+    except AttributeError:
+        # Attribute not available in this version of LiteLLM
+        pass
+
 except ImportError:
     litellm = None
     completion = None
@@ -29,9 +35,6 @@ API_KEY_REGEX = re.compile(r'^[a-zA-Z0-9_-]{6,94}$')
 
 
 logger = logging.getLogger(__name__)
-logging.getLogger('httpx').setLevel(logging.WARNING)
-logging.getLogger('httpcore').setLevel(logging.WARNING)
-logging.getLogger('openai').setLevel(logging.ERROR)
 
 
 def get_provider_model(provider_model: str, use_ollama: bool) -> Tuple[str, str]:
