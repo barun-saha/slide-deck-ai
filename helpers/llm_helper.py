@@ -7,8 +7,37 @@ import sys
 import urllib3
 from typing import Tuple, Union, Iterator, Optional
 
-import requests
-import os
+# Centralized logging configuration (early):
+# - Ensure noisy third-party loggers (httpx, httpcore, urllib3, LiteLLM, etc.) are set to WARNING
+# - Disable propagation so they don't bubble up to the root logger
+# - Capture warnings from the warnings module into logging
+# The suppression must run before the noisy library is imported/initialised!
+LOGGERS_TO_SUPPRESS = [
+    'asyncio',
+    'httpx',
+    'httpcore',
+    'langfuse',
+    'LiteLLM',
+    'litellm',
+    'openai',
+    'urllib3',
+    'urllib3.connectionpool',
+]
+
+# Basic config at module import time; use WARNING to avoid DEBUG noise
+logging.basicConfig(
+    level=logging.WARNING,
+    format='%(asctime)s - %(levelname)s - %(name)s - %(message)s'
+)
+for _lg in LOGGERS_TO_SUPPRESS:
+    logger_obj = logging.getLogger(_lg)
+    logger_obj.setLevel(logging.WARNING)
+    # Prevent these logs from propagating to the root logger
+    logger_obj.propagate = False
+
+# Capture warnings from the warnings module (optional, helps centralize output)
+if hasattr(logging, 'captureWarnings'):
+    logging.captureWarnings(True)
 
 sys.path.append('..')
 
@@ -17,6 +46,14 @@ from global_config import GlobalConfig
 try:
     import litellm
     from litellm import completion
+
+    # Ask LiteLLM to suppress debug information if possible
+    try:
+        litellm.suppress_debug_info = True
+    except Exception:
+        # Ignore if attribute is unavailable
+        pass
+
 except ImportError:
     litellm = None
     completion = None
