@@ -12,16 +12,17 @@ license: mit
 
 # SlideDeck AI
 
-We spend a lot of time on creating the slides and organizing our thoughts for any presentation. 
-With SlideDeck AI, co-create slide decks on any topic with Generative Artificial Intelligence.
-Describe your topic and let SlideDeck AI generate a PowerPoint slide deck for you—it's as simple as that!
+We spend a lot of time **creating** slides and organizing our thoughts for any presentation. 
+With SlideDeck AI, co-create slide decks on any topic with **Generative Artificial Intelligence**.
+Describe your topic and let SlideDeck AI generate a **PowerPoint slide deck** for you—it's as simple as that!
+
 
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=barun-saha/slide-deck-ai&type=Date)](https://star-history.com/#barun-saha/slide-deck-ai&Date)
 
 
-# Process
+## Process
 
 SlideDeck AI works in the following way:
 
@@ -40,11 +41,11 @@ Clicking on the button will download the file.
 In addition, SlideDeck AI can also create a presentation based on PDF files.
 
 
-# Summary of the LLMs
+## Summary of the LLMs
 
 SlideDeck AI allows the use of different LLMs from several online providers—Azure OpenAI, Google, Cohere, Together AI, and OpenRouter. Most of these service providers offer generous free usage of relevant LLMs without requiring any billing information.  
 
-Based on several experiments, SlideDeck AI generally recommends the use of Mistral NeMo, Gemini Flash, and GPT-4o to generate the slide decks.
+Based on several experiments, SlideDeck AI generally recommends the use of **Mistral NeMo**, **Gemini Flash**, and **GPT-4o** to generate the slide decks.
 
 The supported LLMs offer different styles of content generation. Use one of the following LLMs along with relevant API keys/access tokens, as appropriate, to create the content of the slide deck:
 
@@ -62,25 +63,24 @@ The supported LLMs offer different styles of content generation. Use one of the 
 | Llama 3.3 70B Instruct Turbo     | Together AI (`to`) | Mandatory; [get here](https://api.together.ai/settings/api-keys)                                                         | Slower, detailed         |
 | Llama 3.1 8B Instruct Turbo 128K | Together AI (`to`) | Mandatory; [get here](https://api.together.ai/settings/api-keys)                                                         | Faster, shorter          |
 
-**IMPORTANT**: SlideDeck AI does **NOT** store your API keys/tokens or transmit them elsewhere. If you provide your API key, it is only used to invoke the relevant LLM to generate contents. That's it! This is an 
+> **IMPORTANT**: SlideDeck AI does **NOT** store your API keys/tokens or transmit them elsewhere. If you provide your API key, it is only used to invoke the relevant LLM to generate contents. That's it! This is an 
 Open-Source project, so feel free to audit the code and convince yourself. 
 
 In addition, offline LLMs provided by Ollama can be used. Read below to know more. 
 
 
-# Icons
+## Icons
 
-SlideDeck AI uses a subset of icons from [bootstrap-icons-1.11.3](https://github.com/twbs/icons)
- (MIT license) in the slides. A few icons from [SVG Repo](https://www.svgrepo.com/)
+SlideDeck AI uses a subset of icons from [bootstrap-icons-1.11.3](https://github.com/twbs/icons) (MIT license) in the slides. A few icons from [SVG Repo](https://www.svgrepo.com/)
 (CC0, MIT, and Apache licenses) are also used. 
 
 
-# Local Development
+## Local Development
 
 SlideDeck AI uses LLMs via different providers. To run this project by yourself, you need to use an appropriate API key, for example, in a `.env` file.
 Alternatively, you can provide the access token in the app's user interface itself (UI).
 
-## Offline LLMs Using Ollama
+### Offline LLMs Using Ollama
 
 SlideDeck AI allows the use of offline LLMs to generate the contents of the slide decks. This is typically suitable for individuals or organizations who would like to use self-hosted LLMs for privacy concerns, for example.
 
@@ -102,9 +102,9 @@ git lfs install
 
 ollama list  # View locally available LLMs
 export RUN_IN_OFFLINE_MODE=True  # Enable the offline mode to use Ollama
-git clone https://github.com/barun-saha/slide-deck-ai.git
+git clone [https://github.com/barun-saha/slide-deck-ai.git](https://github.com/barun-saha/slide-deck-ai.git)
 cd slide-deck-ai
-git lfs pull  # Pull the PPTX template files
+git lfs pull  # Pull the PPTX template files - ESSENTIAL STEP!
 
 python -m venv venv  # Create a virtual environment
 source venv/bin/activate  # On a Linux system
@@ -139,12 +139,13 @@ SlideDeck AI has won the 3rd Place in the [Llama 2 Hackathon with Clarifai](http
 # Contributors
 
 SlideDeck AI is glad to have the following community contributions:
-- [Srinivasan Ragothaman](https://github.com/rsrini7): added OpenRouter support and API keys mapping from the `.env` file.
-- [Aditya](https://github.com/AdiBak): added support for page range selection for PDF files.
+- [Aditya](https://github.com/AdiBak): added support for page range selection for PDF files and new chat button.
 - [Sagar Bharatbhai Bharadia](https://github.com/sagarbharadia17): added support for Gemini 2.5 Flash Lite and Gemini 2.5 Flash LLMs.
+- [Sairam Pillai](https://github.com/sairampillai): unified the project's LLM access by migrating the API calls to **LiteLLM**.
+- [Srinivasan Ragothaman](https://github.com/rsrini7): added OpenRouter support and API keys mapping from the `.env` file.
 
 Thank you all for your contributions!
 
-[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors)
+[![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors)
 
 
