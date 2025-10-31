@@ -7,37 +7,6 @@ import sys
 import urllib3
 from typing import Tuple, Union, Iterator, Optional
 
-# Centralized logging configuration (early):
-# - Ensure noisy third-party loggers (httpx, httpcore, urllib3, LiteLLM, etc.) are set to WARNING
-# - Disable propagation so they don't bubble up to the root logger
-# - Capture warnings from the warnings module into logging
-# The suppression must run before the noisy library is imported/initialised!
-LOGGERS_TO_SUPPRESS = [
-    'asyncio',
-    'httpx',
-    'httpcore',
-    'langfuse',
-    'LiteLLM',
-    'litellm',
-    'openai',
-    'urllib3',
-    'urllib3.connectionpool',
-]
-
-# Basic config at module import time; use WARNING to avoid DEBUG noise
-logging.basicConfig(
-    level=logging.WARNING,
-    format='%(asctime)s - %(levelname)s - %(name)s - %(message)s'
-)
-for _lg in LOGGERS_TO_SUPPRESS:
-    logger_obj = logging.getLogger(_lg)
-    logger_obj.setLevel(logging.WARNING)
-    # Prevent these logs from propagating to the root logger
-    logger_obj.propagate = False
-
-# Capture warnings from the warnings module (optional, helps centralize output)
-if hasattr(logging, 'captureWarnings'):
-    logging.captureWarnings(True)
 
 sys.path.append('..')
 
@@ -50,8 +19,8 @@ try:
     # Ask LiteLLM to suppress debug information if possible
     try:
         litellm.suppress_debug_info = True
-    except Exception:
-        # Ignore if attribute is unavailable
+    except AttributeError:
+        # Attribute not available in this version of LiteLLM
         pass
 
 except ImportError:
@@ -66,9 +35,6 @@ API_KEY_REGEX = re.compile(r'^[a-zA-Z0-9_-]{6,94}$')
 
 
 logger = logging.getLogger(__name__)
-logging.getLogger('httpx').setLevel(logging.WARNING)
-logging.getLogger('httpcore').setLevel(logging.WARNING)
-logging.getLogger('openai').setLevel(logging.ERROR)
 
 
 def get_provider_model(provider_model: str, use_ollama: bool) -> Tuple[str, str]:
