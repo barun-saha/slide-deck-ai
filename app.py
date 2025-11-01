@@ -332,7 +332,7 @@ def set_up_chat_ui():
     st.info(APP_TEXT['like_feedback'])
     st.chat_message('ai').write(random.choice(APP_TEXT['ai_greetings']))
 
-    history = chat_helper.StreamlitChatMessageHistory(key=CHAT_MESSAGES)
+    history = StreamlitChatMessageHistory(key=CHAT_MESSAGES)
     prompt_template = chat_helper.ChatPromptTemplate.from_template(
         _get_prompt_template(
             is_refinement=_is_it_refinement()
