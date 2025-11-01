@@ -399,6 +399,7 @@ def set_up_chat_ui():
             topic=prompt_text,
             api_key=api_key_token.strip(),
             template_idx=list(GlobalConfig.PPTX_TEMPLATE_FILES.keys()).index(pptx_template),
+            additional_info=st.session_state.get(ADDITIONAL_INFO, ''),
         )
 
         progress_bar = st.progress(0, 'Preparing to call LLM...')

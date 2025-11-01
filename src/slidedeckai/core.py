@@ -26,7 +26,7 @@ class SlideDeckAI:
     The main class for generating slide decks.
     """
 
-    def __init__(self, model, topic, api_key=None, pdf_file_path=None, pdf_page_range=None, template_idx=0):
+    def __init__(self, model, topic, api_key=None, pdf_file_path=None, pdf_page_range=None, template_idx=0, additional_info=''):
         """
         Initializes the SlideDeckAI object.
 
@@ -36,6 +36,7 @@ class SlideDeckAI:
         :param pdf_file_path: The path to a PDF file to use as a source for the slide deck.
         :param pdf_page_range: A tuple representing the page range to use from the PDF file.
         :param template_idx: The index of the PowerPoint template to use.
+        :param additional_info: Additional information to be sent to the LLM, such as text from a PDF.
         """
         self.model = model
         self.topic = topic
@@ -43,6 +44,7 @@ class SlideDeckAI:
         self.pdf_file_path = pdf_file_path
         self.pdf_page_range = pdf_page_range
         self.template_idx = template_idx
+        self.additional_info = additional_info
         self.chat_history = ChatMessageHistory()
         self.last_response = None
 
@@ -68,7 +70,7 @@ class SlideDeckAI:
         """
         self.chat_history.add_user_message(self.topic)
         prompt_template = self._get_prompt_template(is_refinement=False)
-        formatted_template = prompt_template.format(question=self.topic, additional_info='')
+        formatted_template = prompt_template.format(question=self.topic, additional_info=self.additional_info)
 
         provider, llm_name = llm_helper.get_provider_model(self.model, use_ollama=RUN_IN_OFFLINE_MODE)
 
@@ -119,7 +121,7 @@ class SlideDeckAI:
         formatted_template = prompt_template.format(
             instructions='\n'.join(list_of_msgs),
             previous_content=self.last_response,
-            additional_info='',
+            additional_info=self.additional_info,
         )
 
         provider, llm_name = llm_helper.get_provider_model(self.model, use_ollama=RUN_IN_OFFLINE_MODE)
