@@ -386,12 +386,6 @@ def set_up_chat_ui():
                         f' {st.session_state["end_page"]} in {st.session_state["pdf_file"].name}'
                     )
 
-            # Get pdf contents
-            st.session_state[ADDITIONAL_INFO] = filem.get_pdf_contents(
-                st.session_state[PDF_FILE_KEY],
-                (st.session_state['start_page'], st.session_state['end_page'])
-            )
-
         st.chat_message('user').write(prompt_text)
 
         slide_generator = SlideDeckAI(
@@ -399,7 +393,8 @@ def set_up_chat_ui():
             topic=prompt_text,
             api_key=api_key_token.strip(),
             template_idx=list(GlobalConfig.PPTX_TEMPLATE_FILES.keys()).index(pptx_template),
-            additional_info=st.session_state.get(ADDITIONAL_INFO, ''),
+            pdf_path_or_stream=st.session_state.get(PDF_FILE_KEY),
+            pdf_page_range=(st.session_state.get('start_page'), st.session_state.get('end_page')),
         )
 
         progress_bar = st.progress(0, 'Preparing to call LLM...')
