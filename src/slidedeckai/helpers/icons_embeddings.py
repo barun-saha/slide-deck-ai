@@ -11,10 +11,7 @@ import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
 from transformers import BertTokenizer, BertModel
 
-sys.path.append('..')
-sys.path.append('../..')
-
-from global_config import GlobalConfig
+from ..global_config import GlobalConfig
 
 
 tokenizer = BertTokenizer.from_pretrained(GlobalConfig.TINY_BERT_MODEL)
@@ -28,9 +25,9 @@ def get_icons_list() -> List[str]:
     :return: The icons file names.
     """
 
-    items = pathlib.Path('../' + GlobalConfig.ICONS_DIR).glob('*.png')
+    items = GlobalConfig.ICONS_DIR.glob('*.png')
     items = [
-        os.path.basename(str(item)).removesuffix('.png') for item in items
+        item.stem for item in items
     ]
 
     return items

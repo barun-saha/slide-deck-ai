@@ -16,12 +16,9 @@ from dotenv import load_dotenv
 from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
 from pptx.shapes.placeholder import PicturePlaceholder, SlidePlaceholder
 
-sys.path.append('..')
-sys.path.append('../..')
-
-import helpers.icons_embeddings as ice
-import helpers.image_search as ims
-from global_config import GlobalConfig
+from . import icons_embeddings as ice
+from . import image_search as ims
+from ..global_config import GlobalConfig
 
 
 load_dotenv()

@@ -4,6 +4,7 @@ A set of configurations used by the app.
 import logging
 import os
 import re
+from pathlib import Path
 
 from dataclasses import dataclass
 from dotenv import load_dotenv
@@ -11,6 +12,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+_SRC_DIR = Path(__file__).resolve().parent
 
 @dataclass(frozen=True)
 class GlobalConfig:
@@ -128,32 +130,32 @@ class GlobalConfig:
 
     LOG_LEVEL = 'DEBUG'
     COUNT_TOKENS = False
-    APP_STRINGS_FILE = 'strings.json'
-    PRELOAD_DATA_FILE = 'examples/example_02.json'
-    INITIAL_PROMPT_TEMPLATE = 'prompts/initial_template_v4_two_cols_img.txt'
-    REFINEMENT_PROMPT_TEMPLATE = 'prompts/refinement_template_v4_two_cols_img.txt'
+    APP_STRINGS_FILE = _SRC_DIR / 'strings.json'
+    PRELOAD_DATA_FILE = _SRC_DIR / 'examples/example_02.json'
+    INITIAL_PROMPT_TEMPLATE = _SRC_DIR / 'prompts/initial_template_v4_two_cols_img.txt'
+    REFINEMENT_PROMPT_TEMPLATE = _SRC_DIR / 'prompts/refinement_template_v4_two_cols_img.txt'
 
     LLM_PROGRESS_MAX = 90
-    ICONS_DIR = 'icons/png128/'
+    ICONS_DIR = _SRC_DIR / 'icons/png128/'
     TINY_BERT_MODEL = 'gaunernst/bert-mini-uncased'
-    EMBEDDINGS_FILE_NAME = 'file_embeddings/embeddings.npy'
-    ICONS_FILE_NAME = 'file_embeddings/icons.npy'
+    EMBEDDINGS_FILE_NAME = _SRC_DIR / 'file_embeddings/embeddings.npy'
+    ICONS_FILE_NAME = _SRC_DIR / 'file_embeddings/icons.npy'
 
     PPTX_TEMPLATE_FILES = {
         'Basic': {
-            'file': 'pptx_templates/Blank.pptx',
+            'file': _SRC_DIR / 'pptx_templates/Blank.pptx',
             'caption': 'A good start (Uses [photos](https://unsplash.com/photos/AFZ-qBPEceA) by [cetteup](https://unsplash.com/@cetteup?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash) on [Unsplash](https://unsplash.com/photos/a-foggy-forest-filled-with-lots-of-trees-d3ci37Gcgxg?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)) 🟧'
         },
         'Ion Boardroom': {
-            'file': 'pptx_templates/Ion_Boardroom.pptx',
+            'file': _SRC_DIR / 'pptx_templates/Ion_Boardroom.pptx',
             'caption': 'Make some bold decisions 🟥'
         },
         'Minimalist Sales Pitch': {
-            'file': 'pptx_templates/Minimalist_sales_pitch.pptx',
+            'file': _SRC_DIR / 'pptx_templates/Minimalist_sales_pitch.pptx',
             'caption': 'In high contrast ⬛'
         },
         'Urban Monochrome': {
-            'file': 'pptx_templates/Urban_monochrome.pptx',
+            'file': _SRC_DIR / 'pptx_templates/Urban_monochrome.pptx',
             'caption': 'Marvel in a monochrome dream ⬜'
         },
     }

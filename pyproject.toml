@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=77.0.3"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "slidedeckai"
+authors = [
+  { name="Barun Saha", email="author@example.com" }
+]
+description = "A Python package to generate slide decks using AI."
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+dynamic = ["dependencies", "version"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
+version = {attr = "slidedeckai._version.__version__"}
+
+[tool.setuptools.package-data]
+slidedeckai = ["prompts/**/*.txt", "strings.json", "pptx_templates/*.pptx", "icons/png128/*.png", "icons/svg_repo.txt", "file_embeddings/*.npy"]
+
+[project.urls]
+"Homepage" = "https://github.com/barun-saha/slide-deck-ai"
+"Bug Tracker" = "https://github.com/barun-saha/slide-deck-ai/issues"
+
+[project.scripts]
+slidedeckai = "slidedeckai.cli:main"

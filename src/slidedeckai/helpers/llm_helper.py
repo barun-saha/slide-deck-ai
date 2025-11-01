@@ -8,9 +8,7 @@ import urllib3
 from typing import Tuple, Union, Iterator, Optional
 
 
-sys.path.append('..')
-
-from global_config import GlobalConfig
+from ..global_config import GlobalConfig
 
 try:
     import litellm

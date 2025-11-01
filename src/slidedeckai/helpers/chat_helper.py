@@ -27,24 +27,17 @@ class AIMessage(ChatMessage):
         super().__init__(content, 'ai')
 
 
-class StreamlitChatMessageHistory:
-    """Chat message history stored in Streamlit session state."""
+class ChatMessageHistory:
+    """Chat message history stored in a list."""
     
-    def __init__(self, key: str):
-        self.key = key
-        if key not in st.session_state:
-            st.session_state[key] = []
-    
-    @property
-    def messages(self):
-        return st.session_state[self.key]
+    def __init__(self):
+        self.messages = []
     
     def add_user_message(self, content: str):
-        st.session_state[self.key].append(HumanMessage(content))
+        self.messages.append(HumanMessage(content))
     
     def add_ai_message(self, content: str):
-        st.session_state[self.key].append(AIMessage(content))
-
+        self.messages.append(AIMessage(content))
 
 class ChatPromptTemplate:
     """Template for chat prompts."""

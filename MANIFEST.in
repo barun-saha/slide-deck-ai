@@ -1,0 +1,6 @@
+include src/slidedeckai/strings.json
+recursive-include src/slidedeckai/prompts *.txt
+recursive-include src/slidedeckai/pptx_templates *.pptx
+recursive-include src/slidedeckai/icons *.png
+recursive-include src/slidedeckai/icons *.txt
+recursive-include src/slidedeckai/file_embeddings *.npy
