@@ -41,6 +41,34 @@ Clicking on the button will download the file.
 In addition, SlideDeck AI can also create a presentation based on PDF files.
 
 
+## Python API Usage
+
+```python
+from slidedeckai import SlideDeckAI
+
+
+slide_generator = SlideDeckAI(
+    model='[gg]gemini-2.5-flash-lite',
+    topic='Make a slide deck on AI',
+    api_key='your-google-api-key',
+)
+pptx_path = slide_generator.generate()
+print(f"Generated slide deck: {pptx_path}")
+```
+
+## CLI Usage
+
+Generate a new slide deck:
+```bash
+slidedeckai generate --model '[gg]gemini-2.5-flash-lite' --topic 'Make a slide deck on AI' --api-key 'your-google-api-key'
+```
+
+Launch the Streamlit app:
+```bash
+slidedeckai launch
+```
+
+
 ## Summary of the LLMs
 
 SlideDeck AI allows the use of different LLMs from several online providers—Azure OpenAI, Google, Cohere, Together AI, and OpenRouter. Most of these service providers offer generous free usage of relevant LLMs without requiring any billing information.  
