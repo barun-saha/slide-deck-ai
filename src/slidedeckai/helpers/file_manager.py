@@ -8,10 +8,7 @@ import sys
 import streamlit as st
 from pypdf import PdfReader
 
-sys.path.append('..')
-sys.path.append('../..')
-
-from global_config import GlobalConfig
+from ..global_config import GlobalConfig
 
 
 logger = logging.getLogger(__name__)

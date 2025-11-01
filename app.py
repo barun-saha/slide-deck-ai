@@ -6,6 +6,7 @@ import logging
 import os
 import pathlib
 import random
+import sys
 import tempfile
 from typing import List, Union
 
@@ -17,12 +18,34 @@ import requests
 import streamlit as st
 from dotenv import load_dotenv
 
-import global_config as gcfg
-import helpers.file_manager as filem
-from global_config import GlobalConfig
-from helpers import chat_helper, llm_helper, pptx_helper, text_helper
+sys.path.insert(0, os.path.abspath('src'))
+from slidedeckai.core import SlideDeckAI
+from slidedeckai import global_config as gcfg
+from slidedeckai.global_config import GlobalConfig
+from slidedeckai.helpers import llm_helper, text_helper
+import slidedeckai.helpers.file_manager as filem
+from slidedeckai.helpers.chat_helper import ChatMessage, HumanMessage, AIMessage
+from slidedeckai.helpers import chat_helper
 
 load_dotenv()
+
+class StreamlitChatMessageHistory:
+    """Chat message history stored in Streamlit session state."""
+
+    def __init__(self, key: str):
+        self.key = key
+        if key not in st.session_state:
+            st.session_state[key] = []
+
+    @property
+    def messages(self):
+        return st.session_state[self.key]
+
+    def add_user_message(self, content: str):
+        st.session_state[self.key].append(HumanMessage(content))
+
+    def add_ai_message(self, content: str):
+        st.session_state[self.key].append(AIMessage(content))
 
 RUN_IN_OFFLINE_MODE = os.getenv('RUN_IN_OFFLINE_MODE', 'False').lower() == 'true'
 
@@ -368,99 +391,38 @@ def set_up_chat_ui():
                 st.session_state[PDF_FILE_KEY],
                 (st.session_state['start_page'], st.session_state['end_page'])
             )
-        provider, llm_name = llm_helper.get_provider_model(
-            llm_provider_to_use,
-            use_ollama=RUN_IN_OFFLINE_MODE
-        )
 
-        # Validate that provider and model were parsed successfully
-        if not provider or not llm_name:
-            handle_error(
-                f'Failed to parse provider and model from: "{llm_provider_to_use}". '
-                f'Please select a valid LLM from the dropdown.',
-                True
-            )
-            return
-
-        user_key = api_key_token.strip()
-        az_deployment = azure_deployment.strip()
-        az_endpoint = azure_endpoint.strip()
-        api_ver = api_version.strip()
-
-        if not are_all_inputs_valid(
-                prompt_text, provider, llm_name, user_key,
-                az_deployment, az_endpoint, api_ver
-        ):
-            return
-
-        logger.info(
-            'User input: %s | #characters: %d | LLM: %s',
-            prompt_text, len(prompt_text), llm_name
-        )
         st.chat_message('user').write(prompt_text)
 
-        if _is_it_refinement():
-            user_messages = _get_user_messages()
-            user_messages.append(prompt_text)
-            list_of_msgs = [
-                f'{idx + 1}. {msg}' for idx, msg in enumerate(user_messages)
-            ]
-            formatted_template = prompt_template.format(
-                **{
-                    'instructions': '\n'.join(list_of_msgs),
-                    'previous_content': _get_last_response(),
-                    'additional_info': st.session_state.get(ADDITIONAL_INFO, ''),
-                }
-            )
-        else:
-            formatted_template = prompt_template.format(
-                **{
-                    'question': prompt_text,
-                    'additional_info': st.session_state.get(ADDITIONAL_INFO, ''),
-                }
-            )
+        slide_generator = SlideDeckAI(
+            model=llm_provider_to_use,
+            topic=prompt_text,
+            api_key=api_key_token.strip(),
+            template_idx=list(GlobalConfig.PPTX_TEMPLATE_FILES.keys()).index(pptx_template),
+        )
 
         progress_bar = st.progress(0, 'Preparing to call LLM...')
-        response = ''
+
+        def progress_callback(current_progress):
+            progress_bar.progress(min(current_progress / gcfg.get_max_output_tokens(llm_provider_to_use), 0.95), text='Streaming content...this might take a while...')
 
         try:
-            llm = llm_helper.get_litellm_llm(
-                provider=provider,
-                model=llm_name,
-                max_new_tokens=gcfg.get_max_output_tokens(llm_provider_to_use),
-                api_key=user_key,
-                azure_endpoint_url=az_endpoint,
-                azure_deployment_name=az_deployment,
-                azure_api_version=api_ver,
-            )
+            if _is_it_refinement():
+                path = slide_generator.revise(instructions=prompt_text, progress_callback=progress_callback)
+            else:
+                path = slide_generator.generate(progress_callback=progress_callback)
 
-            if not llm:
-                handle_error(
-                    'Failed to create an LLM instance! Make sure that you have selected the'
-                    ' correct model from the dropdown list and have provided correct API key'
-                    ' or access token.',
-                    False
-                )
-                return
+            progress_bar.progress(1.0, text='Done!')
 
-            for chunk in llm.stream(formatted_template):
-                if isinstance(chunk, str):
-                    response += chunk
-                else:
-                    content = getattr(chunk, 'content', None)
-                    if content is not None:
-                        response += content
-                    else:
-                        response += str(chunk)
+            if path:
+                st.session_state[DOWNLOAD_FILE_KEY] = str(path)
+                history.add_user_message(prompt_text)
+                history.add_ai_message(slide_generator.last_response)
+                st.chat_message('ai').code(slide_generator.last_response, language='json')
+                _display_download_button(path)
+            else:
+                handle_error("Failed to generate slide deck.", True)
 
-                # Update the progress bar with an approx progress percentage
-                progress_bar.progress(
-                    min(
-                        len(response) / gcfg.get_max_output_tokens(llm_provider_to_use),
-                        0.95
-                    ),
-                    text='Streaming content...this might take a while...'
-                )
         except (httpx.ConnectError, requests.exceptions.ConnectionError):
             handle_error(
                 'A connection error occurred while streaming content from the LLM endpoint.'
@@ -469,22 +431,19 @@ def set_up_chat_ui():
                 ' using Ollama, make sure that Ollama is already running on your system.',
                 True
             )
-            return
         except huggingface_hub.errors.ValidationError as ve:
             handle_error(
                 f'An error occurred while trying to generate the content: {ve}'
                 '\nPlease try again with a significantly shorter input text.',
                 True
             )
-            return
         except ollama.ResponseError:
             handle_error(
-                f'The model `{llm_name}` is unavailable with Ollama on your system.'
-                f' Make sure that you have provided the correct LLM name or pull it using'
-                f' `ollama pull {llm_name}`. View LLMs available locally by running `ollama list`.',
+                f'The model is unavailable with Ollama on your system.'
+                f' Make sure that you have provided the correct LLM name or pull it.'
+                f' View LLMs available locally by running `ollama list`.',
                 True
             )
-            return
         except Exception as ex:
             _msg = str(ex)
             if 'payment required' in _msg.lower():
@@ -509,101 +468,6 @@ def set_up_chat_ui():
                     ' Read **[how to get free LLM API keys](https://github.com/barun-saha/slide-deck-ai?tab=readme-ov-file#summary-of-the-llms)**.',
                     True
                 )
-            return
-
-        history.add_user_message(prompt_text)
-        history.add_ai_message(response)
-
-        # The content has been generated as JSON
-        # There maybe trailing ``` at the end of the response -- remove them
-        # To be careful: ``` may be part of the content as well when code is generated
-        response = text_helper.get_clean_json(response)
-        logger.info(
-            'Cleaned JSON length: %d', len(response)
-        )
-
-        # Now create the PPT file
-        progress_bar.progress(
-            GlobalConfig.LLM_PROGRESS_MAX,
-            text='Finding photos online and generating the slide deck...'
-        )
-        progress_bar.progress(1.0, text='Done!')
-        st.chat_message('ai').code(response, language='json')
-
-        if path := generate_slide_deck(response):
-            _display_download_button(path)
-
-        logger.info(
-            '#messages in history / 2: %d',
-            len(st.session_state[CHAT_MESSAGES]) / 2
-        )
-
-
-def generate_slide_deck(json_str: str) -> Union[pathlib.Path, None]:
-    """
-    Create a slide deck and return the file path. In case there is any error creating the slide
-    deck, the path may be to an empty file.
-
-    :param json_str: The content in *valid* JSON format.
-    :return: The path to the .pptx file or `None` in case of error.
-    """
-
-    try:
-        parsed_data = json5.loads(json_str)
-    except ValueError:
-        handle_error(
-            'Encountered error while parsing JSON...will fix it and retry',
-            True
-        )
-        try:
-            parsed_data = json5.loads(text_helper.fix_malformed_json(json_str))
-        except ValueError:
-            handle_error(
-                'Encountered an error again while fixing JSON...'
-                'the slide deck cannot be created, unfortunately ☹'
-                '\nPlease try again later.',
-                True
-            )
-            return None
-    except RecursionError:
-        handle_error(
-            'Encountered a recursion error while parsing JSON...'
-            'the slide deck cannot be created, unfortunately ☹'
-            '\nPlease try again later.',
-            True
-        )
-        return None
-    except Exception:
-        handle_error(
-            'Encountered an error while parsing JSON...'
-            'the slide deck cannot be created, unfortunately ☹'
-            '\nPlease try again later.',
-            True
-        )
-        return None
-
-    if DOWNLOAD_FILE_KEY in st.session_state:
-        path = pathlib.Path(st.session_state[DOWNLOAD_FILE_KEY])
-    else:
-        temp = tempfile.NamedTemporaryFile(delete=False, suffix='.pptx')
-        path = pathlib.Path(temp.name)
-        st.session_state[DOWNLOAD_FILE_KEY] = str(path)
-
-        if temp:
-            temp.close()
-
-    try:
-        logger.debug('Creating PPTX file: %s...', st.session_state[DOWNLOAD_FILE_KEY])
-        pptx_helper.generate_powerpoint_presentation(
-            parsed_data,
-            slides_template=pptx_template,
-            output_file_path=path
-        )
-    except Exception as ex:
-        st.error(APP_TEXT['content_generation_error'])
-        logger.exception('Caught a generic exception: %s', str(ex))
-
-    return path
 
 
 def _is_it_refinement() -> bool:
@@ -642,9 +506,6 @@ def _get_last_response() -> str:
 
     :return: The response text.
     """
-
-    return st.session_state[CHAT_MESSAGES][-1].content
-
 
 def _display_messages_history(view_messages: st.expander):
     """
