@@ -13,7 +13,7 @@ license: mit
 # SlideDeck AI
 
 We spend a lot of time **creating** slides and organizing our thoughts for any presentation. 
-With SlideDeck AI, co-create slide decks on any topic with **Generative Artificial Intelligence**.
+With SlideDeck AI, co-create slide decks on any topic with **Artificial Intelligence** and **Large Language Models**.
 Describe your topic and let SlideDeck AI generate a **PowerPoint slide deck** for you—it's as simple as that!
 
 
@@ -44,16 +44,16 @@ In addition, SlideDeck AI can also create a presentation based on PDF files.
 ## Python API Usage
 
 ```python
-from slidedeckai import SlideDeckAI
+from slidedeckai.core import SlideDeckAI
 
 
 slide_generator = SlideDeckAI(
     model='[gg]gemini-2.5-flash-lite',
     topic='Make a slide deck on AI',
-    api_key='your-google-api-key',
+    api_key='your-google-api-key',  # Or set via environment variable
 )
 pptx_path = slide_generator.generate()
-print(f"Generated slide deck: {pptx_path}")
+print(f'🤖 Generated slide deck: {pptx_path}')
 ```
 
 ## CLI Usage
@@ -66,6 +66,11 @@ slidedeckai generate --model '[gg]gemini-2.5-flash-lite' --topic 'Make a slide d
 Launch the Streamlit app:
 ```bash
 slidedeckai launch
+```
+
+List supported models (these are the only models supported by SlideDeck AI):
+```bash
+slidedeckai --list-models
 ```
 
 
@@ -175,5 +180,3 @@ SlideDeck AI is glad to have the following community contributions:
 Thank you all for your contributions!
 
 [![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors)
-
-
