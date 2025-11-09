@@ -51,7 +51,6 @@ def test_format_models_as_bullets():
     ]
 
     result = format_models_as_bullets(test_models)
-    print(result)
 
     assert 'anthropic:' not in result
     assert 'deepseek' in result
