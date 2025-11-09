@@ -10,6 +10,47 @@ from slidedeckai.core import SlideDeckAI
 from slidedeckai.global_config import GlobalConfig
 
 
+def group_models_by_provider(models: list[str]) -> dict[str, list[str]]:
+    """
+    Group model names by their provider.
+
+    Args:
+        models (list[str]): List of model names.
+
+    Returns:
+        dict[str, list[str]]: Dictionary mapping provider codes to lists of model names.
+    """
+    provider_models = {}
+    for model in sorted(models):
+        if match := GlobalConfig.PROVIDER_REGEX.match(model):
+            provider = match.group(1)
+            if provider not in provider_models:
+                provider_models[provider] = []
+            provider_models[provider].append(model.strip())
+
+    return provider_models
+
+
+def format_models_as_bullets(models: list[str]) -> str:
+    """
+    Format models as a bulleted list, grouped by provider.
+
+    Args:
+        models (list[str]): List of model names.
+
+    Returns:
+        str: Formatted string of models.
+    """
+    provider_models = group_models_by_provider(models)
+    lines = []
+    for provider in sorted(provider_models.keys()):
+        lines.append(f'\n{provider}:')
+        for model in sorted(provider_models[provider]):
+            lines.append(f'  • {model}')
+
+    return '\n'.join(lines)
+
+
 class CustomHelpFormatter(argparse.HelpFormatter):
     """
     Custom formatter for argparse that improves the display of choices.
@@ -32,8 +73,9 @@ class CustomHelpFormatter(argparse.HelpFormatter):
             # Special handling for model choices and error messages
             lines = []
             header = 'Available models:'
+            separator = '------------------------'  # Fixed-length separator
             lines.append(header)
-            lines.append('-' * len(header))
+            lines.append(separator)
 
             # Extract models from text
             if text.startswith('choose from'):
@@ -43,23 +85,8 @@ class CustomHelpFormatter(argparse.HelpFormatter):
             else:
                 models = text.split('\n')[1:]
 
-            # Group models by provider
-            provider_models = {}
-            for model in sorted(models):
-                if not model.strip():
-                    continue
-                if match := GlobalConfig.PROVIDER_REGEX.match(model):
-                    provider = match.group(1)
-                    if provider not in provider_models:
-                        provider_models[provider] = []
-                    provider_models[provider].append(model.strip())
-
-            # Add models grouped by provider
-            for provider in sorted(provider_models.keys()):
-                lines.append(f'\n{provider}:')
-                for model in provider_models[provider]:
-                    lines.append(f'  {model}')
-
+            # Use the centralized formatting
+            lines.extend(format_models_as_bullets(models).split('\n'))
             return lines
 
         return super()._split_lines(text, width)
@@ -74,23 +101,14 @@ class CustomArgumentParser(argparse.ArgumentParser):
         if 'invalid choice' in message and '--model' in message:
             # Extract models from the error message
             choices_str = message[message.find('(choose from'):]
-            models = [m.strip("' ") for m in choices_str.replace('(choose from', '').rstrip(')').split(',')]
+            models = [
+                m.strip("' ") for m in choices_str.replace(
+                    '(choose from', ''
+                ).rstrip(')').split(',')
+            ]
 
-            # Group models by provider
-            provider_models = {}
-            for model in sorted(models):
-                if match := GlobalConfig.PROVIDER_REGEX.match(model):
-                    provider = match.group(1)
-                    if provider not in provider_models:
-                        provider_models[provider] = []
-                    provider_models[provider].append(model.strip())
-
-            # Format the error message with grouped models
             error_lines = ['Error: Invalid model choice. Available models:']
-            for provider in sorted(provider_models.keys()):
-                error_lines.append(f'\n{provider}:')
-                for model in sorted(provider_models[provider]):
-                    error_lines.append(f'  • {model}')
+            error_lines.extend(format_models_as_bullets(models).split('\n'))
 
             self.print_help()
             print('\n' + '\n'.join(error_lines), file=sys.stderr)
@@ -101,60 +119,14 @@ class CustomArgumentParser(argparse.ArgumentParser):
 
 def format_models_list() -> str:
     """Format the models list in a nice grouped format with descriptions."""
-    lines = ['Supported SlideDeck AI models:', '']
-
-    # Group models by provider
-    provider_models = {}
-    for model, info in sorted(GlobalConfig.VALID_MODELS.items()):
-        if match := GlobalConfig.PROVIDER_REGEX.match(model):
-            provider = match.group(1)
-            if provider not in provider_models:
-                provider_models[provider] = []
-            provider_models[provider].append((model, info))
-
-    # Add models grouped by provider
-    for provider in sorted(provider_models.keys()):
-        lines.append(f'{provider}:')
-        # Find the longest model name for alignment
-        max_model_len = max(len(model) for model, _ in provider_models[provider])
-        max_desc_len = max(len(info['description']) for _, info in provider_models[provider])
-
-        # Format as a table with aligned columns
-        format_str = f'  {{:<{max_model_len}}}  |  {{:<{max_desc_len}}}  |  {{:>4}}'
-        lines.append('  ' + '-' * (max_model_len + max_desc_len + 13))
-
-        for model, info in sorted(provider_models[provider]):
-            paid_status = 'Paid' if info.get('paid', False) else 'Free'
-            lines.append(format_str.format(
-                model,
-                info['description'],
-                paid_status
-            ))
-        lines.append('')  # Add spacing between provider sections
-
-    return '\n'.join(lines)
+    header = 'Supported SlideDeck AI models:\n'
+    models = list(GlobalConfig.VALID_MODELS.keys())
+    return header + format_models_as_bullets(models)
 
 
 def format_model_help() -> str:
     """Format model choices as a grouped bulleted list for help text."""
-    lines = []
-
-    # Group models by provider
-    provider_models = {}
-    for model in sorted(GlobalConfig.VALID_MODELS.keys()):
-        if match := GlobalConfig.PROVIDER_REGEX.match(model):
-            provider = match.group(1)
-            if provider not in provider_models:
-                provider_models[provider] = []
-            provider_models[provider].append(model)
-
-    # Add models grouped by provider
-    for provider in sorted(provider_models.keys()):
-        lines.append(f'\n{provider}:')
-        for model in sorted(provider_models[provider]):
-            lines.append(f'  • {model}')
-
-    return '\n'.join(lines)
+    return format_models_as_bullets(list(GlobalConfig.VALID_MODELS.keys()))
 
 
 def main():
