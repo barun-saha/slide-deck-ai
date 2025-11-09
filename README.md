@@ -10,6 +10,8 @@ pinned: false
 license: mit
 ---
 
+[![codecov](https://codecov.io/gh/barun-saha/slide-deck-ai/branch/main/graph/badge.svg)](https://codecov.io/gh/barun-saha/slide-deck-ai)
+
 # SlideDeck AI
 
 We spend a lot of time **creating** slides and organizing our thoughts for any presentation. 
