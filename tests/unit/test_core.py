@@ -18,6 +18,14 @@ def mock_env():
 
 
 @pytest.fixture
+def mock_temp_file():
+    """Mock temporary file creation."""
+    with mock.patch('slidedeckai.core.tempfile.NamedTemporaryFile') as mock_temp:
+        mock_temp.return_value.name = 'temp.pptx'
+        yield mock_temp
+
+
+@pytest.fixture
 def slide_deck_ai():
     """Fixture to create a SlideDeckAI instance."""
     return SlideDeckAI(
@@ -75,8 +83,8 @@ def test_slide_deck_ai_init_valid(slide_deck_ai):
     assert slide_deck_ai.template_idx == 0
 
 
-@mock.patch('slidedeckai.helpers.llm_helper.get_provider_model')
-@mock.patch('slidedeckai.helpers.llm_helper.get_litellm_llm')
+@mock.patch('slidedeckai.core.llm_helper.get_provider_model')
+@mock.patch('slidedeckai.core.llm_helper.get_litellm_llm')
 def test_generate_slide_deck(mock_get_llm, mock_get_provider, mock_temp_file, slide_deck_ai):
     """Test generating a slide deck."""
     # Setup mocks
@@ -88,8 +96,8 @@ def test_generate_slide_deck(mock_get_llm, mock_get_provider, mock_temp_file, sl
     assert str(result).endswith('.pptx')
 
 
-@mock.patch('slidedeckai.helpers.llm_helper.get_provider_model')
-@mock.patch('slidedeckai.helpers.llm_helper.get_litellm_llm')
+@mock.patch('slidedeckai.core.llm_helper.get_provider_model')
+@mock.patch('slidedeckai.core.llm_helper.get_litellm_llm')
 def test_revise_slide_deck(mock_get_llm, mock_get_provider, mock_temp_file, slide_deck_ai):
     """Test revising a slide deck."""
     # Setup mocks
@@ -129,3 +137,111 @@ def test_reset(slide_deck_ai):
     assert slide_deck_ai.template_idx == 0
     assert slide_deck_ai.last_response is None
     assert len(slide_deck_ai.chat_history.messages) == 0
+
+
+@mock.patch('slidedeckai.core.llm_helper.get_provider_model')
+@mock.patch('slidedeckai.core.llm_helper.get_litellm_llm')
+def test_get_prompt_template(mock_get_llm, mock_get_provider, slide_deck_ai):
+    """Test getting prompt templates."""
+    initial_template = slide_deck_ai._get_prompt_template(is_refinement=False)
+    refinement_template = slide_deck_ai._get_prompt_template(is_refinement=True)
+
+    assert isinstance(initial_template, str)
+    assert isinstance(refinement_template, str)
+    assert initial_template != refinement_template
+
+
+@mock.patch('slidedeckai.core.llm_helper.get_provider_model')
+@mock.patch('slidedeckai.core.llm_helper.get_litellm_llm')
+def test_generate_with_pdf(mock_get_llm, mock_get_provider, slide_deck_ai):
+    """Test generating a slide deck with PDF input."""
+    mock_get_provider.return_value = ('openai', 'gpt-3.5-turbo')
+    mock_get_llm.return_value = get_mock_llm()
+
+    with mock.patch('slidedeckai.core.filem.get_pdf_contents') as mock_pdf:
+        mock_pdf.return_value = 'PDF content'
+        slide_deck_ai.pdf_path_or_stream = 'test.pdf'
+        with mock.patch('slidedeckai.core.tempfile.NamedTemporaryFile') as mock_temp:
+            mock_temp.return_value.name = 'temp.pptx'
+            result = slide_deck_ai.generate()
+            assert isinstance(result, Path)
+            mock_pdf.assert_called_once()
+
+
+def test_chat_history_limit(slide_deck_ai):
+    """Test chat history limit in revise method."""
+    # Fill up chat history
+    for i in range(8):
+        slide_deck_ai.chat_history.add_user_message(f'User message {i}')
+        slide_deck_ai.chat_history.add_ai_message(f'AI message {i}')
+
+    slide_deck_ai.last_response = 'Previous response'
+
+    with pytest.raises(ValueError) as exc_info:
+        slide_deck_ai.revise('One more message')
+    assert 'Chat history is full' in str(exc_info.value)
+
+
+@mock.patch('slidedeckai.core.json5.loads')
+def test_generate_slide_deck_json_error(mock_json_loads, slide_deck_ai):
+    """Test _generate_slide_deck with JSON parsing error."""
+    mock_json_loads.side_effect = [ValueError('Bad JSON'), {'slides': []}]
+
+    with mock.patch('slidedeckai.core.tempfile.NamedTemporaryFile') as mock_temp:
+        mock_temp.return_value.name = 'temp.pptx'
+        result = slide_deck_ai._generate_slide_deck('{"bad": "json"}')
+        assert result is not None
+        assert mock_json_loads.call_count == 2
+
+
+@mock.patch('slidedeckai.core.json5.loads')
+def test_generate_slide_deck_unrecoverable_json_error(mock_json_loads, slide_deck_ai):
+    """Test _generate_slide_deck with unrecoverable JSON error."""
+    mock_json_loads.side_effect = ValueError('Bad JSON')
+
+    result = slide_deck_ai._generate_slide_deck('{"bad": "json"}')
+    assert result is None
+
+
+@mock.patch('slidedeckai.core.pptx_helper.generate_powerpoint_presentation')
+@mock.patch('slidedeckai.core.json5.loads')
+def test_generate_slide_deck_pptx_error(mock_json_loads, mock_generate_pptx, slide_deck_ai):
+    """Test _generate_slide_deck with PowerPoint generation error."""
+    mock_json_loads.return_value = {'slides': []}
+    mock_generate_pptx.side_effect = Exception('PowerPoint error')
+
+    with mock.patch('slidedeckai.core.tempfile.NamedTemporaryFile') as mock_temp:
+        mock_temp.return_value.name = 'temp.pptx'
+        result = slide_deck_ai._generate_slide_deck('{"slides": []}')
+        assert result is None
+
+
+def test_stream_llm_response_error():
+    """Test _stream_llm_response error handling."""
+    mock_llm = mock.Mock()
+    mock_llm.stream.side_effect = Exception('LLM error')
+
+    with pytest.raises(RuntimeError) as exc_info:
+        _stream_llm_response(mock_llm, 'test prompt')
+    assert "Failed to get response from LLM" in str(exc_info.value)
+
+
+@mock.patch('slidedeckai.core.llm_helper.get_provider_model')
+@mock.patch('slidedeckai.core.llm_helper.get_litellm_llm')
+def test_initialize_llm(mock_get_llm, mock_get_provider, slide_deck_ai):
+    """Test _initialize_llm method."""
+    mock_get_provider.return_value = ('openai', 'gpt-3.5-turbo')
+    mock_get_llm.return_value = get_mock_llm()
+
+    llm = slide_deck_ai._initialize_llm()
+    assert llm is not None
+    mock_get_provider.assert_called_once()
+    mock_get_llm.assert_called_once()
+
+
+def test_topic_reset(slide_deck_ai):
+    """Test that topic is reset correctly."""
+    original_topic = slide_deck_ai.topic
+    slide_deck_ai.reset()
+    assert slide_deck_ai.topic == 0
+    assert slide_deck_ai.topic != original_topic
