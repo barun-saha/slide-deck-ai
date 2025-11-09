@@ -12,7 +12,7 @@ jobs:
         python-version: ["3.10"]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v4
@@ -27,10 +27,10 @@ jobs:
 
     - name: Run tests with coverage
       run: |
-        pytest tests/ --asyncio-mode=auto --cov=src/slidedeckai --cov-report=xml --cov-report=html
+        pytest tests/unit --asyncio-mode=auto --cov=src/slidedeckai --cov-report=xml --cov-report=html
 
     - name: Upload test results and coverage
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: pytest-results
@@ -40,9 +40,8 @@ jobs:
         retention-days: 30
 
     - name: Coverage Report
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
         files: ./coverage.xml
         fail_ci_if_error: true
         verbose: true
-
