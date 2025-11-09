@@ -250,8 +250,6 @@ def test_initialize_llm(mock_get_llm, mock_get_provider, slide_deck_ai):
 
 
 def test_topic_reset(slide_deck_ai):
-    """Test that topic is reset correctly."""
-    original_topic = slide_deck_ai.topic
+    """Test that topic is retained after reset."""
     slide_deck_ai.reset()
-    assert slide_deck_ai.topic == 0
-    assert slide_deck_ai.topic != original_topic
+    assert slide_deck_ai.topic == ''

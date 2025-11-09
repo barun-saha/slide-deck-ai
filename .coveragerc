@@ -1,0 +1,15 @@
+[run]
+source = src/slidedeckai
+omit =
+    tests/*
+    */__init__.py
+    setup.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    if __name__ == '__main__':
+    raise NotImplementedError
+    pass
+    raise ImportError
