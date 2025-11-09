@@ -1,13 +1,23 @@
 """
-Unit tests for the core module.
+Unit tests for the core module of SlideDeck AI.
 """
 import os
 from pathlib import Path
 from unittest import mock
+from unittest.mock import patch
+
 import pytest
 
-from slidedeckai.core import SlideDeckAI, _process_llm_chunk, _stream_llm_response
-from .test_utils import get_mock_llm, get_mock_llm_response, MockStreamResponse
+# Apply BertTokenizer patch before importing anything that might use it
+from .test_utils import (
+    get_mock_llm,
+    get_mock_llm_response,
+    MockStreamResponse,
+    patch_bert_tokenizer
+)
+
+with patch('transformers.BertTokenizer', patch_bert_tokenizer()):
+    from slidedeckai.core import SlideDeckAI, _process_llm_chunk, _stream_llm_response
 
 
 @pytest.fixture

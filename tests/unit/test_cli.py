@@ -1,5 +1,5 @@
 """
-Unit tests for the cli module.
+Unit tests for the CLI of SlideDeck AI.
 """
 import argparse
 import sys
@@ -8,16 +8,20 @@ from unittest.mock import patch, MagicMock
 
 import pytest
 
-from slidedeckai.cli import (
-    group_models_by_provider,
-    format_models_as_bullets,
-    CustomArgumentParser,
-    CustomHelpFormatter,
-    format_models_list,
-    format_model_help,
-    main
-)
-from slidedeckai.global_config import GlobalConfig
+# Apply BertTokenizer patch before importing anything that might use it
+from .test_utils import patch_bert_tokenizer
+
+with patch('transformers.BertTokenizer', patch_bert_tokenizer()):
+    from slidedeckai.cli import (
+        group_models_by_provider,
+        format_models_as_bullets,
+        CustomArgumentParser,
+        CustomHelpFormatter,
+        format_models_list,
+        format_model_help,
+        main
+    )
+    from slidedeckai.global_config import GlobalConfig
 
 
 def test_group_models_by_provider():
