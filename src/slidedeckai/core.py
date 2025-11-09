@@ -281,4 +281,4 @@ class SlideDeckAI:
         self.chat_history = ChatMessageHistory()
         self.last_response = None
         self.template_idx = 0
-        self.topic = 0
+        self.topic = ''
