@@ -5,7 +5,7 @@ import importlib
 import sys
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any, List
+from typing import Any
 
 import numpy as np
 
@@ -176,7 +176,7 @@ def test_find_icons(monkeypatch: Any, tmp_path: Path) -> None:
     monkeypatch.setattr(mod.GlobalConfig, 'ICONS_FILE_NAME', str(names_file))
 
     # Make keyword embeddings match each saved one.
-    def fake_get_embeddings(keywords: List[str]) -> np.ndarray:
+    def fake_get_embeddings(keywords: list[str]) -> np.ndarray:
         out = []
         for kw in keywords:
             if kw == 'match_a':
@@ -203,7 +203,7 @@ def test_main_calls_and_prints(monkeypatch: Any, capsys: Any) -> None:
         called['saved'] = True
 
 
-    def fake_find(keywords: List[str]) -> List[str]:
+    def fake_find(keywords: list[str]) -> list[str]:
         called['found'] = True
         return ['x' for _ in keywords]
 
