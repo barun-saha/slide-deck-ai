@@ -2,10 +2,7 @@
 Generate and save the embeddings of a pre-defined list of icons.
 Compare them with keywords embeddings to find most relevant icons.
 """
-import os
-import pathlib
-import sys
-from typing import List, Tuple
+from typing import Union
 
 import numpy as np
 from sklearn.metrics.pairwise import cosine_similarity
@@ -18,32 +15,32 @@ tokenizer = BertTokenizer.from_pretrained(GlobalConfig.TINY_BERT_MODEL)
 model = BertModel.from_pretrained(GlobalConfig.TINY_BERT_MODEL)
 
 
-def get_icons_list() -> List[str]:
+def get_icons_list() -> list[str]:
     """
     Get a list of available icons.
 
-    :return: The icons file names.
+    Returns:
+        The icons file names.
     """
-
     items = GlobalConfig.ICONS_DIR.glob('*.png')
-    items = [
-        item.stem for item in items
-    ]
+    items = [item.stem for item in items]
 
     return items
 
 
-def get_embeddings(texts) -> np.ndarray:
+def get_embeddings(texts: Union[str, list[str]]) -> np.ndarray:
     """
     Generate embeddings for a list of texts using a pre-trained language model.
 
-    :param texts: A string or a list of strings to be converted into embeddings.
-    :type texts: Union[str, List[str]]
-    :return: A NumPy array containing the embeddings for the input texts.
-    :rtype: numpy.ndarray
+    Args:
+        texts: A string or a list of strings to be converted into embeddings.
 
-    :raises ValueError: If the input is not a string or a list of strings, or if any element
-    in the list is not a string.
+    Returns:
+        A NumPy array containing the embeddings for the input texts.
+
+    Raises:
+        ValueError: If the input is not a string or a list of strings, or if any element
+         in the list is not a string.
 
     Example usage:
     >>> keyword = 'neural network'
@@ -51,7 +48,6 @@ def get_embeddings(texts) -> np.ndarray:
     >>> keyword_embeddings = get_embeddings(keyword)
     >>> file_name_embeddings = get_embeddings(file_names)
     """
-
     inputs = tokenizer(texts, return_tensors='pt', padding=True, max_length=128, truncation=True)
     outputs = model(**inputs)
 
@@ -62,7 +58,6 @@ def save_icons_embeddings():
     """
     Generate and save the embeddings for the icon file names.
     """
-
     file_names = get_icons_list()
     print(f'{len(file_names)} icon files available...')
     file_name_embeddings = get_embeddings(file_names)
@@ -73,27 +68,29 @@ def save_icons_embeddings():
     np.save(GlobalConfig.ICONS_FILE_NAME, file_names)  # Save file names for reference
 
 
-def load_saved_embeddings() -> Tuple[np.ndarray, np.ndarray]:
+def load_saved_embeddings() -> tuple[np.ndarray, np.ndarray]:
     """
     Load precomputed embeddings and icons file names.
 
-    :return: The embeddings and the icon file names.
+    Returns:
+        The embeddings and the icon file names.
     """
-
     file_name_embeddings = np.load(GlobalConfig.EMBEDDINGS_FILE_NAME)
     file_names = np.load(GlobalConfig.ICONS_FILE_NAME)
 
     return file_name_embeddings, file_names
 
 
-def find_icons(keywords: List[str]) -> List[str]:
+def find_icons(keywords: list[str]) -> list[str]:
     """
     Find relevant icon file names for a list of keywords.
 
-    :param keywords: The list of one or more keywords.
-    :return: A list of the file names relevant for each keyword.
-    """
+    Args:
+        keywords: The list of one or more keywords.
 
+    Returns:
+        A list of the file names relevant for each keyword.
+    """
     keyword_embeddings = get_embeddings(keywords)
     file_name_embeddings, file_names = load_saved_embeddings()
 
@@ -108,7 +105,6 @@ def main():
     """
     Example usage.
     """
-
     # Run this again if icons are to be added/removed
     save_icons_embeddings()
 
