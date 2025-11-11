@@ -5,7 +5,7 @@ import logging
 import os
 import random
 from io import BytesIO
-from typing import Union, Tuple, Literal
+from typing import Union, Literal
 from urllib.parse import urlparse, parse_qs
 
 import requests
@@ -23,7 +23,6 @@ MAX_PHOTOS = 3
 logging.getLogger('urllib3').setLevel(logging.ERROR)
 # Disable all child loggers of urllib3, e.g. urllib3.connectionpool
 # logging.getLogger('urllib3').propagate = True
-
 
 
 def search_pexels(
@@ -45,13 +44,17 @@ def search_pexels(
     https://stackoverflow.com/a/51268523/147021
     https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/User-Agent/Firefox#linux
 
-    :param query: The search query for finding images.
-    :param size: The size of the images: small, medium, or large.
-    :param per_page: No. of results to be displayed per page.
-    :return: The JSON response from the Pexels API containing search results.
-    :raises requests.exceptions.RequestException: If the request to the Pexels API fails.
-    """
+    Args:
+        query: The search query for finding images.
+        size: The size of the images: small, medium, or large.
+        per_page: No. of results to be displayed per page.
 
+    Returns:
+        The JSON response from the Pexels API containing search results.
+
+    Raises:
+        requests.exceptions.RequestException: If the request to the Pexels API fails.
+    """
     url = 'https://api.pexels.com/v1/search'
     headers = {
         'Authorization': os.getenv('PEXEL_API_KEY'),
@@ -71,15 +74,17 @@ def search_pexels(
 
 def get_photo_url_from_api_response(
         json_response: dict
-) -> Tuple[Union[str, None], Union[str, None]]:
+) -> tuple[Union[str, None], Union[str, None]]:
     """
     Return a randomly chosen photo from a Pexels search API response. In addition, also return
     the original URL of the page on Pexels.
 
-    :param json_response: The JSON response.
-    :return: The selected photo URL and page URL or `None`.
-    """
+    Args:
+        json_response: The JSON response.
 
+    Returns:
+        The selected photo URL and page URL or `None`.
+    """
     page_url = None
     photo_url = None
 
@@ -109,11 +114,15 @@ def get_image_from_url(url: str) -> BytesIO:
     This function sends a GET request to the provided URL, retrieves the image data,
     and wraps it in a BytesIO object, which can be used like a file.
 
-    :param url: The URL of the image to be fetched.
-    :return: A BytesIO object containing the image data.
-    :raises requests.exceptions.RequestException: If the request to the URL fails.
-    """
+    Args:
+        url: The URL of the image to be fetched.
 
+    Returns:
+        A BytesIO object containing the image data.
+
+    Raises:
+        requests.exceptions.RequestException: If the request to the URL fails.
+    """
     headers = {
         'Authorization': os.getenv('PEXEL_API_KEY'),
         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20100101 Firefox/10.0',
@@ -125,12 +134,15 @@ def get_image_from_url(url: str) -> BytesIO:
     return image_data
 
 
-def extract_dimensions(url: str) -> Tuple[int, int]:
+def extract_dimensions(url: str) -> tuple[int, int]:
     """
     Extracts the height and width from the URL parameters.
 
-    :param url: The URL containing the image dimensions.
-    :return: A tuple containing the width and height as integers.
+    Args:
+        url: The URL containing the image dimensions.
+
+    Returns:
+        A tuple containing the width and height as integers.
     """
     parsed_url = urlparse(url)
     query_params = parse_qs(parsed_url.query)

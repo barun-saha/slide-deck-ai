@@ -6,9 +6,8 @@ import os
 import pathlib
 import random
 import re
-import sys
 import tempfile
-from typing import List, Tuple, Optional
+from typing import Optional
 
 import json5
 import pptx
@@ -69,23 +68,26 @@ def remove_slide_number_from_heading(header: str) -> str:
     """
     Remove the slide number from a given slide header.
 
-    :param header: The header of a slide.
-    :return: The header without slide number.
-    """
+    Args:
+        header: The header of a slide.
 
+    Returns:
+        str: The header without slide number.
+    """
     if SLIDE_NUMBER_REGEX.match(header):
         idx = header.find(':')
-        header = header[idx + 1:]
+        header = header[idx + 1:].strip()
 
     return header
 
 
 def add_bulleted_items(text_frame: pptx.text.text.TextFrame, flat_items_list: list):
-    """
-    Add a list of texts as bullet points and apply formatting.
+    """Add a list of texts as bullet points to a text frame and apply formatting.
 
-    :param text_frame: The text frame where text is to be displayed.
-    :param flat_items_list: The list of items to be displayed.
+    Args:
+        text_frame (pptx.text.text.TextFrame): The text frame where text is to be
+            displayed.
+        flat_items_list (list): The list of items to be displayed.
     """
 
     for idx, an_item in enumerate(flat_items_list):
@@ -98,12 +100,14 @@ def add_bulleted_items(text_frame: pptx.text.text.TextFrame, flat_items_list: li
         format_text(paragraph, an_item[0].removeprefix(STEP_BY_STEP_PROCESS_MARKER))
 
 
-def format_text(frame_paragraph, text):
+def format_text(frame_paragraph, text: str):
     """
-    Apply bold and italic formatting while preserving the original word order
-     without duplication.
-    """
+    Apply bold and italic formatting while preserving the original word order without duplication.
 
+    Args:
+        frame_paragraph: The paragraph to format.
+        text: The text to format with markdown-style formatting.
+    """
     matches = list(BOLD_ITALICS_PATTERN.finditer(text))
     last_index = 0  # Track position in the text
     # Group 0: Full match (e.g., **bold** or *italic*)
@@ -139,14 +143,17 @@ def generate_powerpoint_presentation(
         parsed_data: dict,
         slides_template: str,
         output_file_path: pathlib.Path
-) -> List:
+) -> list:
     """
-    Create and save a PowerPoint presentation file containing the content in JSON format.
+    Create and save a PowerPoint presentation from parsed JSON content.
 
-    :param parsed_data: The presentation content as parsed JSON data.
-    :param slides_template: The PPTX template to use.
-    :param output_file_path: The path of the PPTX file to save as.
-    :return: A list of presentation title and slides headers.
+    Args:
+        parsed_data (dict): The presentation content as parsed JSON data.
+        slides_template (str): The PPTX template key to use from GlobalConfig.
+        output_file_path (pathlib.Path): Destination path for the generated PPTX file.
+
+    Returns:
+        A list containing the presentation title and slide headers.
     """
 
     presentation = pptx.Presentation(GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file'])
@@ -227,14 +234,17 @@ def generate_powerpoint_presentation(
     return all_headers
 
 
-def get_flat_list_of_contents(items: list, level: int) -> List[Tuple]:
+def get_flat_list_of_contents(items: list, level: int) -> list[tuple]:
     """
     Flatten a (hierarchical) list of bullet points to a single list containing each item and
-    its level.
+     its level.
 
-    :param items: A bullet point (string or list).
-    :param level: The current level of hierarchy.
-    :return: A list of (bullet item text, hierarchical level) tuples.
+    Args:
+        items: A bullet point (string or list).
+        level: The current level of hierarchy.
+
+    Returns:
+        A list of (bullet item text, hierarchical level) tuples.
     """
 
     flat_list = []
@@ -252,24 +262,28 @@ def get_slide_placeholders(
         slide: pptx.slide.Slide,
         layout_number: int,
         is_debug: bool = False
-) -> List[Tuple[int, str]]:
+) -> list[tuple[int, str]]:
     """
-    Return the index and name (lower case) of all placeholders present in a slide, except
-    the title placeholder.
+    Return the index and name (lower case) of all placeholders present in a
+    slide, except the title placeholder.
 
-    A placeholder in a slide is a place to add content. Each placeholder has a name and an index.
-    This index is NOT a list index, rather a set of keys used to look up a dict. So, `idx` is
-    non-contiguous. Also, the title placeholder of a slide always has index 0. User-added
-    placeholder get indices assigned starting from 10.
+    A placeholder in a slide is a place to add content. Each placeholder has a
+    name and an index. This index is not a list index; it is a key used to look up
+    a dict and may be non-contiguous. The title placeholder always has index 0.
+    User-added placeholders get indices starting from 10.
 
-    With user-edited or added placeholders, their index may be difficult to track. This function
-    returns the placeholders name as well, which could be useful to distinguish between the
-    different placeholder.
+    With user-edited or added placeholders, indices may be difficult to track. This
+    function returns the placeholders' names as well, which may help distinguish
+    between placeholders.
 
-    :param slide: The slide.
-    :param layout_number: The layout number used by the slide.
-    :param is_debug: Whether to print debugging statements.
-    :return: A list containing placeholders (idx, name) tuples, except the title placeholder.
+    Args:
+        slide: The slide.
+        layout_number: The layout number used by the slide.
+        is_debug: Whether to print debugging statements.
+
+    Returns:
+        list[tuple[int, str]]: A list of (index, name) tuples for placeholders
+        present in the slide, excluding the title placeholder.
     """
 
     if is_debug:
@@ -298,10 +312,11 @@ def _handle_default_display(
     """
     Display a list of text in a slide.
 
-    :param presentation: The presentation object.
-    :param slide_json: The content of the slide as JSON data.
-    :param slide_width_inch: The width of the slide in inches.
-    :param slide_height_inch: The height of the slide in inches.
+    Args:
+        presentation: The presentation object.
+        slide_json: The content of the slide as JSON data.
+        slide_width_inch: The width of the slide in inches.
+        slide_height_inch: The height of the slide in inches.
     """
 
     status = False
@@ -366,11 +381,14 @@ def _handle_display_image__in_foreground(
     Create a slide with text and image using a picture placeholder layout. If not image keyword is
     available, it will add only text to the slide.
 
-    :param presentation: The presentation object.
-    :param slide_json: The content of the slide as JSON data.
-    :param slide_width_inch: The width of the slide in inches.
-    :param slide_height_inch: The height of the slide in inches.
-    :return: True if the side has been processed.
+    Args:
+        presentation: The presentation object.
+        slide_json: The content of the slide as JSON data.
+        slide_width_inch: The width of the slide in inches.
+        slide_height_inch: The height of the slide in inches.
+
+    Returns:
+        bool: True if the side has been processed.
     """
 
     img_keywords = slide_json['img_keywords'].strip()
@@ -445,11 +463,14 @@ def _handle_display_image__in_background(
     `_handle_default_display()` but with a background image added. If not image keyword is
     available, it will add only text to the slide.
 
-    :param presentation: The presentation object.
-    :param slide_json: The content of the slide as JSON data.
-    :param slide_width_inch: The width of the slide in inches.
-    :param slide_height_inch: The height of the slide in inches.
-    :return: True if the slide has been processed.
+    Args:
+        presentation: The presentation object.
+        slide_json: The content of the slide as JSON data.
+        slide_width_inch: The width of the slide in inches.
+        slide_height_inch: The height of the slide in inches.
+
+    Returns:
+        True if the slide has been processed.
     """
 
     img_keywords = slide_json['img_keywords'].strip()
@@ -559,11 +580,14 @@ def _handle_icons_ideas(
     Add a slide with some icons and text.
     If no suitable icons are found, the step numbers are shown.
 
-    :param presentation: The presentation object.
-    :param slide_json: The content of the slide as JSON data.
-    :param slide_width_inch: The width of the slide in inches.
-    :param slide_height_inch: The height of the slide in inches.
-    :return: True if the slide has been processed.
+    Args:
+        presentation: The presentation object.
+        slide_json: The content of the slide as JSON data.
+        slide_width_inch: The width of the slide in inches.
+        slide_height_inch: The height of the slide in inches.
+
+    Returns:
+        True if the slide has been processed.
     """
 
     if 'bullet_points' in slide_json and slide_json['bullet_points']:
@@ -670,14 +694,15 @@ def _add_text_at_bottom(
         target_height: Optional[float] = 0.5
 ):
     """
-    Add arbitrary text to a textbox positioned near the lower left side of a slide.
+    Add arbitrary text to a textbox positioned near the lower-left side of a slide.
 
-    :param slide: The slide.
-    :param slide_width_inch: The width of the slide.
-    :param slide_height_inch: The height of the slide.
-    :param target_height: the target height of the box in inches (optional).
-    :param text: The text to be added
-    :param hyperlink: The hyperlink to be added to the text (optional).
+    Args:
+        slide: The slide.
+        slide_width_inch: The width of the slide in inches.
+        slide_height_inch: The height of the slide in inches.
+        text: The text to be added.
+        hyperlink: Optional; the hyperlink to be added to the text.
+        target_height: Optional[float]; the target height of the box in inches.
     """
 
     footer = slide.shapes.add_textbox(
@@ -706,11 +731,14 @@ def _handle_double_col_layout(
     """
     Add a slide with a double column layout for comparison.
 
-    :param presentation: The presentation object.
-    :param slide_json: The content of the slide as JSON data.
-    :param slide_width_inch: The width of the slide in inches.
-    :param slide_height_inch: The height of the slide in inches.
-    :return: True if double col layout has been added; False otherwise.
+    Args:
+        presentation (pptx.Presentation): The presentation object.
+        slide_json (dict): The content of the slide as JSON data.
+        slide_width_inch (float): The width of the slide in inches.
+        slide_height_inch (float): The height of the slide in inches.
+
+    Returns:
+        bool: True if double col layout has been added; False otherwise.
     """
 
     if 'bullet_points' in slide_json and slide_json['bullet_points']:
@@ -800,14 +828,16 @@ def _handle_step_by_step_process(
         slide_width_inch: float,
         slide_height_inch: float
 ) -> bool:
-    """
-    Add shapes to display a step-by-step process in the slide, if available.
+    """Add shapes to display a step-by-step process in the slide, if available.
 
-    :param presentation: The presentation object.
-    :param slide_json: The content of the slide as JSON data.
-    :param slide_width_inch: The width of the slide in inches.
-    :param slide_height_inch: The height of the slide in inches.
-    :return True if this slide has a step-by-step process depiction added; False otherwise.
+    Args:
+        presentation (pptx.Presentation): The presentation object.
+        slide_json (dict): The content of the slide as JSON data.
+        slide_width_inch (float): The width of the slide in inches.
+        slide_height_inch (float): The height of the slide in inches.
+
+    Returns:
+        bool: True if this slide has a step-by-step process depiction added; False otherwise.
     """
 
     if 'bullet_points' in slide_json and slide_json['bullet_points']:
@@ -912,11 +942,14 @@ def _handle_table(
     """
     Add a table to a slide, if available.
 
-    :param presentation: The presentation object.
-    :param slide_json: The content of the slide as JSON data.
-    :param slide_width_inch: The width of the slide in inches.
-    :param slide_height_inch: The height of the slide in inches.
-    :return True if this slide has a step-by-step process depiction added; False otherwise.
+    Args:
+        presentation (pptx.Presentation): The presentation object.
+        slide_json (dict): The content of the slide as JSON data.
+        slide_width_inch (float): The width of the slide in inches.
+        slide_height_inch (float): The height of the slide in inches.
+
+    Returns:
+        bool: True if a table was added to the slide; False otherwise.
     """
 
     if 'table' not in slide_json or not slide_json['table']:
@@ -955,13 +988,17 @@ def _handle_key_message(
         slide_height_inch: float
 ):
     """
-    Add a shape to display the key message in the slide, if available.
+        Add a shape to display the key message in the slide, if available.
 
-    :param the_slide: The slide to be processed.
-    :param slide_json: The content of the slide as JSON data.
-    :param slide_width_inch: The width of the slide in inches.
-    :param slide_height_inch: The height of the slide in inches.
-    """
+        Args:
+            the_slide (pptx.slide.Slide): The slide to be processed.
+            slide_json (dict): The content of the slide as JSON data.
+            slide_width_inch (float): The width of the slide in inches.
+            slide_height_inch (float): The height of the slide in inches.
+
+        Returns:
+            None
+        """
 
     if 'key_message' in slide_json and slide_json['key_message']:
         height = pptx.util.Inches(1.6)
@@ -978,12 +1015,15 @@ def _handle_key_message(
         format_text(shape.text_frame.paragraphs[0], slide_json['key_message'])
 
 
-def _get_slide_width_height_inches(presentation: pptx.Presentation) -> Tuple[float, float]:
+def _get_slide_width_height_inches(presentation: pptx.Presentation) -> tuple[float, float]:
     """
     Get the dimensions of a slide in inches.
 
-    :param presentation: The presentation object.
-    :return: The width and the height.
+    Args:
+        presentation: The presentation object.
+
+    Returns:
+        The width and the height.
     """
 
     slide_width_inch = EMU_TO_INCH_SCALING_FACTOR * presentation.slide_width

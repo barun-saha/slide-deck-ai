@@ -2,13 +2,9 @@
 File manager helper to work with uploaded files.
 """
 import logging
-import os
-import sys
 
 import streamlit as st
 from pypdf import PdfReader
-
-from ..global_config import GlobalConfig
 
 
 logger = logging.getLogger(__name__)
@@ -16,7 +12,8 @@ logger = logging.getLogger(__name__)
 
 def get_pdf_contents(
         pdf_file: st.runtime.uploaded_file_manager.UploadedFile,
-        page_range: tuple[int, int]) -> str:
+        page_range: tuple[int, int]
+) -> str:
     """
     Extract the text contents from a PDF file.
 
