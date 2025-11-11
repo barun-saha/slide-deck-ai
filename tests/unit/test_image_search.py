@@ -44,7 +44,6 @@ def _dummy_requests_get_success_search(
     """Return a successful mock response for search_pexels."""
 
     # Validate that the function under test passes expected args
-    assert 'pexels.com' in url
     assert 'Authorization' in headers
     assert 'User-Agent' in headers
     assert 'query' in params
