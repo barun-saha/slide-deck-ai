@@ -1,0 +1,3 @@
+ignore:
+  # Exclude the version file from all coverage calculations
+  - "src/slidedeckai/_version.py"
