@@ -1,0 +1,13 @@
+coverage:
+  status:
+    patch:
+      # Exclude the version file from patch coverage checks
+      paths:
+        - "src/slidedeckai/_version.py":
+            target: auto
+            # Set the patch coverage requirement to 0% for this specific file
+            threshold: 0%
+
+ignore:
+  # Optionally ignore the entire version file from total coverage calculation too
+  - "src/slidedeckai/_version.py"
