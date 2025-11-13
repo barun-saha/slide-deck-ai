@@ -3,7 +3,6 @@ Helper functions to access LLMs using LiteLLM.
 """
 import logging
 import re
-import sys
 import urllib3
 from typing import Tuple, Union, Iterator, Optional
 

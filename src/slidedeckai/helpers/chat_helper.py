@@ -1,12 +1,11 @@
 """
-Chat helper classes to replace LangChain components.
+Chat helper: message classes and history.
 """
-import streamlit as st
 
 
 class ChatMessage:
     """Base class for chat messages."""
-    
+
     def __init__(self, content: str, role: str):
         self.content = content
         self.role = role
@@ -34,10 +33,13 @@ class ChatMessageHistory:
         self.messages = []
     
     def add_user_message(self, content: str):
+        """Append user message to the history."""
         self.messages.append(HumanMessage(content))
     
     def add_ai_message(self, content: str):
+        """Append AI-generated response to the history."""
         self.messages.append(AIMessage(content))
+
 
 class ChatPromptTemplate:
     """Template for chat prompts."""
