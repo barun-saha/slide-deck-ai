@@ -1,5 +1,5 @@
 """
-Core functionality of SlideDeckAI.
+Core functionality of SlideDeck AI.
 """
 import logging
 import os
