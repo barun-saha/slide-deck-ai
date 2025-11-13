@@ -63,7 +63,7 @@ def fix_malformed_json(json_str: str) -> str:
         json_str: The input JSON string.
 
     Returns:
-        The fixed JSOn string.
+        The fixed JSON string.
     """
     return jr.repair_json(json_str, skip_json_loads=True)
 

@@ -1,5 +1,5 @@
 """
-Sphinx configuration file for the KodeAgent documentation.
+Sphinx configuration file for the SlideDeck AI documentation.
 This file sets up Sphinx to generate documentation from the source code
 located in the 'src' directory, and includes support for Markdown files
 using the MyST parser.
@@ -8,7 +8,7 @@ import os
 import sys
 
 # --- Path setup ---
-# Crucial: This tells Sphinx to look in 'src' to find the 'kodeagent' package.
+# Crucial: This tells Sphinx to look in 'src' to find the 'slidedeckai' package.
 sys.path.insert(0, os.path.abspath('../src'))
 
 # --- Project information ---

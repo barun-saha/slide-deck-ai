@@ -24,6 +24,6 @@ If you want to use the latest features or contribute, clone the repository and i
 
 ```bash
 git clone https://github.com/barun-saha/slide-deck-ai/
-cd slidedeckai
+cd slide-deck-ai
 pip install -e .
 ```
