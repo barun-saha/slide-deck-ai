@@ -27,12 +27,27 @@ from slidedeckai.helpers import chat_helper
 
 
 load_dotenv()
+logger = logging.getLogger(__name__)
+
+
+RUN_IN_OFFLINE_MODE = os.getenv('RUN_IN_OFFLINE_MODE', 'False').lower() == 'true'
+
+# Session variables
+CHAT_MESSAGES = 'chat_messages'
+DOWNLOAD_FILE_KEY = 'download_file_name'
+IS_IT_REFINEMENT = 'is_it_refinement'
+ADDITIONAL_INFO = 'additional_info'
+PDF_FILE_KEY = 'pdf_file'
+
+TEXTS = list(GlobalConfig.PPTX_TEMPLATE_FILES.keys())
+CAPTIONS = [GlobalConfig.PPTX_TEMPLATE_FILES[x]['caption'] for x in TEXTS]
 
 
 class StreamlitChatMessageHistory:
     """Chat message history stored in Streamlit session state."""
 
     def __init__(self, key: str):
+        """Initialize the chat message history."""
         self.key = key
         if key not in st.session_state:
             st.session_state[key] = []
@@ -51,14 +66,13 @@ class StreamlitChatMessageHistory:
         st.session_state[self.key].append(AIMessage(content))
 
 
-RUN_IN_OFFLINE_MODE = os.getenv('RUN_IN_OFFLINE_MODE', 'False').lower() == 'true'
-
-
 @st.cache_data
 def _load_strings() -> dict:
     """
     Load various strings to be displayed in the app.
-    :return: The dictionary of strings.
+
+    Returns:
+        The dictionary of strings.
     """
     with open(GlobalConfig.APP_STRINGS_FILE, 'r', encoding='utf-8') as in_file:
         return json5.loads(in_file.read())
@@ -69,10 +83,12 @@ def _get_prompt_template(is_refinement: bool) -> str:
     """
     Return a prompt template.
 
-    :param is_refinement: Whether this is the initial or refinement prompt.
-    :return: The prompt template as f-string.
-    """
+    Args:
+        is_refinement: Whether this is the initial or refinement prompt.
 
+    Returns:
+        The prompt template as f-string.
+    """
     if is_refinement:
         with open(GlobalConfig.REFINEMENT_PROMPT_TEMPLATE, 'r', encoding='utf-8') as in_file:
             template = in_file.read()
@@ -95,16 +111,18 @@ def are_all_inputs_valid(
     """
     Validate user input and LLM selection.
 
-    :param user_prompt: The prompt.
-    :param provider: The LLM provider.
-    :param selected_model: Name of the model.
-    :param user_key: User-provided API key.
-    :param azure_deployment_url: Azure OpenAI deployment URL.
-    :param azure_endpoint_name: Azure OpenAI model endpoint.
-    :param azure_api_version: Azure OpenAI API version.
-    :return: `True` if all inputs "look" OK; `False` otherwise.
-    """
+    Args:
+        user_prompt: The prompt.
+        provider: The LLM provider.
+        selected_model: Name of the model.
+        user_key: User-provided API key.
+        azure_deployment_url: Azure OpenAI deployment URL.
+        azure_endpoint_name: Azure OpenAI model endpoint.
+        azure_api_version: Azure OpenAI API version.
 
+    Returns:
+        `True` if all inputs "look" OK; `False` otherwise.
+    """
     if not text_helper.is_valid_prompt(user_prompt):
         handle_error(
             'Not enough information provided!'
@@ -139,10 +157,10 @@ def handle_error(error_msg: str, should_log: bool):
     """
     Display an error message in the app.
 
-    :param error_msg: The error message to be displayed.
-    :param should_log: If `True`, log the message.
+    Args:
+        error_msg: The error message to be displayed.
+        should_log: If `True`, log the message.
     """
-
     if should_log:
         logger.error(error_msg)
 
@@ -153,7 +171,6 @@ def reset_api_key():
     """
     Clear API key input when a different LLM is selected from the dropdown list.
     """
-
     st.session_state.api_key_input = ''
 
 
@@ -177,18 +194,8 @@ def reset_chat_history():
 
 APP_TEXT = _load_strings()
 
-# Session variables
-CHAT_MESSAGES = 'chat_messages'
-DOWNLOAD_FILE_KEY = 'download_file_name'
-IS_IT_REFINEMENT = 'is_it_refinement'
-ADDITIONAL_INFO = 'additional_info'
-PDF_FILE_KEY = 'pdf_file'
 
-
-logger = logging.getLogger(__name__)
-
-texts = list(GlobalConfig.PPTX_TEMPLATE_FILES.keys())
-captions = [GlobalConfig.PPTX_TEMPLATE_FILES[x]['caption'] for x in texts]
+# -----= UI display begins here =-----
 
 
 with st.sidebar:
@@ -201,8 +208,8 @@ with st.sidebar:
     # The PPT templates
     pptx_template = st.sidebar.radio(
         '1: Select a presentation template:',
-        texts,
-        captions=captions,
+        TEXTS,
+        captions=CAPTIONS,
         horizontal=True
     )
 
@@ -303,7 +310,6 @@ def build_ui():
     """
     Display the input elements for content generation.
     """
-
     st.title(APP_TEXT['app_name'])
     st.subheader(APP_TEXT['caption'])
     st.markdown(
@@ -342,11 +348,11 @@ def set_up_chat_ui():
     st.chat_message('ai').write(random.choice(APP_TEXT['ai_greetings']))
 
     history = StreamlitChatMessageHistory(key=CHAT_MESSAGES)
-    prompt_template = chat_helper.ChatPromptTemplate.from_template(
-        _get_prompt_template(
-            is_refinement=_is_it_refinement()
-        )
-    )
+    # prompt_template = chat_helper.ChatPromptTemplate.from_template(
+    #     _get_prompt_template(
+    #         is_refinement=_is_it_refinement()
+    #     )
+    # )
 
     # Since Streamlit app reloads at every interaction, display the chat history
     # from the save session state
@@ -449,9 +455,9 @@ def set_up_chat_ui():
             )
         except ollama.ResponseError:
             handle_error(
-                f'The model is unavailable with Ollama on your system.'
-                f' Make sure that you have provided the correct LLM name or pull it.'
-                f' View LLMs available locally by running `ollama list`.',
+                'The model is unavailable with Ollama on your system.'
+                ' Make sure that you have provided the correct LLM name or pull it.'
+                ' View LLMs available locally by running `ollama list`.',
                 True
             )
         except Exception as ex:
@@ -484,9 +490,9 @@ def _is_it_refinement() -> bool:
     """
     Whether it is the initial prompt or a refinement.
 
-    :return: True if it is the initial prompt; False otherwise.
+    Returns:
+        True if it is the initial prompt; False otherwise.
     """
-
     if IS_IT_REFINEMENT in st.session_state:
         return True
 
@@ -502,7 +508,8 @@ def _get_user_messages() -> list[str]:
     """
     Get a list of user messages submitted until now from the session state.
 
-    :return: The list of user messages.
+    Returns:
+        The list of user messages.
     """
     return [
         msg.content for msg in st.session_state[CHAT_MESSAGES]
@@ -514,7 +521,8 @@ def _display_download_button(file_path: pathlib.Path):
     """
     Display a download button to download a slide deck.
 
-    :param file_path: The path of the .pptx file.
+    Args:
+        file_path: The path of the .pptx file.
     """
     with open(file_path, 'rb') as download_file:
         st.download_button(
@@ -529,7 +537,6 @@ def main():
     """
     Trigger application run.
     """
-
     build_ui()
 
 
