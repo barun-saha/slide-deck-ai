@@ -27,8 +27,8 @@ except ImportError:
 
 LLM_PROVIDER_MODEL_REGEX = re.compile(r'\[(.*?)\](.*)')
 OLLAMA_MODEL_REGEX = re.compile(r'[a-zA-Z0-9._:-]+$')
-# 94 characters long, only containing alphanumeric characters, hyphens, and underscores
-API_KEY_REGEX = re.compile(r'^[a-zA-Z0-9_-]{6,94}$')
+# 128 characters long, only containing alphanumeric characters, hyphens, and underscores
+API_KEY_REGEX = re.compile(r'^[a-zA-Z0-9_-]{6,128}$')
 
 
 logger = logging.getLogger(__name__)
@@ -42,7 +42,6 @@ def get_provider_model(provider_model: str, use_ollama: bool) -> Tuple[str, str]
     :param use_ollama: Whether Ollama is used (i.e., running in offline mode).
     :return: The provider and the model name; empty strings in case no matching pattern found.
     """
-
     provider_model = provider_model.strip()
 
     if use_ollama:
@@ -99,7 +98,6 @@ def is_valid_llm_provider_model(
     :param azure_api_version: Azure OpenAI API version.
     :return: `True` if the settings "look" OK; `False` otherwise.
     """
-
     if not provider or not model or provider not in GlobalConfig.VALID_PROVIDERS:
         return False
 
@@ -132,16 +130,7 @@ def get_litellm_model_name(provider: str, model: str) -> Optional[str]:
     :param model: The model name.
     :return: LiteLLM-compatible model name, or None if provider is not supported.
     """
-    provider_prefix_map = {
-        GlobalConfig.PROVIDER_HUGGING_FACE: 'huggingface',
-        GlobalConfig.PROVIDER_GOOGLE_GEMINI: 'gemini',
-        GlobalConfig.PROVIDER_AZURE_OPENAI: 'azure',
-        GlobalConfig.PROVIDER_OPENROUTER: 'openrouter',
-        GlobalConfig.PROVIDER_COHERE: 'cohere',
-        GlobalConfig.PROVIDER_TOGETHER_AI: 'together_ai',
-        GlobalConfig.PROVIDER_OLLAMA: 'ollama',
-    }
-    prefix = provider_prefix_map.get(provider)
+    prefix = GlobalConfig.LITELLM_PROVIDER_MAPPING.get(provider)
     if prefix:
         return f'{prefix}/{model}'
     # LiteLLM always expects a prefix for model names; if not found, return None
@@ -171,7 +160,6 @@ def stream_litellm_completion(
     :param azure_api_version: Azure OpenAI API version.
     :return: Iterator of response chunks.
     """
-    
     if litellm is None:
         raise ImportError("LiteLLM is not installed. Please install it with: pip install litellm")
     
@@ -251,7 +239,6 @@ def get_litellm_llm(
     :param azure_api_version: Azure OpenAI API version.
     :return: A LiteLLM-compatible object for streaming; `None` in case of any error.
     """
-    
     if litellm is None:
         raise ImportError("LiteLLM is not installed. Please install it with: pip install litellm")
     

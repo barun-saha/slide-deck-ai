@@ -19,33 +19,52 @@ class GlobalConfig:
     """
     A data class holding the configurations.
     """
-
+    PROVIDER_ANTHROPIC = 'an'
+    PROVIDER_AZURE_OPENAI = 'az'
     PROVIDER_COHERE = 'co'
     PROVIDER_GOOGLE_GEMINI = 'gg'
-    PROVIDER_HUGGING_FACE = 'hf'
-    PROVIDER_AZURE_OPENAI = 'az'
     PROVIDER_OLLAMA = 'ol'
     PROVIDER_OPENROUTER = 'or'
     PROVIDER_TOGETHER_AI = 'to'
+    PROVIDER_SAMBANOVA = 'sn'
+
+    LITELLM_PROVIDER_MAPPING = {
+        PROVIDER_ANTHROPIC: 'anthropic',
+        PROVIDER_GOOGLE_GEMINI: 'gemini',
+        PROVIDER_AZURE_OPENAI: 'azure',
+        PROVIDER_OPENROUTER: 'openrouter',
+        PROVIDER_COHERE: 'cohere',
+        PROVIDER_SAMBANOVA: 'sambanova',
+        PROVIDER_TOGETHER_AI: 'together_ai',
+        PROVIDER_OLLAMA: 'ollama',
+    }
+
     VALID_PROVIDERS = {
+        PROVIDER_ANTHROPIC,
+        PROVIDER_AZURE_OPENAI,
         PROVIDER_COHERE,
         PROVIDER_GOOGLE_GEMINI,
-        # PROVIDER_HUGGING_FACE,
         PROVIDER_OLLAMA,
-        PROVIDER_TOGETHER_AI,
-        PROVIDER_AZURE_OPENAI,
         PROVIDER_OPENROUTER,
+        PROVIDER_SAMBANOVA,
+        PROVIDER_TOGETHER_AI,
     }
     PROVIDER_ENV_KEYS = {
-        PROVIDER_COHERE: "COHERE_API_KEY",
-        PROVIDER_GOOGLE_GEMINI: "GOOGLE_API_KEY",
-        PROVIDER_HUGGING_FACE: "HUGGINGFACEHUB_API_TOKEN",
-        PROVIDER_AZURE_OPENAI: "AZURE_OPENAI_API_KEY",
-        PROVIDER_OPENROUTER: "OPENROUTER_API_KEY",
-        PROVIDER_TOGETHER_AI: "TOGETHER_API_KEY",
+        PROVIDER_ANTHROPIC: 'ANTHROPIC_API_KEY',
+        PROVIDER_COHERE: 'COHERE_API_KEY',
+        PROVIDER_GOOGLE_GEMINI: 'GOOGLE_API_KEY',
+        PROVIDER_AZURE_OPENAI: 'AZURE_OPENAI_API_KEY',
+        PROVIDER_OPENROUTER: 'OPENROUTER_API_KEY',
+        PROVIDER_SAMBANOVA: 'SAMBANOVA_API_KEY',
+        PROVIDER_TOGETHER_AI: 'TOGETHER_API_KEY',
     }
     PROVIDER_REGEX = re.compile(r'\[(.*?)\]')
     VALID_MODELS = {
+        '[an]claude-haiku-4-5': {
+            'description': 'faster, detailed',
+            'max_new_tokens': 8192,
+            'paid': True,
+        },
         '[az]azure/open-ai': {
             'description': 'faster, detailed',
             'max_new_tokens': 8192,
@@ -76,16 +95,6 @@ class GlobalConfig:
             'max_new_tokens': 8192,
             'paid': True,
         },
-        # '[hf]mistralai/Mistral-7B-Instruct-v0.2': {
-        #     'description': 'faster, shorter',
-        #     'max_new_tokens': 8192,
-        #     'paid': False,
-        # },
-        # '[hf]mistralai/Mistral-Nemo-Instruct-2407': {
-        #     'description': 'longer response',
-        #     'max_new_tokens': 8192,
-        #     'paid': False,
-        # },
         '[or]google/gemini-2.0-flash-001': {
             'description': 'Google Gemini-2.0-flash-001 (via OpenRouter)',
             'max_new_tokens': 8192,
@@ -94,6 +103,11 @@ class GlobalConfig:
         '[or]openai/gpt-3.5-turbo': {
             'description': 'OpenAI GPT-3.5 Turbo (via OpenRouter)',
             'max_new_tokens': 4096,
+            'paid': True,
+        },
+        '[sn]Llama-3.3-Swallow-70B-Instruct-v0.4': {
+            'description': 'fast, shorter',
+            'max_new_tokens': 8192,
             'paid': True,
         },
         '[to]deepseek-ai/DeepSeek-V3': {
