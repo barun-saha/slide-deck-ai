@@ -26,7 +26,6 @@ from slidedeckai.global_config import GlobalConfig
         ('invalid[]model', False, ('', '')),
         ('', False, ('', '')),
         ('[invalid]model', False, ('', '')),
-        ('[hf]mistral', False, ('', '')),  # hf is not in VALID_PROVIDERS
     ],
 )
 def test_get_provider_model(provider_model, use_ollama, expected):
@@ -107,7 +106,6 @@ def test_is_valid_llm_provider_model(
 @pytest.mark.parametrize(
     'provider, model, expected',
     [
-        (GlobalConfig.PROVIDER_HUGGING_FACE, 'mistral', 'huggingface/mistral'),
         (GlobalConfig.PROVIDER_GOOGLE_GEMINI, 'gemini-pro', 'gemini/gemini-pro'),
         (GlobalConfig.PROVIDER_OPENROUTER, 'openai/gpt-4', 'openrouter/openai/gpt-4'),
         (GlobalConfig.PROVIDER_COHERE, 'command', 'cohere/command'),
@@ -139,8 +137,8 @@ def test_stream_litellm_completion_success(mock_litellm):
     messages = [{'role': 'user', 'content': 'Say hello'}]
     result = list(
         stream_litellm_completion(
-            provider='hf',
-            model='mistral',
+            provider='gg',
+            model='gemini-2.5-flash-lite',
             messages=messages,
             max_tokens=100,
             api_key='test-key',
@@ -187,8 +185,8 @@ def test_stream_litellm_completion_error(mock_litellm):
     with pytest.raises(Exception) as exc_info:
         list(
             stream_litellm_completion(
-                provider='hf',
-                model='mistral',
+                provider='gg',
+                model='gemini-2.5-flash-lite',
                 messages=messages,
                 max_tokens=100,
                 api_key='test-key',
@@ -203,8 +201,8 @@ def test_get_litellm_llm(mock_stream):
     mock_stream.return_value = iter(['Hello', ' world'])
 
     llm = get_litellm_llm(
-        provider='hf',
-        model='mistral',
+        provider='gg',
+        model='gemini-2.5-flash-lite',
         max_new_tokens=100,
         api_key='test-key',
     )
@@ -254,8 +252,8 @@ def test_stream_litellm_completion_message_format(mock_litellm):
     messages = [{'role': 'user', 'content': 'Test'}]
     result = list(
         stream_litellm_completion(
-            provider='hf',
-            model='mistral',
+            provider='gg',
+            model='gemini-2.5-flash-lite',
             messages=messages,
             max_tokens=100,
             api_key='test-key',
