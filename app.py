@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 RUN_IN_OFFLINE_MODE = os.getenv('RUN_IN_OFFLINE_MODE', 'False').lower() == 'true'
 
 # Session variables
+SLIDE_GENERATOR = 'slide_generator_instance'
 CHAT_MESSAGES = 'chat_messages'
 DOWNLOAD_FILE_KEY = 'download_file_name'
 IS_IT_REFINEMENT = 'is_it_refinement'
@@ -179,6 +180,7 @@ def reset_chat_history():
     Clear the chat history and related session state variables.
     """
     # Clear session state variables using pop with None default
+    st.session_state.pop(SLIDE_GENERATOR, None)
     st.session_state.pop(CHAT_MESSAGES, None)
     st.session_state.pop(IS_IT_REFINEMENT, None)
     st.session_state.pop(ADDITIONAL_INFO, None)
@@ -403,14 +405,20 @@ def set_up_chat_ui():
 
         st.chat_message('user').write(prompt_text)
 
-        slide_generator = SlideDeckAI(
-            model=llm_provider_to_use,
-            topic=prompt_text,
-            api_key=api_key_token.strip(),
-            template_idx=list(GlobalConfig.PPTX_TEMPLATE_FILES.keys()).index(pptx_template),
-            pdf_path_or_stream=st.session_state.get(PDF_FILE_KEY),
-            pdf_page_range=(st.session_state.get('start_page'), st.session_state.get('end_page')),
-        )
+        if SLIDE_GENERATOR in st.session_state:
+            slide_generator = st.session_state[SLIDE_GENERATOR]
+        else:
+            slide_generator = SlideDeckAI(
+                model=llm_provider_to_use,
+                topic=prompt_text,
+                api_key=api_key_token.strip(),
+                template_idx=list(GlobalConfig.PPTX_TEMPLATE_FILES.keys()).index(pptx_template),
+                pdf_path_or_stream=st.session_state.get(PDF_FILE_KEY),
+                pdf_page_range=(
+                    st.session_state.get('start_page'), st.session_state.get('end_page')
+                ),
+            )
+            st.session_state[SLIDE_GENERATOR] = slide_generator
 
         progress_bar = st.progress(0, 'Preparing to call LLM...')
 
