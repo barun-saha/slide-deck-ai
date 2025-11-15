@@ -4,6 +4,7 @@ Search photos using Pexels API.
 import logging
 import os
 import random
+import warnings
 from io import BytesIO
 from typing import Union, Literal
 from urllib.parse import urlparse, parse_qs
@@ -15,6 +16,18 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+# If PEXEL_API_KEY env var is unavailable, issue a one-time warning
+if not os.getenv('PEXEL_API_KEY'):
+    warnings.warn(
+        'PEXEL_API_KEY environment variable is not set. '
+        'Image search functionality will not work without it.'
+    )
+
+PEXELS_URL = 'https://api.pexels.com/v1/search'
+REQUEST_HEADER = {
+    'Authorization': os.getenv('PEXEL_API_KEY'),
+    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20100101 Firefox/10.0',
+}
 REQUEST_TIMEOUT = 12
 MAX_PHOTOS = 3
 
@@ -50,23 +63,27 @@ def search_pexels(
         per_page: No. of results to be displayed per page.
 
     Returns:
-        The JSON response from the Pexels API containing search results.
+        The JSON response from the Pexels API containing search results. Empty dict if API key
+        is not set.
 
     Raises:
         requests.exceptions.RequestException: If the request to the Pexels API fails.
     """
-    url = 'https://api.pexels.com/v1/search'
-    headers = {
-        'Authorization': os.getenv('PEXEL_API_KEY'),
-        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20100101 Firefox/10.0',
-    }
+    if not os.getenv('PEXEL_API_KEY'):
+        return {}
+
     params = {
         'query': query,
         'size': size,
         'page': 1,
         'per_page': per_page
     }
-    response = requests.get(url, headers=headers, params=params, timeout=REQUEST_TIMEOUT)
+    response = requests.get(
+        PEXELS_URL,
+        headers=REQUEST_HEADER,
+        params=params,
+        timeout=REQUEST_TIMEOUT
+    )
     response.raise_for_status()  # Ensure the request was successful
 
     return response.json()
@@ -83,8 +100,12 @@ def get_photo_url_from_api_response(
         json_response: The JSON response.
 
     Returns:
-        The selected photo URL and page URL or `None`.
+        The selected photo URL and page URL or `None`. Empty tuple if no photos found or API key
+        is not set.
     """
+    if not os.getenv('PEXEL_API_KEY'):
+        return None, None
+
     page_url = None
     photo_url = None
 
@@ -123,11 +144,7 @@ def get_image_from_url(url: str) -> BytesIO:
     Raises:
         requests.exceptions.RequestException: If the request to the URL fails.
     """
-    headers = {
-        'Authorization': os.getenv('PEXEL_API_KEY'),
-        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:10.0) Gecko/20100101 Firefox/10.0',
-    }
-    response = requests.get(url, headers=headers, stream=True, timeout=REQUEST_TIMEOUT)
+    response = requests.get(url, headers=REQUEST_HEADER, stream=True, timeout=REQUEST_TIMEOUT)
     response.raise_for_status()
     image_data = BytesIO(response.content)
 

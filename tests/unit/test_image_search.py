@@ -42,7 +42,6 @@ def _dummy_requests_get_success_search(
         timeout: int
 ):
     """Return a successful mock response for search_pexels."""
-
     # Validate that the function under test passes expected args
     assert 'Authorization' in headers
     assert 'User-Agent' in headers
@@ -72,7 +71,6 @@ def _dummy_requests_get_image(
         stream: bool, timeout: int
 ):
     """Return a mock image response for get_image_from_url."""
-
     assert stream is True
     assert 'Authorization' in headers
     data = b'\x89PNG\r\n\x1a\n...'
@@ -169,3 +167,22 @@ def test_search_pexels_raises_on_request_error(monkeypatch) -> None:
 
     with pytest.raises(RuntimeError):
         image_search.search_pexels(query='x')
+
+
+def test_search_pexels_returns_empty_when_no_api_key(monkeypatch) -> None:
+    """When PEXEL_API_KEY is not set, search_pexels should return an empty dict."""
+    monkeypatch.delenv('PEXEL_API_KEY', raising=False)
+    result = image_search.search_pexels(query='people')
+
+    assert result == {}
+
+
+def test_get_photo_url_from_api_response_returns_none_when_no_api_key(monkeypatch) -> None:
+    """When PEXEL_API_KEY is not set, get_photo_url_from_api_response should return (None, None)."""
+    photos = [
+        {'url': 'https://pexels.com/photo/1', 'src': {'large': 'https://images/1_large.jpg'}}
+    ]
+    monkeypatch.delenv('PEXEL_API_KEY', raising=False)
+    result = image_search.get_photo_url_from_api_response({'photos': photos})
+
+    assert result == (None, None)
