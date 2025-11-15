@@ -7,7 +7,7 @@ name = "slidedeckai"
 authors = [
   { name="Barun Saha", email="author@example.com" }
 ]
-description = "A Python package to generate slide decks using AI."
+description = "Co-create PowerPoint slide decks with AI"
 readme = "README.md"
 requires-python = ">=3.10"
 classifiers = [
