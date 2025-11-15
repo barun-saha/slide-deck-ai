@@ -112,6 +112,10 @@ def test_get_photo_url_from_api_response_selects_large_and_original(monkeypatch)
         {'url': 'https://pexels.com/photo/3', 'src': {'large': 'https://images/3_large.jpg'}},
     ]
 
+    # Ensure the Pexels API key is present so the helper will attempt to select
+    # and return photo URLs rather than early-returning (None, None).
+    monkeypatch.setenv('PEXEL_API_KEY', 'akey')
+
     # Force selection of index 1 (second photo) which only has 'original'
     monkeypatch.setattr(image_search.random, 'choice', lambda seq: 1)
 

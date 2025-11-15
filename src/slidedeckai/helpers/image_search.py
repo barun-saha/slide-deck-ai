@@ -20,7 +20,8 @@ load_dotenv()
 if not os.getenv('PEXEL_API_KEY'):
     warnings.warn(
         'PEXEL_API_KEY environment variable is not set. '
-        'Image search functionality will not work without it.'
+        'Image search functionality will not work without it.',
+        stacklevel=2
     )
 
 PEXELS_URL = 'https://api.pexels.com/v1/search'
