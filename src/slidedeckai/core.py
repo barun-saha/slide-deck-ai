@@ -265,7 +265,7 @@ class SlideDeckAI:
 
         return path
 
-    def set_model(self, model_name: str, api_key: str = None):
+    def set_model(self, model_name: str, api_key: str | None = None):
         """
         Set the LLM model (and API key) to use.
 
