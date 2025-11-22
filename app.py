@@ -143,7 +143,7 @@ def are_all_inputs_valid(
     ):
         handle_error(
             'The LLM settings do not look correct. Make sure that an API key/access token'
-            ' is provided if the selected LLM requires it. An API key should be 6-94 characters'
+            ' is provided if the selected LLM requires it. An API key should be 6-200 characters'
             ' long, only containing alphanumeric characters, hyphens, and underscores.\n\n'
             'If you are using Azure OpenAI, make sure that you have provided the additional and'
             ' correct configurations.',
