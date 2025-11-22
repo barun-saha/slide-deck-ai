@@ -231,9 +231,10 @@ with st.sidebar:
             try:
                 st.session_state[SLIDE_GENERATOR].set_model(llm_provider_to_use)
             except Exception as e:
-                logger.exception('Failed to update model on existing SlideDeckAI: %s', e)
+                logger.error('Failed to update model on existing SlideDeckAI: %s', e)
                 # If updating fails, drop the stored instance so a new one is created
                 st.session_state.pop(SLIDE_GENERATOR, None)
+
         api_key_token: str = ''
         azure_endpoint: str = ''
         azure_deployment: str = ''
@@ -292,7 +293,7 @@ with st.sidebar:
             try:
                 st.session_state[SLIDE_GENERATOR].set_model(llm_provider_to_use, api_key_token)
             except Exception as e:
-                logger.exception('Failed to update model on existing SlideDeckAI: %s', e)
+                logger.error('Failed to update model on existing SlideDeckAI: %s', e)
                 # If updating fails, drop the stored instance so a new one is created
                 st.session_state.pop(SLIDE_GENERATOR, None)
 
