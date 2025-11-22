@@ -10,7 +10,11 @@ pinned: false
 license: mit
 ---
 
+
+[![PyPI](https://img.shields.io/pypi/v/slidedeckai.svg)](https://pypi.org/project/slidedeckai/)
 [![codecov](https://codecov.io/gh/barun-saha/slide-deck-ai/branch/main/graph/badge.svg)](https://codecov.io/gh/barun-saha/slide-deck-ai)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://huggingface.co/spaces/barunsaha/slide-deck-ai)
 
 # SlideDeck AI
 
