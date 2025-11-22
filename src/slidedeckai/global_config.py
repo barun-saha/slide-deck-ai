@@ -14,6 +14,7 @@ load_dotenv()
 
 _SRC_DIR = Path(__file__).resolve().parent
 
+
 @dataclass(frozen=True)
 class GlobalConfig:
     """
@@ -24,6 +25,7 @@ class GlobalConfig:
     PROVIDER_COHERE = 'co'
     PROVIDER_GOOGLE_GEMINI = 'gg'
     PROVIDER_OLLAMA = 'ol'
+    PROVIDER_OPENAI = 'oa'
     PROVIDER_OPENROUTER = 'or'
     PROVIDER_TOGETHER_AI = 'to'
     PROVIDER_SAMBANOVA = 'sn'
@@ -37,6 +39,7 @@ class GlobalConfig:
         PROVIDER_SAMBANOVA: 'sambanova',
         PROVIDER_TOGETHER_AI: 'together_ai',
         PROVIDER_OLLAMA: 'ollama',
+        PROVIDER_OPENAI: 'openai',
     }
 
     VALID_PROVIDERS = {
@@ -45,6 +48,7 @@ class GlobalConfig:
         PROVIDER_COHERE,
         PROVIDER_GOOGLE_GEMINI,
         PROVIDER_OLLAMA,
+        PROVIDER_OPENAI,
         PROVIDER_OPENROUTER,
         PROVIDER_SAMBANOVA,
         PROVIDER_TOGETHER_AI,
@@ -54,6 +58,7 @@ class GlobalConfig:
         PROVIDER_COHERE: 'COHERE_API_KEY',
         PROVIDER_GOOGLE_GEMINI: 'GOOGLE_API_KEY',
         PROVIDER_AZURE_OPENAI: 'AZURE_OPENAI_API_KEY',
+        PROVIDER_OPENAI: 'OPENAI_API_KEY',
         PROVIDER_OPENROUTER: 'OPENROUTER_API_KEY',
         PROVIDER_SAMBANOVA: 'SAMBANOVA_API_KEY',
         PROVIDER_TOGETHER_AI: 'TOGETHER_API_KEY',
@@ -95,6 +100,21 @@ class GlobalConfig:
             'max_new_tokens': 8192,
             'paid': True,
         },
+        '[oa]gpt-4.1-mini': {
+            'description': 'faster, medium',
+            'max_new_tokens': 8192,
+            'paid': True,
+        },
+        '[oa]gpt-4.1-nano': {
+            'description': 'faster, shorter',
+            'max_new_tokens': 8192,
+            'paid': True,
+        },
+        '[oa]gpt-5-nano': {
+            'description': 'slow, shorter',
+            'max_new_tokens': 8192,
+            'paid': True,
+        },
         '[or]google/gemini-2.0-flash-001': {
             'description': 'Google Gemini-2.0-flash-001 (via OpenRouter)',
             'max_new_tokens': 8192,
@@ -103,6 +123,11 @@ class GlobalConfig:
         '[or]openai/gpt-3.5-turbo': {
             'description': 'OpenAI GPT-3.5 Turbo (via OpenRouter)',
             'max_new_tokens': 4096,
+            'paid': True,
+        },
+        '[sn]DeepSeek-V3.1-Terminus': {
+            'description': 'fast, detailed',
+            'max_new_tokens': 8192,
             'paid': True,
         },
         '[sn]Llama-3.3-Swallow-70B-Instruct-v0.4': {
@@ -128,11 +153,13 @@ class GlobalConfig:
     }
     LLM_PROVIDER_HELP = (
         'LLM provider codes:\n\n'
+        '- **[an]**: Anthropic\n'
         '- **[az]**: Azure OpenAI\n'
         '- **[co]**: Cohere\n'
         '- **[gg]**: Google Gemini API\n'
-        # '- **[hf]**: Hugging Face Inference API\n'
+        '- **[oa]**: OpenAI\n'
         '- **[or]**: OpenRouter\n\n'
+        '- **[sn]**: SambaNova\n'
         '- **[to]**: Together AI\n\n'
         '[Find out more](https://github.com/barun-saha/slide-deck-ai?tab=readme-ov-file#summary-of-the-llms)'
     )
@@ -193,13 +220,13 @@ class GlobalConfig:
         '\n\nSlideDeck AI can algo generate a presentation based on a PDF file. You can upload'
         ' a PDF file using the chat widget. Only a single file and up to max 50 pages will be'
         ' considered. For PDF-based slide deck generation, LLMs with large context windows, such'
-        ' as Gemini, GPT, and Mistral-Nemo, are recommended. Note: images from the PDF files will'
+        ' as Gemini and GPT, are recommended. Note: images from the PDF files will'
         ' not be used.'
         '\n\nAlso, note that the uploaded file might disappear from the page after click.'
         ' You do not need to upload the same file again to continue'
         ' the interaction and refining—the contents of the PDF file will be retained in the'
         ' same interactive session.'
-        '\n\nCurrently, paid or *free-to-use* LLMs from six different providers are supported.'
+        '\n\nCurrently, paid or *free-to-use* LLMs from eight different providers are supported.'
         ' A [summary of the supported LLMs]('
         'https://github.com/barun-saha/slide-deck-ai/blob/main/README.md#summary-of-the-llms)'
         ' is available for reference. SlideDeck AI does **NOT** store your API keys.'

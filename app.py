@@ -541,12 +541,5 @@ def _display_download_button(file_path: pathlib.Path):
         )
 
 
-def main():
-    """
-    Trigger application run.
-    """
-    build_ui()
-
-
 if __name__ == '__main__':
-    main()
+    build_ui()
