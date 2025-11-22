@@ -224,6 +224,16 @@ with st.sidebar:
                 ' Ollama-compatible and supported GPU is strongly recommended.'
             )
         )
+        # If a SlideDeckAI instance already exists in session state, update its model
+        # to reflect the user change rather than reusing the old model
+        # No API key required for local models
+        if SLIDE_GENERATOR in st.session_state and llm_provider_to_use:
+            try:
+                st.session_state[SLIDE_GENERATOR].set_model(llm_provider_to_use)
+            except Exception as e:
+                logger.exception('Failed to update model on existing SlideDeckAI: %s', e)
+                # If updating fails, drop the stored instance so a new one is created
+                st.session_state.pop(SLIDE_GENERATOR, None)
         api_key_token: str = ''
         azure_endpoint: str = ''
         azure_deployment: str = ''
@@ -261,7 +271,7 @@ with st.sidebar:
             st.stop()
         
         env_key_name = GlobalConfig.PROVIDER_ENV_KEYS.get(selected_provider)
-        default_api_key = os.getenv(env_key_name, "") if env_key_name else ""
+        default_api_key = os.getenv(env_key_name, '') if env_key_name else ''
 
         # Always sync session state to env value if needed (autofill on provider change)
         if default_api_key and st.session_state.get(API_INPUT_KEY, None) != default_api_key:
@@ -276,6 +286,15 @@ with st.sidebar:
             type='password',
             disabled=bool(default_api_key),
         )
+
+        # If a model was updated in the sidebar, make sure to update it in the SlideDeckAI instance
+        if SLIDE_GENERATOR in st.session_state and llm_provider_to_use:
+            try:
+                st.session_state[SLIDE_GENERATOR].set_model(llm_provider_to_use, api_key_token)
+            except Exception as e:
+                logger.exception('Failed to update model on existing SlideDeckAI: %s', e)
+                # If updating fails, drop the stored instance so a new one is created
+                st.session_state.pop(SLIDE_GENERATOR, None)
 
         # Additional configs for Azure OpenAI
         with st.expander('**Azure OpenAI-specific configurations**'):
