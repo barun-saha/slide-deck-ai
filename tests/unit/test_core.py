@@ -93,6 +93,52 @@ def test_slide_deck_ai_init_valid(slide_deck_ai):
     assert slide_deck_ai.template_idx == 0
 
 
+@mock.patch.dict(
+    'slidedeckai.core.GlobalConfig.VALID_MODELS',
+    {
+        '[or]openai/gpt-3.5-turbo': ('openai', 'gpt-3.5-turbo'),
+        'new-valid-model': ('openai', 'gpt-test')
+    }
+)
+def test_set_model_valid_updates_model(slide_deck_ai) -> None:
+    """Test that set_model updates the model name and keeps api_key when
+    no new api_key is provided.
+
+    This test patches GlobalConfig.VALID_MODELS to a small controlled set so
+    model validation is deterministic.
+    """
+    original_api_key = slide_deck_ai.api_key
+
+    slide_deck_ai.set_model('new-valid-model')
+
+    assert slide_deck_ai.model == 'new-valid-model'
+    assert slide_deck_ai.api_key == original_api_key
+
+
+@mock.patch.dict(
+    'slidedeckai.core.GlobalConfig.VALID_MODELS',
+    {
+        '[or]openai/gpt-3.5-turbo': ('openai', 'gpt-3.5-turbo'),
+        'new-valid-model': ('openai', 'gpt-test')
+    }
+)
+def test_set_model_valid_updates_api_key(slide_deck_ai) -> None:
+    """Test that set_model updates both the model name and the api_key when
+    an api_key is provided explicitly.
+    """
+    slide_deck_ai.set_model('new-valid-model', api_key='new-key')
+
+    assert slide_deck_ai.model == 'new-valid-model'
+    assert slide_deck_ai.api_key == 'new-key'
+
+
+def test_set_model_invalid_raises(slide_deck_ai) -> None:
+    """Test that set_model raises ValueError for an invalid model name."""
+    with pytest.raises(ValueError) as exc_info:
+        slide_deck_ai.set_model('clearly-invalid-model-name')
+    assert 'Invalid model name' in str(exc_info.value)
+
+
 @mock.patch('slidedeckai.core.llm_helper.get_provider_model')
 @mock.patch('slidedeckai.core.llm_helper.get_litellm_llm')
 def test_generate_slide_deck(mock_get_llm, mock_get_provider, mock_temp_file, slide_deck_ai):
@@ -108,7 +154,7 @@ def test_generate_slide_deck(mock_get_llm, mock_get_provider, mock_temp_file, sl
 
 @mock.patch('slidedeckai.core.llm_helper.get_provider_model')
 @mock.patch('slidedeckai.core.llm_helper.get_litellm_llm')
-def test_revise_slide_deck(mock_get_llm, mock_get_provider, mock_temp_file, slide_deck_ai):
+def test_slide_deck(mock_get_llm, mock_get_provider, mock_temp_file, slide_deck_ai):
     """Test revising a slide deck."""
     # Setup mocks
     mock_get_provider.return_value = ('openai', 'gpt-3.5-turbo')
