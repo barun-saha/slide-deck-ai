@@ -13,6 +13,8 @@ try:
     import litellm
     from litellm import completion
 
+    litellm.drop_params = True
+
     # Ask LiteLLM to suppress debug information if possible
     try:
         litellm.suppress_debug_info = True
@@ -27,8 +29,8 @@ except ImportError:
 
 LLM_PROVIDER_MODEL_REGEX = re.compile(r'\[(.*?)\](.*)')
 OLLAMA_MODEL_REGEX = re.compile(r'[a-zA-Z0-9._:-]+$')
-# 128 characters long, only containing alphanumeric characters, hyphens, and underscores
-API_KEY_REGEX = re.compile(r'^[a-zA-Z0-9_-]{6,128}$')
+# 200 characters long, only containing alphanumeric characters, hyphens, and underscores
+API_KEY_REGEX = re.compile(r'^[a-zA-Z0-9_-]{6,200}$')
 
 
 logger = logging.getLogger(__name__)
