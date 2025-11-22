@@ -1,5 +1,5 @@
 """
-Core functionality of SlideDeckAI.
+Core functionality of SlideDeck AI.
 """
 import logging
 import os
@@ -114,6 +114,7 @@ class SlideDeckAI:
         self.template_idx: int = template_idx if 0 <= template_idx < num_templates else 0
         self.chat_history = ChatMessageHistory()
         self.last_response = None
+        logger.info('Using model: %s', model)
 
     def _initialize_llm(self):
         """
@@ -263,6 +264,27 @@ class SlideDeckAI:
             return None
 
         return path
+
+    def set_model(self, model_name: str, api_key: str | None = None):
+        """
+        Set the LLM model (and API key) to use.
+
+        Args:
+            model_name: The name of the model to use.
+            api_key: The API key for the LLM provider.
+
+        Raises:
+            ValueError: If the model name is not in VALID_MODELS.
+        """
+        if model_name not in GlobalConfig.VALID_MODELS:
+            raise ValueError(
+                f'Invalid model name: {model_name}.'
+                f' Must be one of: {", ".join(VALID_MODEL_NAMES)}.'
+            )
+        self.model = model_name
+        if api_key:
+            self.api_key = api_key
+        logger.debug('Model set to: %s', model_name)
 
     def set_template(self, idx):
         """

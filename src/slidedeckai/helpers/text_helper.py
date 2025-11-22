@@ -8,10 +8,12 @@ def is_valid_prompt(prompt: str) -> bool:
     """
     Verify whether user input satisfies the concerned constraints.
 
-    :param prompt: The user input text.
-    :return: True if all criteria are satisfied; False otherwise.
-    """
+    Args:
+        prompt: The user input text.
 
+    Returns:
+        True if all criteria are satisfied; False otherwise.
+    """
     if len(prompt) < 7 or ' ' not in prompt:
         return False
 
@@ -24,10 +26,12 @@ def get_clean_json(json_str: str) -> str:
     trailing ``` and any text beyond that.
     CAUTION: May not be always accurate.
 
-    :param json_str: The input string in JSON format.
-    :return: The "cleaned" JSON string.
-    """
+    Args:
+        json_str: The input string in JSON format.
 
+    Returns:
+        The "cleaned" JSON string.
+    """
     response_cleaned = json_str
 
     if json_str.startswith('```json'):
@@ -55,10 +59,12 @@ def fix_malformed_json(json_str: str) -> str:
     """
     Try and fix the syntax error(s) in a JSON string.
 
-    :param json_str: The input JSON string.
-    :return: The fixed JSOn string.
-    """
+    Args:
+        json_str: The input JSON string.
 
+    Returns:
+        The fixed JSON string.
+    """
     return jr.repair_json(json_str, skip_json_loads=True)
 
 

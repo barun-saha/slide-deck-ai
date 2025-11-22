@@ -7,11 +7,8 @@ import os
 import pathlib
 import random
 import sys
-import tempfile
-from typing import List, Union
 
 import httpx
-import huggingface_hub
 import json5
 import ollama
 import requests
@@ -27,36 +24,57 @@ import slidedeckai.helpers.file_manager as filem
 from slidedeckai.helpers.chat_helper import ChatMessage, HumanMessage, AIMessage
 from slidedeckai.helpers import chat_helper
 
+
 load_dotenv()
+logger = logging.getLogger(__name__)
+
+
+RUN_IN_OFFLINE_MODE = os.getenv('RUN_IN_OFFLINE_MODE', 'False').lower() == 'true'
+
+# Session variables
+SLIDE_GENERATOR = 'slide_generator_instance'
+CHAT_MESSAGES = 'chat_messages'
+DOWNLOAD_FILE_KEY = 'download_file_name'
+IS_IT_REFINEMENT = 'is_it_refinement'
+ADDITIONAL_INFO = 'additional_info'
+PDF_FILE_KEY = 'pdf_file'
+API_INPUT_KEY = 'api_key_input'
+
+TEXTS = list(GlobalConfig.PPTX_TEMPLATE_FILES.keys())
+CAPTIONS = [GlobalConfig.PPTX_TEMPLATE_FILES[x]['caption'] for x in TEXTS]
+
 
 class StreamlitChatMessageHistory:
     """Chat message history stored in Streamlit session state."""
 
     def __init__(self, key: str):
+        """Initialize the chat message history."""
         self.key = key
         if key not in st.session_state:
             st.session_state[key] = []
 
     @property
     def messages(self):
+        """Get all chat messages in the history."""
         return st.session_state[self.key]
 
     def add_user_message(self, content: str):
+        """Add a user message to the history."""
         st.session_state[self.key].append(HumanMessage(content))
 
     def add_ai_message(self, content: str):
+        """Add an AI message to the history."""
         st.session_state[self.key].append(AIMessage(content))
-
-RUN_IN_OFFLINE_MODE = os.getenv('RUN_IN_OFFLINE_MODE', 'False').lower() == 'true'
 
 
 @st.cache_data
 def _load_strings() -> dict:
     """
     Load various strings to be displayed in the app.
-    :return: The dictionary of strings.
-    """
 
+    Returns:
+        The dictionary of strings.
+    """
     with open(GlobalConfig.APP_STRINGS_FILE, 'r', encoding='utf-8') as in_file:
         return json5.loads(in_file.read())
 
@@ -66,10 +84,12 @@ def _get_prompt_template(is_refinement: bool) -> str:
     """
     Return a prompt template.
 
-    :param is_refinement: Whether this is the initial or refinement prompt.
-    :return: The prompt template as f-string.
-    """
+    Args:
+        is_refinement: Whether this is the initial or refinement prompt.
 
+    Returns:
+        The prompt template as f-string.
+    """
     if is_refinement:
         with open(GlobalConfig.REFINEMENT_PROMPT_TEMPLATE, 'r', encoding='utf-8') as in_file:
             template = in_file.read()
@@ -92,16 +112,18 @@ def are_all_inputs_valid(
     """
     Validate user input and LLM selection.
 
-    :param user_prompt: The prompt.
-    :param provider: The LLM provider.
-    :param selected_model: Name of the model.
-    :param user_key: User-provided API key.
-    :param azure_deployment_url: Azure OpenAI deployment URL.
-    :param azure_endpoint_name: Azure OpenAI model endpoint.
-    :param azure_api_version: Azure OpenAI API version.
-    :return: `True` if all inputs "look" OK; `False` otherwise.
-    """
+    Args:
+        user_prompt: The prompt.
+        provider: The LLM provider.
+        selected_model: Name of the model.
+        user_key: User-provided API key.
+        azure_deployment_url: Azure OpenAI deployment URL.
+        azure_endpoint_name: Azure OpenAI model endpoint.
+        azure_api_version: Azure OpenAI API version.
 
+    Returns:
+        `True` if all inputs "look" OK; `False` otherwise.
+    """
     if not text_helper.is_valid_prompt(user_prompt):
         handle_error(
             'Not enough information provided!'
@@ -121,7 +143,7 @@ def are_all_inputs_valid(
     ):
         handle_error(
             'The LLM settings do not look correct. Make sure that an API key/access token'
-            ' is provided if the selected LLM requires it. An API key should be 6-94 characters'
+            ' is provided if the selected LLM requires it. An API key should be 6-200 characters'
             ' long, only containing alphanumeric characters, hyphens, and underscores.\n\n'
             'If you are using Azure OpenAI, make sure that you have provided the additional and'
             ' correct configurations.',
@@ -136,10 +158,10 @@ def handle_error(error_msg: str, should_log: bool):
     """
     Display an error message in the app.
 
-    :param error_msg: The error message to be displayed.
-    :param should_log: If `True`, log the message.
+    Args:
+        error_msg: The error message to be displayed.
+        should_log: If `True`, log the message.
     """
-
     if should_log:
         logger.error(error_msg)
 
@@ -150,7 +172,6 @@ def reset_api_key():
     """
     Clear API key input when a different LLM is selected from the dropdown list.
     """
-
     st.session_state.api_key_input = ''
 
 
@@ -159,6 +180,7 @@ def reset_chat_history():
     Clear the chat history and related session state variables.
     """
     # Clear session state variables using pop with None default
+    st.session_state.pop(SLIDE_GENERATOR, None)
     st.session_state.pop(CHAT_MESSAGES, None)
     st.session_state.pop(IS_IT_REFINEMENT, None)
     st.session_state.pop(ADDITIONAL_INFO, None)
@@ -174,18 +196,8 @@ def reset_chat_history():
 
 APP_TEXT = _load_strings()
 
-# Session variables
-CHAT_MESSAGES = 'chat_messages'
-DOWNLOAD_FILE_KEY = 'download_file_name'
-IS_IT_REFINEMENT = 'is_it_refinement'
-ADDITIONAL_INFO = 'additional_info'
-PDF_FILE_KEY = 'pdf_file'
 
-
-logger = logging.getLogger(__name__)
-
-texts = list(GlobalConfig.PPTX_TEMPLATE_FILES.keys())
-captions = [GlobalConfig.PPTX_TEMPLATE_FILES[x]['caption'] for x in texts]
+# -----= UI display begins here =-----
 
 
 with st.sidebar:
@@ -198,8 +210,8 @@ with st.sidebar:
     # The PPT templates
     pptx_template = st.sidebar.radio(
         '1: Select a presentation template:',
-        texts,
-        captions=captions,
+        TEXTS,
+        captions=CAPTIONS,
         horizontal=True
     )
 
@@ -212,6 +224,17 @@ with st.sidebar:
                 ' Ollama-compatible and supported GPU is strongly recommended.'
             )
         )
+        # If a SlideDeckAI instance already exists in session state, update its model
+        # to reflect the user change rather than reusing the old model
+        # No API key required for local models
+        if SLIDE_GENERATOR in st.session_state and llm_provider_to_use:
+            try:
+                st.session_state[SLIDE_GENERATOR].set_model(llm_provider_to_use)
+            except Exception as e:
+                logger.error('Failed to update model on existing SlideDeckAI: %s', e)
+                # If updating fails, drop the stored instance so a new one is created
+                st.session_state.pop(SLIDE_GENERATOR, None)
+
         api_key_token: str = ''
         azure_endpoint: str = ''
         azure_deployment: str = ''
@@ -233,8 +256,14 @@ with st.sidebar:
             selected_provider = provider_match.group(1)
         else:
             # If regex doesn't match, try to extract provider from the beginning
-            selected_provider = llm_provider_to_use.split(' ')[0] if ' ' in llm_provider_to_use else llm_provider_to_use
-            logger.warning("Provider regex did not match for: %s, using: %s", llm_provider_to_use, selected_provider)
+            selected_provider = (
+                llm_provider_to_use.split(' ')[0]
+                if ' ' in llm_provider_to_use else llm_provider_to_use
+            )
+            logger.warning(
+                'Provider regex did not match for: %s, using: %s',
+                llm_provider_to_use, selected_provider
+            )
         
         # Validate that the selected provider is valid
         if selected_provider not in GlobalConfig.VALID_PROVIDERS:
@@ -243,21 +272,30 @@ with st.sidebar:
             st.stop()
         
         env_key_name = GlobalConfig.PROVIDER_ENV_KEYS.get(selected_provider)
-        default_api_key = os.getenv(env_key_name, "") if env_key_name else ""
+        default_api_key = os.getenv(env_key_name, '') if env_key_name else ''
 
         # Always sync session state to env value if needed (autofill on provider change)
-        if default_api_key and st.session_state.get('api_key_input', None) != default_api_key:
-            st.session_state['api_key_input'] = default_api_key
+        if default_api_key and st.session_state.get(API_INPUT_KEY, None) != default_api_key:
+            st.session_state[API_INPUT_KEY] = default_api_key
 
         api_key_token = st.text_input(
             label=(
                 '3: Paste your API key/access token:\n\n'
                 '*Mandatory* for all providers.'
             ),
-            key='api_key_input',
+            key=API_INPUT_KEY,
             type='password',
             disabled=bool(default_api_key),
         )
+
+        # If a model was updated in the sidebar, make sure to update it in the SlideDeckAI instance
+        if SLIDE_GENERATOR in st.session_state and llm_provider_to_use:
+            try:
+                st.session_state[SLIDE_GENERATOR].set_model(llm_provider_to_use, api_key_token)
+            except Exception as e:
+                logger.error('Failed to update model on existing SlideDeckAI: %s', e)
+                # If updating fails, drop the stored instance so a new one is created
+                st.session_state.pop(SLIDE_GENERATOR, None)
 
         # Additional configs for Azure OpenAI
         with st.expander('**Azure OpenAI-specific configurations**'):
@@ -294,7 +332,6 @@ def build_ui():
     """
     Display the input elements for content generation.
     """
-
     st.title(APP_TEXT['app_name'])
     st.subheader(APP_TEXT['caption'])
     st.markdown(
@@ -333,11 +370,6 @@ def set_up_chat_ui():
     st.chat_message('ai').write(random.choice(APP_TEXT['ai_greetings']))
 
     history = StreamlitChatMessageHistory(key=CHAT_MESSAGES)
-    prompt_template = chat_helper.ChatPromptTemplate.from_template(
-        _get_prompt_template(
-            is_refinement=_is_it_refinement()
-        )
-    )
 
     # Since Streamlit app reloads at every interaction, display the chat history
     # from the save session state
@@ -388,23 +420,34 @@ def set_up_chat_ui():
 
         st.chat_message('user').write(prompt_text)
 
-        slide_generator = SlideDeckAI(
-            model=llm_provider_to_use,
-            topic=prompt_text,
-            api_key=api_key_token.strip(),
-            template_idx=list(GlobalConfig.PPTX_TEMPLATE_FILES.keys()).index(pptx_template),
-            pdf_path_or_stream=st.session_state.get(PDF_FILE_KEY),
-            pdf_page_range=(st.session_state.get('start_page'), st.session_state.get('end_page')),
-        )
+        if SLIDE_GENERATOR in st.session_state:
+            slide_generator = st.session_state[SLIDE_GENERATOR]
+        else:
+            slide_generator = SlideDeckAI(
+                model=llm_provider_to_use,
+                topic=prompt_text,
+                api_key=api_key_token.strip(),
+                template_idx=list(GlobalConfig.PPTX_TEMPLATE_FILES.keys()).index(pptx_template),
+                pdf_path_or_stream=st.session_state.get(PDF_FILE_KEY),
+                pdf_page_range=(
+                    st.session_state.get('start_page'), st.session_state.get('end_page')
+                ),
+            )
+            st.session_state[SLIDE_GENERATOR] = slide_generator
 
         progress_bar = st.progress(0, 'Preparing to call LLM...')
 
         def progress_callback(current_progress):
-            progress_bar.progress(min(current_progress / gcfg.get_max_output_tokens(llm_provider_to_use), 0.95), text='Streaming content...this might take a while...')
+            progress_bar.progress(
+                min(current_progress / gcfg.get_max_output_tokens(llm_provider_to_use), 0.95),
+                text='Streaming content...this might take a while...'
+            )
 
         try:
             if _is_it_refinement():
-                path = slide_generator.revise(instructions=prompt_text, progress_callback=progress_callback)
+                path = slide_generator.revise(
+                    instructions=prompt_text, progress_callback=progress_callback
+                )
             else:
                 path = slide_generator.generate(progress_callback=progress_callback)
 
@@ -417,7 +460,7 @@ def set_up_chat_ui():
                 st.chat_message('ai').code(slide_generator.last_response, language='json')
                 _display_download_button(path)
             else:
-                handle_error("Failed to generate slide deck.", True)
+                handle_error('Failed to generate slide deck.', True)
 
         except (httpx.ConnectError, requests.exceptions.ConnectionError):
             handle_error(
@@ -427,17 +470,11 @@ def set_up_chat_ui():
                 ' using Ollama, make sure that Ollama is already running on your system.',
                 True
             )
-        except huggingface_hub.errors.ValidationError as ve:
-            handle_error(
-                f'An error occurred while trying to generate the content: {ve}'
-                '\nPlease try again with a significantly shorter input text.',
-                True
-            )
         except ollama.ResponseError:
             handle_error(
-                f'The model is unavailable with Ollama on your system.'
-                f' Make sure that you have provided the correct LLM name or pull it.'
-                f' View LLMs available locally by running `ollama list`.',
+                'The model is unavailable with Ollama on your system.'
+                ' Make sure that you have provided the correct LLM name or pull it.'
+                ' View LLMs available locally by running `ollama list`.',
                 True
             )
         except Exception as ex:
@@ -470,9 +507,9 @@ def _is_it_refinement() -> bool:
     """
     Whether it is the initial prompt or a refinement.
 
-    :return: True if it is the initial prompt; False otherwise.
+    Returns:
+        True if it is the initial prompt; False otherwise.
     """
-
     if IS_IT_REFINEMENT in st.session_state:
         return True
 
@@ -484,43 +521,26 @@ def _is_it_refinement() -> bool:
     return False
 
 
-def _get_user_messages() -> List[str]:
+def _get_user_messages() -> list[str]:
     """
     Get a list of user messages submitted until now from the session state.
 
-    :return: The list of user messages.
+    Returns:
+        The list of user messages.
     """
-
     return [
-        msg.content for msg in st.session_state[CHAT_MESSAGES] if isinstance(msg, chat_helper.HumanMessage)
+        msg.content for msg in st.session_state[CHAT_MESSAGES]
+        if isinstance(msg, chat_helper.HumanMessage)
     ]
-
-
-def _get_last_response() -> str:
-    """
-    Get the last response generated by AI.
-
-    :return: The response text.
-    """
-
-def _display_messages_history(view_messages: st.expander):
-    """
-    Display the history of messages.
-
-    :param view_messages: The list of AI and Human messages.
-    """
-
-    with view_messages:
-        view_messages.json(st.session_state[CHAT_MESSAGES])
 
 
 def _display_download_button(file_path: pathlib.Path):
     """
     Display a download button to download a slide deck.
 
-    :param file_path: The path of the .pptx file.
+    Args:
+        file_path: The path of the .pptx file.
     """
-
     with open(file_path, 'rb') as download_file:
         st.download_button(
             'Download PPTX file ⬇️',
@@ -530,13 +550,5 @@ def _display_download_button(file_path: pathlib.Path):
         )
 
 
-def main():
-    """
-    Trigger application run.
-    """
-
-    build_ui()
-
-
 if __name__ == '__main__':
-    main()
+    build_ui()
