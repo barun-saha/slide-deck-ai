@@ -9,7 +9,6 @@ import random
 import sys
 
 import httpx
-import huggingface_hub
 import json5
 import ollama
 import requests
@@ -39,6 +38,7 @@ DOWNLOAD_FILE_KEY = 'download_file_name'
 IS_IT_REFINEMENT = 'is_it_refinement'
 ADDITIONAL_INFO = 'additional_info'
 PDF_FILE_KEY = 'pdf_file'
+API_INPUT_KEY = 'api_key_input'
 
 TEXTS = list(GlobalConfig.PPTX_TEMPLATE_FILES.keys())
 CAPTIONS = [GlobalConfig.PPTX_TEMPLATE_FILES[x]['caption'] for x in TEXTS]
@@ -224,6 +224,17 @@ with st.sidebar:
                 ' Ollama-compatible and supported GPU is strongly recommended.'
             )
         )
+        # If a SlideDeckAI instance already exists in session state, update its model
+        # to reflect the user change rather than reusing the old model
+        # No API key required for local models
+        if SLIDE_GENERATOR in st.session_state and llm_provider_to_use:
+            try:
+                st.session_state[SLIDE_GENERATOR].set_model(llm_provider_to_use)
+            except Exception as e:
+                logger.error('Failed to update model on existing SlideDeckAI: %s', e)
+                # If updating fails, drop the stored instance so a new one is created
+                st.session_state.pop(SLIDE_GENERATOR, None)
+
         api_key_token: str = ''
         azure_endpoint: str = ''
         azure_deployment: str = ''
@@ -261,21 +272,30 @@ with st.sidebar:
             st.stop()
         
         env_key_name = GlobalConfig.PROVIDER_ENV_KEYS.get(selected_provider)
-        default_api_key = os.getenv(env_key_name, "") if env_key_name else ""
+        default_api_key = os.getenv(env_key_name, '') if env_key_name else ''
 
         # Always sync session state to env value if needed (autofill on provider change)
-        if default_api_key and st.session_state.get('api_key_input', None) != default_api_key:
-            st.session_state['api_key_input'] = default_api_key
+        if default_api_key and st.session_state.get(API_INPUT_KEY, None) != default_api_key:
+            st.session_state[API_INPUT_KEY] = default_api_key
 
         api_key_token = st.text_input(
             label=(
                 '3: Paste your API key/access token:\n\n'
                 '*Mandatory* for all providers.'
             ),
-            key='api_key_input',
+            key=API_INPUT_KEY,
             type='password',
             disabled=bool(default_api_key),
         )
+
+        # If a model was updated in the sidebar, make sure to update it in the SlideDeckAI instance
+        if SLIDE_GENERATOR in st.session_state and llm_provider_to_use:
+            try:
+                st.session_state[SLIDE_GENERATOR].set_model(llm_provider_to_use, api_key_token)
+            except Exception as e:
+                logger.error('Failed to update model on existing SlideDeckAI: %s', e)
+                # If updating fails, drop the stored instance so a new one is created
+                st.session_state.pop(SLIDE_GENERATOR, None)
 
         # Additional configs for Azure OpenAI
         with st.expander('**Azure OpenAI-specific configurations**'):
@@ -350,11 +370,6 @@ def set_up_chat_ui():
     st.chat_message('ai').write(random.choice(APP_TEXT['ai_greetings']))
 
     history = StreamlitChatMessageHistory(key=CHAT_MESSAGES)
-    # prompt_template = chat_helper.ChatPromptTemplate.from_template(
-    #     _get_prompt_template(
-    #         is_refinement=_is_it_refinement()
-    #     )
-    # )
 
     # Since Streamlit app reloads at every interaction, display the chat history
     # from the save session state
@@ -445,7 +460,7 @@ def set_up_chat_ui():
                 st.chat_message('ai').code(slide_generator.last_response, language='json')
                 _display_download_button(path)
             else:
-                handle_error("Failed to generate slide deck.", True)
+                handle_error('Failed to generate slide deck.', True)
 
         except (httpx.ConnectError, requests.exceptions.ConnectionError):
             handle_error(
@@ -453,12 +468,6 @@ def set_up_chat_ui():
                 ' Unfortunately, the slide deck cannot be generated. Please try again later.'
                 ' Alternatively, try selecting a different LLM from the dropdown list. If you are'
                 ' using Ollama, make sure that Ollama is already running on your system.',
-                True
-            )
-        except huggingface_hub.errors.ValidationError as ve:
-            handle_error(
-                f'An error occurred while trying to generate the content: {ve}'
-                '\nPlease try again with a significantly shorter input text.',
                 True
             )
         except ollama.ResponseError:
