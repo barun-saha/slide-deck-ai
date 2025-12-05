@@ -13,14 +13,18 @@ license: mit
 
 [![PyPI](https://img.shields.io/pypi/v/slidedeckai.svg)](https://pypi.org/project/slidedeckai/)
 [![codecov](https://codecov.io/gh/barun-saha/slide-deck-ai/branch/main/graph/badge.svg)](https://codecov.io/gh/barun-saha/slide-deck-ai)
+[![Documentation Status](https://readthedocs.org/projects/slidedeckai/badge/?version=latest)](https://slidedeckai.readthedocs.io/en/latest/?badge=latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://huggingface.co/spaces/barunsaha/slide-deck-ai)
 
-# SlideDeck AI
 
-We spend a lot of time **creating** slides and organizing our thoughts for any presentation. 
-With SlideDeck AI, co-create slide decks on any topic with **Artificial Intelligence** and **Large Language Models**.
-Describe your topic and let SlideDeck AI generate a **PowerPoint slide deck** for you—it's as simple as that!
+# SlideDeck AI: The AI Assistant for Professional Presentations
+
+We all spend countless hours **creating** slides and meticulously organizing our thoughts for any presentation.
+
+**SlideDeck AI is your powerful AI assistant** for presentation generation. Co-create stunning, professional slide decks on any topic with the help of cutting-edge **Artificial Intelligence** and **Large Language Models**.
+
+**The workflow is simple:** Describe your topic, and let SlideDeck AI generate a complete **PowerPoint slide deck** for you—it's that easy!
 
 
 ## Star History
@@ -28,26 +32,23 @@ Describe your topic and let SlideDeck AI generate a **PowerPoint slide deck** fo
 [![Star History Chart](https://api.star-history.com/svg?repos=barun-saha/slide-deck-ai&type=Date)](https://star-history.com/#barun-saha/slide-deck-ai&Date)
 
 
-## Process
+## How It Works: The Automated Deck Generation Process
 
-SlideDeck AI works in the following way:
+SlideDeck AI streamlines the creation process through the following steps:
 
-1. Given a topic description, it uses a Large Language Model (LLM) to generate the *initial* content of the slides. 
-The output is generated as structured JSON data based on a pre-defined schema.
-2. Next, it uses the keywords from the JSON output to search and download a few images with a certain probability.
-3. Subsequently, it uses the `python-pptx` library to generate the slides, 
-based on the JSON data from the previous step. 
-A user can choose from a set of pre-defined presentation templates.
-4. At this stage onward, a user can provide additional instructions to *refine* the content.
-For example, one can ask to add another slide or modify an existing slide.
-A history of instructions is maintained.
-5. Every time SlideDeck AI generates a PowerPoint presentation, a download button is provided.
-Clicking on the button will download the file.
+1.  **AI Content Generation:** Given a topic description, a Large Language Model (LLM) generates the *initial* slide content as structured JSON data based on a pre-defined schema.
+2.  **Visual Enhancement:** It uses keywords from the JSON output to search and download relevant images, which are added to the presentation with a certain probability.
+3.  **PPTX Assembly:** Subsequently, the powerful `python-pptx` library is used to generate the slides based on the structured JSON data. A user can choose from a set of pre-defined presentation templates.
+4.  **Refinement & Iteration:** At this stage onward, a user can provide additional instructions to *refine* the content (e.g., "add another slide," or "modify an existing slide"). A history of instructions is maintained for seamless iteration.
+5.  **Instant Download:** Every time SlideDeck AI generates a PowerPoint presentation, a download button is provided to instantly save the file.
 
-In addition, SlideDeck AI can also create a presentation based on PDF files.
+In addition, SlideDeck AI can also create a presentation based on **PDF files**, transforming documents into decks!
 
+## Python API Quickstart
 
-## Python API Usage
+<a target="_blank" href="https://colab.research.google.com/drive/1YA9EEmyiQFk03bOSc7lZnxK5l2hAL60l?usp=sharing">
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Open In Colab"/>
+</a>
 
 ```python
 from slidedeckai.core import SlideDeckAI
@@ -80,11 +81,13 @@ slidedeckai --list-models
 ```
 
 
-## Summary of the LLMs
+## Unmatched Flexibility: Choose Your AI Brain
 
-SlideDeck AI allows the use of different LLMs from several online providers—Azure OpenAI, Google, Cohere, Together AI, and OpenRouter. Most of these service providers offer generous free usage of relevant LLMs without requiring any billing information.  
+SlideDeck AI stands out by supporting a wide array of LLMs from several online providers—Azure/ OpenAI, Google, SambaNova, Together AI, and OpenRouter. This gives you flexibility and control over your content generation style.
 
-Based on several experiments, SlideDeck AI generally recommends the use of **Mistral NeMo**, **Gemini Flash**, and **GPT-4o** to generate the slide decks.
+Most supported service providers also offer generous free usage tiers, meaning you can often start building without immediate billing concerns.
+
+Based on several experiments, SlideDeck AI generally recommends the use of Gemini Flash and GPT-4o to generate the best-quality slide decks.
 
 The supported LLMs offer different styles of content generation. Use one of the following LLMs along with relevant API keys/access tokens, as appropriate, to create the content of the slide deck:
 
@@ -108,8 +111,9 @@ The supported LLMs offer different styles of content generation. Use one of the 
 | Llama 3.3 70B Instruct Turbo        | Together AI (`to`)       | Mandatory; [get here](https://api.together.ai/settings/api-keys)                                                         | Slower, detailed         |
 | Llama 3.1 8B Instruct Turbo 128K    | Together AI (`to`)       | Mandatory; [get here](https://api.together.ai/settings/api-keys)                                                         | Faster, shorter          |
 
-> **IMPORTANT**: SlideDeck AI does **NOT** store your API keys/tokens or transmit them elsewhere. If you provide your API key, it is only used to invoke the relevant LLM to generate contents. That's it! This is an 
-Open-Source project, so feel free to audit the code and convince yourself. 
+> **🔒 IMPORTANT: Your Privacy and Security are Paramount**
+> 
+> SlideDeck AI does **NOT** store your API keys/tokens or transmit them elsewhere. Your key is _only_ used to invoke the relevant LLM for content generation—and that's it! As a fully **Open-Source** project, we encourage you to audit the code yourself for complete peace of mind.
 
 In addition, offline LLMs provided by Ollama can be used. Read below to know more. 
 
@@ -125,9 +129,9 @@ SlideDeck AI uses a subset of icons from [bootstrap-icons-1.11.3](https://github
 SlideDeck AI uses LLMs via different providers. To run this project by yourself, you need to use an appropriate API key, for example, in a `.env` file.
 Alternatively, you can provide the access token in the app's user interface itself (UI).
 
-### Offline LLMs Using Ollama
+### Ultimate Privacy: Offline Generation with Ollama
 
-SlideDeck AI allows the use of offline LLMs to generate the contents of the slide decks. This is typically suitable for individuals or organizations who would like to use self-hosted LLMs for privacy concerns, for example.
+SlideDeck AI allows the use of **offline LLMs** to generate the contents of the slide decks. This is typically suitable for individuals or organizations who would like to use self-hosted LLMs for privacy concerns, for example.
 
 Offline LLMs are made available via Ollama. Therefore, a pre-requisite here is to have [Ollama installed](https://ollama.com/download) on the system and the desired [LLM](https://ollama.com/search) pulled locally. You should choose a model to use based on your hardware capacity. However, if you have no GPU, [gemma3:1b](https://ollama.com/library/gemma3:1b) can be a suitable model to run only on CPU.
 
@@ -171,12 +175,14 @@ Finally, the focus is on using offline LLMs, not going completely offline. So, I
 
 # Live Demo
 
-- [SlideDeck AI](https://huggingface.co/spaces/barunsaha/slide-deck-ai) on Hugging Face Spaces
-- [Demo video](https://youtu.be/QvAKzNKtk9k) of the chat interface on YouTube
-- Demo video on [using Azure OpenAI](https://youtu.be/oPbH-z3q0Mw)
+Experience the power now!
+
+- 🚀 Live App: [Try SlideDeck AI on Hugging Face Spaces](https://huggingface.co/spaces/barunsaha/slide-deck-ai)
+- 🎥 Quick Demo: [Watch the core chat interface in action (YouTube)](https://youtu.be/QvAKzNKtk9k)
+- 🤝 Enterprise Showcase: [See a demonstration using Azure OpenAI (YouTube)](https://youtu.be/oPbH-z3q0Mw)
 
 
-# Award
+# 🏆 Recognized Excellence
 
 SlideDeck AI has won the 3rd Place in the [Llama 2 Hackathon with Clarifai](https://lablab.ai/event/llama-2-hackathon-with-clarifai) in 2023.
 
