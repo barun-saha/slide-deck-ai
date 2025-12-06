@@ -478,29 +478,15 @@ def set_up_chat_ui():
                 True
             )
         except Exception as ex:
-            _msg = str(ex)
-            if 'payment required' in _msg.lower():
+            if 'litellm.AuthenticationError' in str(ex):
                 handle_error(
-                    'The available inference quota has exhausted.'
-                    ' Please use your own Hugging Face access token. Paste your token in'
-                    ' the input field on the sidebar to the left.'
-                    '\n\nDon\'t have a token? Get your free'
-                    ' [HF access token](https://huggingface.co/settings/tokens) now'
-                    ' and start creating your slide deck! For gated models, you may need to'
-                    ' visit the model\'s page and accept the terms or service.'
-                    '\n\nAlternatively, choose a different LLM and provider from the list.',
-                    should_log=True
-                )
-            else:
-                handle_error(
-                    f'An unexpected error occurred while generating the content: {_msg}'
-                    '\n\nPlease try again later, possibly with different inputs.'
-                    ' Alternatively, try selecting a different LLM from the dropdown list.'
-                    ' If you are using Azure OpenAI, Cohere, Gemini, or Together AI models, make'
-                    ' sure that you have provided a correct API key.'
-                    ' Read **[how to get free LLM API keys](https://github.com/barun-saha/slide-deck-ai?tab=readme-ov-file#summary-of-the-llms)**.',
+                    f'LLM API authentication failed: {ex}'
+                    '\nMake sure that you have provided a valid, correct API key.'
+                    ' Read **[how to get free LLM API keys](https://github.com/barun-saha/slide-deck-ai?tab=readme-ov-file#unmatched-flexibility-choose-your-ai-brain)**.',
                     True
                 )
+            else:
+                handle_error('An unexpected error occurred: ' + str(ex), True)
 
 
 def _is_it_refinement() -> bool:
