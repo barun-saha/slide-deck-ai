@@ -9,7 +9,7 @@ pyarrow~=16.0.0
 pydantic~=2.12.5
 litellm~=1.80.7
 google-generativeai  # ~=0.8.3
-streamlit==1.52.0
+streamlit==1.52.1
 
 python-pptx~=1.0.2
 json5~=0.12.1
