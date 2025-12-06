@@ -1,3 +1,10 @@
 ignore:
   # Exclude the version file from all coverage calculations
   - "src/slidedeckai/_version.py"
+
+coverage:
+  status:
+    patch:
+      default:
+        target: 80%
+        threshold: 5%
