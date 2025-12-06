@@ -87,6 +87,8 @@ SlideDeck AI stands out by supporting a wide array of LLMs from several online p
 
 Most supported service providers also offer generous free usage tiers, meaning you can often start building without immediate billing concerns.
 
+Model names in SlideDeck AI are specified in the `[code]model-name` format. It begins with a two-character prefix code in square brackets to indicate the provider, for example, `[oa]` for OpenAI, `[gg]` for Google Gemini, and so on. Following the code, the model name is specified, for example, `gemini-2.0-flash` or `gpt-4o`. So, to use Google Gemini 2.0 Flash Lite, the model name would be `[gg]gemini-2.0-flash-lite`.
+
 Based on several experiments, SlideDeck AI generally recommends the use of Gemini Flash and GPT-4o to generate the best-quality slide decks.
 
 The supported LLMs offer different styles of content generation. Use one of the following LLMs along with relevant API keys/access tokens, as appropriate, to create the content of the slide deck:

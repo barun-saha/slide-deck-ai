@@ -12,6 +12,7 @@ Please select a section below or choose a version in the bottom-left corner.
 
    installation.md
    usage.md
+   models.md
 
 .. toctree::
    :maxdepth: 2

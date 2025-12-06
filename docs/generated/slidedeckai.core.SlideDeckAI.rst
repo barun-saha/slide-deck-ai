@@ -17,6 +17,7 @@ slidedeckai.core.SlideDeckAI
       ~SlideDeckAI.generate
       ~SlideDeckAI.reset
       ~SlideDeckAI.revise
+      ~SlideDeckAI.set_model
       ~SlideDeckAI.set_template
    
    
