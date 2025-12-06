@@ -2,7 +2,7 @@
 ===============
 ===================================
 
-.. currentmodule:: slidedeckai.cli
+.. currentmodule:: slidedeckai
 
 .. automodule:: slidedeckai.cli
    :noindex:
