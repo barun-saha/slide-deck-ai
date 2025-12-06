@@ -260,7 +260,7 @@ class SlideDeckAI:
                 output_file_path=path
             )
         except Exception as ex:
-            logger.exception('Caught a generic exception: %s', str(ex))
+            logger.error('Caught a generic exception: %s', str(ex))
             return None
 
         return path
