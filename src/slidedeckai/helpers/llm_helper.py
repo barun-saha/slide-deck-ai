@@ -216,7 +216,7 @@ def stream_litellm_completion(
                         yield choice.message.content
                         
     except Exception as e:
-        logger.error('Error in LiteLLM completion: %s', e)
+        # logger.error('Error in LiteLLM completion: %s', e)
         raise
 
 
