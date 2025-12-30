@@ -480,10 +480,10 @@ def set_up_chat_ui():
         except Exception as ex:
             if 'litellm.AuthenticationError' in str(ex):
                 handle_error(
-                    f'LLM API authentication failed. Make sure that you have provided'
-                    f' a valid, correct API key. Read **[how to get free LLM API keys]'
-                    f'(https://github.com/barun-saha/slide-deck-ai?tab=readme-ov-file'
-                    f'#unmatched-flexibility-choose-your-ai-brain)**.\n\nAdditional info: {ex}',
+                    'LLM API authentication failed. Make sure that you have provided'
+                    ' a valid, correct API key. Read **[how to get free LLM API keys]'
+                    '(https://github.com/barun-saha/slide-deck-ai?tab=readme-ov-file'
+                    '#unmatched-flexibility-choose-your-ai-brain)**.',
                     True
                 )
             else:
