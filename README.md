@@ -4,7 +4,7 @@ emoji: 🏢
 colorFrom: yellow
 colorTo: green
 sdk: streamlit
-sdk_version: 1.52.1
+sdk_version: 1.53.1
 app_file: app.py
 pinned: false
 license: mit
@@ -15,6 +15,7 @@ license: mit
 [![codecov](https://codecov.io/gh/barun-saha/slide-deck-ai/branch/main/graph/badge.svg)](https://codecov.io/gh/barun-saha/slide-deck-ai)
 [![Documentation Status](https://readthedocs.org/projects/slidedeckai/badge/?version=latest)](https://slidedeckai.readthedocs.io/en/latest/?badge=latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![Python 3.10+](https://img.shields.io/badge/python-3.10%20%7C%203.11%20%7C%203.12%20%7C%203.13-blue)
 [![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://huggingface.co/spaces/barunsaha/slide-deck-ai)
 
 
