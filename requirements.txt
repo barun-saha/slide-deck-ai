@@ -4,7 +4,7 @@ gitpython==3.1.46
 json-repair~=0.55.1
 idna==3.11
 jinja2>=3.1.6
-Pillow~=12.1.0
+Pillow~=12.1.1
 pyarrow~=22.0.0
 pydantic~=2.12.5
 litellm~=1.81.5
@@ -16,10 +16,10 @@ protobuf~=6.33.5
 python-pptx~=1.0.2
 json5~=0.12.1
 requests~=2.32.5
-pypdf~=6.6.2
+pypdf~=6.7.4
 
 transformers>=4.52.1
-torch~=2.9.1
+torch~=2.10.0
 
 lxml~=6.0.2
 tqdm~=4.66.5
