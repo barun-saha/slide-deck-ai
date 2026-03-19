@@ -29,7 +29,6 @@ Read carefully. Based on the contents provided, organize the presentation.
 For example, if it's a paper, you can consider having slides describing "Problem," "Solution," "Experiments," and "Results," among other sections.
 If it's a product brochure, you can have "Features," "Changes," "Operating Conditions," and likewise relevant sections.
 Similarly, decide for other content types. Then appropriately incorporate the contents into the relevant slides, presenting in a useful way.
-If you find that <ADDITIONAL_INFO> contains text from a document and said document has a title, use the same title for the slide deck.
 If there are important content, e.g., equations and theorems, try to capture a few of them.
 Overall, rather than creating a bulleted list of all information, present them in a meaningful way.
 If <ADDITIONAL_INFO> is empty, ignore the section and the related instructions.
