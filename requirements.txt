@@ -1,22 +1,22 @@
 aiohttp>=3.13.3
-python-dotenv[cli]~=1.2.1
+python-dotenv[cli]~=1.2.2
 gitpython==3.1.46
-json-repair~=0.58.5
+json-repair~=0.58.6
 idna==3.11
 jinja2>=3.1.6
 Pillow~=12.1.1
 pyarrow~=22.0.0
 pydantic~=2.12.5
-litellm~=1.82.2
+litellm~=1.82.4
 #google-generativeai  # ~=0.8.3
 google-genai
-streamlit==1.53.1
+streamlit==1.55.0
 protobuf~=6.33.5
 
 python-pptx~=1.0.2
 json5~=0.12.1
 requests~=2.32.5
-pypdf~=6.8.0
+pypdf~=6.9.1
 
 transformers>=4.52.1
 torch~=2.10.0

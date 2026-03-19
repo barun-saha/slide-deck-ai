@@ -4,7 +4,7 @@ emoji: 🏢
 colorFrom: yellow
 colorTo: green
 sdk: streamlit
-sdk_version: 1.53.1
+sdk_version: 1.55.0
 app_file: app.py
 pinned: false
 license: mit
