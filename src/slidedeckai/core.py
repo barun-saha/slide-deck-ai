@@ -206,7 +206,7 @@ class SlideDeckAI:
         self.chat_history.add_user_message(instructions)
 
         if template_idx is not None:
-            self.template_idx = template_idx
+            self.set_template(template_idx)
 
         prompt_template = self._get_prompt_template(is_refinement=True)
 
