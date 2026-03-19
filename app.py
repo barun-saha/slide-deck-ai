@@ -446,7 +446,11 @@ def set_up_chat_ui():
         try:
             if _is_it_refinement():
                 path = slide_generator.revise(
-                    instructions=prompt_text, progress_callback=progress_callback
+                    instructions=prompt_text,
+                    template_idx=list(
+                        GlobalConfig.PPTX_TEMPLATE_FILES.keys()
+                    ).index(pptx_template),
+                    progress_callback=progress_callback
                 )
             else:
                 path = slide_generator.generate(progress_callback=progress_callback)

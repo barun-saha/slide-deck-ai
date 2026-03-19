@@ -176,6 +176,24 @@ def test_revise_without_generate(slide_deck_ai):
     assert 'You must generate a slide deck before you can revise it' in str(exc_info.value)
 
 
+@mock.patch('slidedeckai.core.llm_helper.get_provider_model')
+@mock.patch('slidedeckai.core.llm_helper.get_litellm_llm')
+def test_revise_with_new_template(mock_get_llm, mock_get_provider, mock_temp_file, slide_deck_ai):
+    """Test revising with a new template index."""
+    # Setup mocks
+    mock_get_provider.return_value = ('openai', 'gpt-4.1')
+    mock_get_llm.return_value = get_mock_llm()
+
+    # First generate initial deck
+    slide_deck_ai.generate()
+
+    # Test valid template index
+    result = slide_deck_ai.revise('Make it better', template_idx=2)
+    assert isinstance(result, Path)
+    assert str(result).endswith('.pptx')
+    assert slide_deck_ai.template_idx == 2
+
+
 def test_set_template(slide_deck_ai):
     """Test setting template index."""
     slide_deck_ai.set_template(1)

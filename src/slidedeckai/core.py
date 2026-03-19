@@ -182,12 +182,13 @@ class SlideDeckAI:
 
         return self._generate_slide_deck(self.last_response)
 
-    def revise(self, instructions, progress_callback=None):
+    def revise(self, instructions: str, template_idx: int | None = None, progress_callback=None):
         """
         Revise the slide deck with new instructions.
 
         Args:
             instructions: The instructions for revising the slide deck.
+            template_idx: Optional index of the PowerPoint template to use for the revised deck.
             progress_callback: Optional callback function to report progress.
 
         Returns:
@@ -203,6 +204,9 @@ class SlideDeckAI:
             raise ValueError('Chat history is full. Please reset to continue.')
 
         self.chat_history.add_user_message(instructions)
+
+        if template_idx is not None:
+            self.set_template(template_idx)
 
         prompt_template = self._get_prompt_template(is_refinement=True)
 
