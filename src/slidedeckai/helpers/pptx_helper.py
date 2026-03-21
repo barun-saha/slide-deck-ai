@@ -961,16 +961,10 @@ def _handle_table(
     slide = presentation.slides.add_slide(bullet_slide_layout)
     shapes = slide.shapes
     shapes.title.text = remove_slide_number_from_heading(slide_json['heading'])
-
-    target_idx = 1
-    for plachelder in slide.placeholders:
-        if 'content' in plachelder.name.lower():
-            target_idx = plachelder.placeholder_format.idx
-            break
-    left = slide.placeholders[target_idx].left
-    top = slide.placeholders[target_idx].top
-    width = slide.placeholders[target_idx].width
-    height = slide.placeholders[target_idx].height
+    left = slide.placeholders[1].left
+    top = slide.placeholders[1].top
+    width = slide.placeholders[1].width
+    height = slide.placeholders[1].height
     table = slide.shapes.add_table(len(rows) + 1, len(headers), left, top, width, height).table
 
     # Set headers
