@@ -291,6 +291,21 @@ def test_handle_table(mock_pptx_presentation: Mock):
     mock_slide = mock_pptx_presentation.slides.add_slide.return_value
     mock_slide.shapes.add_table.return_value.table = mock_table
 
+    # Setup mock placeholder with 'content' in its name, matching target_idx resolution
+    mock_content_placeholder = MagicMock()
+    mock_content_placeholder.name = 'Content Placeholder'
+    mock_content_placeholder.placeholder_format.idx = 1
+    mock_content_placeholder.left = 100
+    mock_content_placeholder.top = 200
+    mock_content_placeholder.width = 800
+    mock_content_placeholder.height = 600
+
+    # Assign placeholders as a MagicMock so dunders can be configured freely
+    mock_placeholders = MagicMock()
+    mock_placeholders.__iter__ = Mock(return_value=iter([mock_content_placeholder]))
+    mock_placeholders.__getitem__ = Mock(return_value=mock_content_placeholder)
+    mock_slide.placeholders = mock_placeholders
+
     result = ph._handle_table(
         presentation=mock_pptx_presentation,
         slide_json=slide_json_with_table,
@@ -299,7 +314,19 @@ def test_handle_table(mock_pptx_presentation: Mock):
     )
 
     assert result is True
-    mock_slide.shapes.add_table.assert_called_once()
+
+    # Verify the content placeholder was looked up by the resolved target_idx
+    mock_placeholders.__getitem__.assert_called_with(1)
+
+    # Verify add_table was called with the placeholder's dimensions
+    mock_slide.shapes.add_table.assert_called_once_with(
+        3, 2,  # len(rows) + 1, len(headers)
+        mock_content_placeholder.left,
+        mock_content_placeholder.top,
+        mock_content_placeholder.width,
+        mock_content_placeholder.height
+    )
+
     # Verify headers
     assert mock_table.cell(0, 0).text == 'Header 1'
     assert mock_table.cell(0, 1).text == 'Header 2'
