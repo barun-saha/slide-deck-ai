@@ -1038,6 +1038,24 @@ def _get_slide_width_height_inches(presentation: pptx.Presentation) -> tuple[flo
     return slide_width_inch, slide_height_inch
 
 
+def print_slide_layouts(slides_template: str) -> None:
+    """
+    Print all slide layouts and their placeholder indices/names.
+
+    Args:
+        slides_template: The name of the slide template to be used.
+    """
+    presentation = pptx.Presentation(GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file'])
+    for layout_idx, layout in enumerate(presentation.slide_layouts):
+        print(f'Layout {layout_idx}: {layout.name}')
+        for placeholder in layout.placeholders:
+            print(
+                f'  idx={placeholder.placeholder_format.idx} | name={placeholder.name} |'
+                f' type={placeholder.placeholder_format.type}'
+            )
+        print()
+
+
 if __name__ == '__main__':
     _JSON_DATA = '''
     {
@@ -1159,14 +1177,19 @@ if __name__ == '__main__':
   ]
 }'''
 
-    temp = tempfile.NamedTemporaryFile(delete=False, suffix='.pptx')
-    path = pathlib.Path(temp.name)
+    # temp = tempfile.NamedTemporaryFile(delete=False, suffix='.pptx')
+    # path = pathlib.Path(temp.name)
+    #
+    # generate_powerpoint_presentation(
+    #     json5.loads(_JSON_DATA),
+    #     output_file_path=path,
+    #     slides_template='Basic'
+    # )
+    # print(f'File path: {path}')
+    #
+    # temp.close()
 
-    generate_powerpoint_presentation(
-        json5.loads(_JSON_DATA),
-        output_file_path=path,
-        slides_template='Basic'
-    )
-    print(f'File path: {path}')
-
-    temp.close()
+    print('\n\nSLIDE LAYOUTS')
+    for template_name in GlobalConfig.PPTX_TEMPLATE_FILES:
+        print(f'\nTemplate: {template_name}\n{"-" * 40}')
+        print_slide_layouts(template_name)
