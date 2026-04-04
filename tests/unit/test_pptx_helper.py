@@ -10,6 +10,7 @@ from pptx.shapes.autoshape import Shape
 from pptx.text.text import _Paragraph, _Run
 
 from slidedeckai.helpers import pptx_helper as ph
+from slidedeckai.global_config import GlobalConfig
 
 
 @pytest.fixture
@@ -1042,3 +1043,43 @@ def test_format_text_complex():
                 f'Run {i} italic mismatch for "{text}". '
                 f'Expected: {expected_italic}, got: {run.font.italic}'
             )
+
+
+def test_print_slide_layouts(mock_pptx_presentation: Mock, capsys: pytest.CaptureFixture, monkeypatch: pytest.MonkeyPatch):
+    """Test that slide layouts and placeholder details are printed correctly."""
+
+    # Setup two mock layouts with placeholders
+    mock_placeholder_1 = MagicMock()
+    mock_placeholder_1.name = 'Title 1'
+    mock_placeholder_1.placeholder_format.idx = 0
+    mock_placeholder_1.placeholder_format.type = 'TITLE (15)'
+
+    mock_placeholder_2 = MagicMock()
+    mock_placeholder_2.name = 'Content Placeholder 2'
+    mock_placeholder_2.placeholder_format.idx = 1
+    mock_placeholder_2.placeholder_format.type = 'BODY (2)'
+
+    mock_layout_1 = MagicMock()
+    mock_layout_1.name = 'Title Slide'
+    mock_layout_1.placeholders = [mock_placeholder_1]
+
+    mock_layout_2 = MagicMock()
+    mock_layout_2.name = 'Title and Content'
+    mock_layout_2.placeholders = [mock_placeholder_1, mock_placeholder_2]
+
+    mock_pptx_presentation.slide_layouts = [mock_layout_1, mock_layout_2]
+    monkeypatch.setattr(pptx, 'Presentation', lambda _: mock_pptx_presentation)
+    monkeypatch.setitem(
+        GlobalConfig.PPTX_TEMPLATE_FILES,
+        'test_template',
+        {'file': 'fake_template.pptx'}
+    )
+
+    ph.print_slide_layouts('test_template')
+
+    captured = capsys.readouterr()
+    assert "Layout 0: Title Slide" in captured.out
+    assert "idx=0 | name=Title 1 | type=TITLE (15)" in captured.out
+    assert "Layout 1: Title and Content" in captured.out
+    assert "idx=0 | name=Title 1 | type=TITLE (15)" in captured.out
+    assert "idx=1 | name=Content Placeholder 2 | type=BODY (2)" in captured.out
