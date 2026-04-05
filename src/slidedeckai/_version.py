@@ -1,1 +1,3 @@
-__version__ = '8.0.13'
+"""Version information for SlideDeckAI."""
+
+__version__ = '8.0.14'

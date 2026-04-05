@@ -1,10 +1,10 @@
 aiohttp>=3.13.3
 python-dotenv[cli]==1.0.1  # Downgraded because of LiteLLM 1.83.2 compatibility issues
 gitpython==3.1.46
-json-repair~=0.58.6
+json-repair~=0.58.7
 idna==3.11
 jinja2>=3.1.6
-Pillow~=12.1.1
+Pillow~=12.2.0
 pyarrow~=22.0.0
 pydantic~=2.12.5
 litellm~=1.83.2
@@ -14,22 +14,24 @@ streamlit==1.55.0
 protobuf~=6.33.5
 
 python-pptx~=1.0.2
-json5~=0.12.1
+json5~=0.14.0
 requests~=2.33.1
 pypdf~=6.9.2
 
-transformers<5.0.0,>=4.34.0
-torch~=2.10.0
+sentence-transformers~=5.3.0
+transformers~=5.5.0
+torch~=2.11.0
+torchvision~=0.26.0
 
 lxml~=6.0.2
-tqdm~=4.66.5
+tqdm~=4.67.3
 numpy
-scikit-learn~=1.5.1
+scikit-learn~=1.7.2
 
 certifi==2024.8.30
 urllib3>=2.6.3
 
-anyio~=4.12.1
+anyio~=4.13.0
 
 httpx~=0.28.1
 huggingface-hub  #~=0.24.5
