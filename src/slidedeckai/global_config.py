@@ -125,12 +125,12 @@ class GlobalConfig:
             'max_new_tokens': 4096,
             'paid': True,
         },
-        '[sn]DeepSeek-V3.1-Terminus': {
+        '[sn]DeepSeek-V3.1': {
             'description': 'fast, detailed',
             'max_new_tokens': 8192,
             'paid': True,
         },
-        '[sn]Llama-3.3-Swallow-70B-Instruct-v0.4': {
+        '[sn]Meta-Llama-3.3-70B-Instruct': {
             'description': 'fast, shorter',
             'max_new_tokens': 8192,
             'paid': True,
