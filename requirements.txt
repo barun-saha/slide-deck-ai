@@ -1,4 +1,4 @@
-aiohttp>=3.13.3
+aiohttp>=3.13.4
 python-dotenv[cli]==1.0.1  # Downgraded because of LiteLLM 1.83.2 compatibility issues
 gitpython==3.1.46
 json-repair~=0.58.7
