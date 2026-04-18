@@ -1,4 +1,4 @@
-aiohttp>=3.13.3
+aiohttp>=3.13.4
 python-dotenv[cli]==1.0.1  # Downgraded because of LiteLLM 1.83.2 compatibility issues
 gitpython==3.1.46
 json-repair~=0.58.7
@@ -16,7 +16,7 @@ protobuf~=6.33.5
 python-pptx~=1.0.2
 json5~=0.14.0
 requests~=2.33.1
-pypdf~=6.9.2
+pypdf~=6.10.2
 
 sentence-transformers~=5.3.0
 transformers~=5.5.0
