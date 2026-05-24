@@ -1,3 +1,3 @@
 """Version information for SlideDeckAI."""
 
-__version__ = '8.1.2'
+__version__ = '8.1.3'
