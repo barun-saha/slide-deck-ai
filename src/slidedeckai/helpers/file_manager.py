@@ -1,21 +1,18 @@
-"""
-File manager to help with uploaded PDF files.
-"""
+"""File manager to help with uploaded PDF files."""
+
 import logging
 
 import streamlit as st
 from pypdf import PdfReader
 
-
 logger = logging.getLogger(__name__)
 
 
 def get_pdf_contents(
-        pdf_file: st.runtime.uploaded_file_manager.UploadedFile,
-        page_range: tuple[int, None] | tuple[int, int]
+    pdf_file: st.runtime.uploaded_file_manager.UploadedFile,
+    page_range: tuple[int, None] | tuple[int, int],
 ) -> str:
-    """
-    Extract the text contents from a PDF file.
+    """Extract the text contents from a PDF file.
 
     Args:
         pdf_file: The uploaded PDF file.
@@ -38,12 +35,11 @@ def get_pdf_contents(
 
     return text
 
+
 def validate_page_range(
-        pdf_file: st.runtime.uploaded_file_manager.UploadedFile,
-        start:int, end:int
+    pdf_file: st.runtime.uploaded_file_manager.UploadedFile, start: int, end: int
 ) -> tuple[int, None] | tuple[int, int]:
-    """
-    Validate the page range for the uploaded PDF file. Adjusts start and end
+    """Validate the page range for the uploaded PDF file. Adjusts start and end
     to be within the valid range of pages in the PDF.
 
     Args:

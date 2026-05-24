@@ -1,8 +1,7 @@
-"""
-Tests for the image search module.
-"""
+"""Tests for the image search module."""
+
 from io import BytesIO
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 
@@ -13,11 +12,7 @@ class _MockResponse:
     """A tiny response-like object to simulate `requests` responses."""
 
     def __init__(
-            self,
-            *,
-            content: bytes = b'',
-            json_data: Any = None,
-            status_ok: bool = True
+        self, *, content: bytes = b'', json_data: Any = None, status_ok: bool = True
     ) -> None:
         self.content = content
         self._json = json_data
@@ -25,21 +20,16 @@ class _MockResponse:
 
     def raise_for_status(self) -> None:
         """Raise an exception when status is not OK."""
-
         if not self._status_ok:
             raise RuntimeError('status not ok')
 
     def json(self) -> Any:
         """Return preconfigured JSON data."""
-
         return self._json
 
 
 def _dummy_requests_get_success_search(
-        url: str,
-        headers: Dict[str, str],
-        params: Dict[str, Any],
-        timeout: int
+    url: str, headers: dict[str, str], params: dict[str, Any], timeout: int
 ):
     """Return a successful mock response for search_pexels."""
     # Validate that the function under test passes expected args
@@ -48,28 +38,15 @@ def _dummy_requests_get_success_search(
     assert 'query' in params
 
     photos = [
-        {
-            'url': 'https://pexels.com/photo/1',
-            'src': {'large': 'https://images/1_large.jpg'}
-        },
-        {
-            'url': 'https://pexels.com/photo/2',
-            'src': {'original': 'https://images/2_original.jpg'}
-        },
-        {
-            'url': 'https://pexels.com/photo/3',
-            'src': {'large': 'https://images/3_large.jpg'}
-        }
+        {'url': 'https://pexels.com/photo/1', 'src': {'large': 'https://images/1_large.jpg'}},
+        {'url': 'https://pexels.com/photo/2', 'src': {'original': 'https://images/2_original.jpg'}},
+        {'url': 'https://pexels.com/photo/3', 'src': {'large': 'https://images/3_large.jpg'}},
     ]
 
     return _MockResponse(json_data={'photos': photos})
 
 
-def _dummy_requests_get_image(
-        url: str,
-        headers: Dict[str, str],
-        stream: bool, timeout: int
-):
+def _dummy_requests_get_image(url: str, headers: dict[str, str], stream: bool, timeout: int):
     """Return a mock image response for get_image_from_url."""
     assert stream is True
     assert 'Authorization' in headers
@@ -137,7 +114,7 @@ def test_get_image_from_url_success(monkeypatch) -> None:
     """get_image_from_url returns a BytesIO object with image content."""
     monkeypatch.setattr(
         'slidedeckai.helpers.image_search.requests.get',
-        lambda *a, **k: _dummy_requests_get_image(*a, **k)
+        lambda *a, **k: _dummy_requests_get_image(*a, **k),
     )
     monkeypatch.setenv('PEXEL_API_KEY', 'dummykey')
     img = image_search.get_image_from_url('https://images/1_large.jpg')
@@ -151,7 +128,7 @@ def test_search_pexels_success(monkeypatch) -> None:
     """search_pexels forwards the request and returns parsed JSON."""
     monkeypatch.setattr(
         'slidedeckai.helpers.image_search.requests.get',
-        lambda *a, **k: _dummy_requests_get_success_search(*a, **k)
+        lambda *a, **k: _dummy_requests_get_success_search(*a, **k),
     )
     monkeypatch.setenv('PEXEL_API_KEY', 'akey')
     result = image_search.search_pexels(query='people', size='medium', per_page=3)
@@ -163,6 +140,7 @@ def test_search_pexels_success(monkeypatch) -> None:
 
 def test_search_pexels_raises_on_request_error(monkeypatch) -> None:
     """When requests.get raises an exception, it should propagate from search_pexels."""
+
     def _raise(*a, **k):
         raise RuntimeError('network')
 
@@ -183,9 +161,7 @@ def test_search_pexels_returns_empty_when_no_api_key(monkeypatch) -> None:
 
 def test_get_photo_url_from_api_response_returns_none_when_no_api_key(monkeypatch) -> None:
     """When PEXEL_API_KEY is not set, get_photo_url_from_api_response should return (None, None)."""
-    photos = [
-        {'url': 'https://pexels.com/photo/1', 'src': {'large': 'https://images/1_large.jpg'}}
-    ]
+    photos = [{'url': 'https://pexels.com/photo/1', 'src': {'large': 'https://images/1_large.jpg'}}]
     monkeypatch.delenv('PEXEL_API_KEY', raising=False)
     result = image_search.get_photo_url_from_api_response({'photos': photos})
 

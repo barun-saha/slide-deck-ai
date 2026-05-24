@@ -1,18 +1,17 @@
-"""
-Unit tests for llm_helper module.
-"""
-from unittest.mock import patch, MagicMock
+"""Unit tests for llm_helper module."""
+
+from unittest.mock import MagicMock, patch
 
 import pytest
 
+from slidedeckai.global_config import GlobalConfig
 from slidedeckai.helpers.llm_helper import (
+    get_litellm_llm,
+    get_litellm_model_name,
     get_provider_model,
     is_valid_llm_provider_model,
-    get_litellm_model_name,
     stream_litellm_completion,
-    get_litellm_llm,
 )
-from slidedeckai.global_config import GlobalConfig
 
 
 @pytest.mark.parametrize(
@@ -36,8 +35,8 @@ def test_get_provider_model(provider_model, use_ollama, expected):
 
 @pytest.mark.parametrize(
     (
-            'provider, model, api_key, azure_endpoint_url,'
-            ' azure_deployment_name, azure_api_version, expected'
+        'provider, model, api_key, azure_endpoint_url,'
+        ' azure_deployment_name, azure_api_version, expected'
     ),
     [
         # Valid non-Azure cases
@@ -219,13 +218,11 @@ def test_litellm_not_installed():
 
         with pytest.raises(ImportError) as exc_info:
             # Try to use stream_litellm_completion which requires LiteLLM
-            list(stream_litellm_completion(
-                provider='co',
-                model='command',
-                messages=[],
-                max_tokens=100,
-                api_key='test-key'
-            ))
+            list(
+                stream_litellm_completion(
+                    provider='co', model='command', messages=[], max_tokens=100, api_key='test-key'
+                )
+            )
 
     assert 'LiteLLM is not installed' in str(exc_info.value)
 

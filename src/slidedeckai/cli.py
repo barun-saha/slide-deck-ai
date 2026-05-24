@@ -1,9 +1,8 @@
-"""
-Command-line interface for SlideDeck AI.
-"""
+"""Command-line interface for SlideDeck AI."""
+
 import argparse
-import sys
 import shutil
+import sys
 from typing import Any
 
 from slidedeckai.core import SlideDeckAI
@@ -11,8 +10,7 @@ from slidedeckai.global_config import GlobalConfig
 
 
 def group_models_by_provider(models: list[str]) -> dict[str, list[str]]:
-    """
-    Group model names by their provider.
+    """Group model names by their provider.
 
     Args:
         models (list[str]): List of model names.
@@ -32,8 +30,7 @@ def group_models_by_provider(models: list[str]) -> dict[str, list[str]]:
 
 
 def format_models_as_bullets(models: list[str]) -> str:
-    """
-    Format models as a bulleted list, grouped by provider.
+    """Format models as a bulleted list, grouped by provider.
 
     Args:
         models (list[str]): List of model names.
@@ -52,9 +49,8 @@ def format_models_as_bullets(models: list[str]) -> str:
 
 
 class CustomHelpFormatter(argparse.HelpFormatter):
-    """
-    Custom formatter for argparse that improves the display of choices.
-    """
+    """Custom formatter for argparse that improves the display of choices."""
+
     def _format_action_invocation(self, action: Any) -> str:
         if not action.option_strings or action.nargs == 0:
             return super()._format_action_invocation(action)
@@ -66,7 +62,7 @@ class CustomHelpFormatter(argparse.HelpFormatter):
         if action.choices and '--model' in action.option_strings:
             return ', '.join(action.option_strings) + ' MODEL'
 
-        return f"{', '.join(action.option_strings)} {args_string}"
+        return f'{", ".join(action.option_strings)} {args_string}'
 
     def _split_lines(self, text: str, width: int) -> list[str]:
         if text.startswith('Model choices:') or text.startswith('choose from'):
@@ -79,9 +75,7 @@ class CustomHelpFormatter(argparse.HelpFormatter):
 
             # Extract models from text
             if text.startswith('choose from'):
-                models = [
-                    m.strip("' ") for m in text.replace('choose from', '').split(',')
-                ]
+                models = [m.strip("' ") for m in text.replace('choose from', '').split(',')]
             else:
                 models = text.split('\n')[1:]
 
@@ -93,18 +87,16 @@ class CustomHelpFormatter(argparse.HelpFormatter):
 
 
 class CustomArgumentParser(argparse.ArgumentParser):
-    """
-    Custom argument parser that formats error messages better.
-    """
+    """Custom argument parser that formats error messages better."""
+
     def error(self, message: str) -> None:
         """Custom error handler that formats model choices better"""
         if 'invalid choice' in message and '--model' in message:
             # Extract models from the error message
-            choices_str = message[message.find('(choose from'):]
+            choices_str = message[message.find('(choose from') :]
             models = [
-                m.strip("' ") for m in choices_str.replace(
-                    '(choose from', ''
-                ).rstrip(')').split(',')
+                m.strip("' ")
+                for m in choices_str.replace('(choose from', '').rstrip(')').split(',')
             ]
 
             error_lines = ['Error: Invalid model choice. Available models:']
@@ -130,12 +122,9 @@ def format_model_help() -> str:
 
 
 def main():
-    """
-    The main function for the CLI.
-    """
+    """The main function for the CLI."""
     parser = CustomArgumentParser(
-        description='Generate slide decks with SlideDeck AI.',
-        formatter_class=CustomHelpFormatter
+        description='Generate slide decks with SlideDeck AI.', formatter_class=CustomHelpFormatter
     )
     subparsers = parser.add_subparsers(dest='command')
 
@@ -149,9 +138,7 @@ def main():
 
     # 'generate' command
     parser_generate = subparsers.add_parser(
-        'generate',
-        help='Generate a new slide deck.',
-        formatter_class=CustomHelpFormatter
+        'generate', help='Generate a new slide deck.', formatter_class=CustomHelpFormatter
     )
 
     parser_generate.add_argument(
@@ -162,7 +149,7 @@ def main():
             'Model name to use. Must be one of the supported models in the'
             ' `[provider-code]model_name` format.' + format_model_help()
         ),
-        metavar='MODEL'
+        metavar='MODEL',
     )
     parser_generate.add_argument(
         '--topic',

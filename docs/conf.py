@@ -1,9 +1,9 @@
-"""
-Sphinx configuration file for the SlideDeck AI documentation.
+"""Sphinx configuration file for the SlideDeck AI documentation.
 This file sets up Sphinx to generate documentation from the source code
 located in the 'src' directory, and includes support for Markdown files
 using the MyST parser.
 """
+
 import os
 import sys
 
@@ -20,9 +20,9 @@ author = 'Barun Saha'
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
-    'sphinx.ext.napoleon',    # Converts Google/NumPy style docstrings
+    'sphinx.ext.napoleon',  # Converts Google/NumPy style docstrings
     'sphinx.ext.viewcode',
-    'myst_parser',            # Enables Markdown support (.md files)
+    'myst_parser',  # Enables Markdown support (.md files)
 ]
 autosummary_generate = True
 
@@ -33,13 +33,7 @@ autodoc_member_order = 'alphabetical'
 templates_path = ['_templates']
 
 # Configure MyST to allow cross-referencing and nested structure
-myst_enable_extensions = [
-    'deflist',
-    'html_image',
-    'linkify',
-    'replacements',
-    'html_admonition'
-]
+myst_enable_extensions = ['deflist', 'html_image', 'linkify', 'replacements', 'html_admonition']
 source_suffix = {
     '.rst': 'restructuredtext',
     '.md': 'markdown',

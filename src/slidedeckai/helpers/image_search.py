@@ -1,17 +1,15 @@
-"""
-Search photos using Pexels API.
-"""
+"""Search photos using Pexels API."""
+
 import logging
 import os
 import random
 import warnings
 from io import BytesIO
-from typing import Union, Literal
-from urllib.parse import urlparse, parse_qs
+from typing import Literal
+from urllib.parse import parse_qs, urlparse
 
 import requests
 from dotenv import load_dotenv
-
 
 load_dotenv()
 
@@ -21,7 +19,7 @@ if not os.getenv('PEXEL_API_KEY'):
     warnings.warn(
         'PEXEL_API_KEY environment variable is not set. '
         'Image search functionality will not work without it.',
-        stacklevel=2
+        stacklevel=2,
     )
 
 PEXELS_URL = 'https://api.pexels.com/v1/search'
@@ -40,12 +38,9 @@ logging.getLogger('urllib3').setLevel(logging.ERROR)
 
 
 def search_pexels(
-        query: str,
-        size: Literal['small', 'medium', 'large'] = 'medium',
-        per_page: int = MAX_PHOTOS
+    query: str, size: Literal['small', 'medium', 'large'] = 'medium', per_page: int = MAX_PHOTOS
 ) -> dict:
-    """
-    Searches for images on Pexels using the provided query.
+    """Searches for images on Pexels using the provided query.
 
     This function sends a GET request to the Pexels API with the specified search query
     and authorization header containing the API key. It returns the JSON response from the API.
@@ -73,28 +68,17 @@ def search_pexels(
     if not os.getenv('PEXEL_API_KEY'):
         return {}
 
-    params = {
-        'query': query,
-        'size': size,
-        'page': 1,
-        'per_page': per_page
-    }
+    params = {'query': query, 'size': size, 'page': 1, 'per_page': per_page}
     response = requests.get(
-        PEXELS_URL,
-        headers=REQUEST_HEADER,
-        params=params,
-        timeout=REQUEST_TIMEOUT
+        PEXELS_URL, headers=REQUEST_HEADER, params=params, timeout=REQUEST_TIMEOUT
     )
     response.raise_for_status()  # Ensure the request was successful
 
     return response.json()
 
 
-def get_photo_url_from_api_response(
-        json_response: dict
-) -> tuple[Union[str, None], Union[str, None]]:
-    """
-    Return a randomly chosen photo from a Pexels search API response. In addition, also return
+def get_photo_url_from_api_response(json_response: dict) -> tuple[str | None, str | None]:
+    """Return a randomly chosen photo from a Pexels search API response. In addition, also return
     the original URL of the page on Pexels.
 
     Args:
@@ -130,8 +114,7 @@ def get_photo_url_from_api_response(
 
 
 def get_image_from_url(url: str) -> BytesIO:
-    """
-    Fetches an image from the specified URL and returns it as a BytesIO object.
+    """Fetches an image from the specified URL and returns it as a BytesIO object.
 
     This function sends a GET request to the provided URL, retrieves the image data,
     and wraps it in a BytesIO object, which can be used like a file.
@@ -153,8 +136,7 @@ def get_image_from_url(url: str) -> BytesIO:
 
 
 def extract_dimensions(url: str) -> tuple[int, int]:
-    """
-    Extracts the height and width from the URL parameters.
+    """Extracts the height and width from the URL parameters.
 
     Args:
         url: The URL containing the image dimensions.
@@ -171,8 +153,4 @@ def extract_dimensions(url: str) -> tuple[int, int]:
 
 
 if __name__ == '__main__':
-    print(
-        search_pexels(
-            query='people'
-        )
-    )
+    print(search_pexels(query='people'))

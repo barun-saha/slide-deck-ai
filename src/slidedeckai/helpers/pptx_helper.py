@@ -1,24 +1,19 @@
-"""
-A set of functions to create a PowerPoint slide deck.
-"""
+"""A set of functions to create a PowerPoint slide deck."""
+
 import logging
 import os
 import pathlib
 import random
 import re
-import tempfile
-from typing import Optional
 
-import json5
 import pptx
 from dotenv import load_dotenv
 from pptx.enum.shapes import MSO_AUTO_SHAPE_TYPE
 from pptx.shapes.placeholder import PicturePlaceholder, SlidePlaceholder
 
+from ..global_config import GlobalConfig
 from . import icons_embeddings as ice
 from . import image_search as ims
-from ..global_config import GlobalConfig
-
 
 load_dotenv()
 
@@ -46,8 +41,8 @@ ICON_BG_SIZE = INCHES_1
 IMAGE_DISPLAY_PROBABILITY = 1 / 3.0
 FOREGROUND_IMAGE_PROBABILITY = 0.8
 
-SLIDE_NUMBER_REGEX = re.compile(r"^slide[ ]+\d+:", re.IGNORECASE)
-ICONS_REGEX = re.compile(r"\[\[(.*?)\]\]\s*(.*)")
+SLIDE_NUMBER_REGEX = re.compile(r'^slide[ ]+\d+:', re.IGNORECASE)
+ICONS_REGEX = re.compile(r'\[\[(.*?)\]\]\s*(.*)')
 BOLD_ITALICS_PATTERN = re.compile(r'(\*\*(.*?)\*\*|\*(.*?)\*)')
 
 ICON_COLORS = [
@@ -65,8 +60,7 @@ logging.getLogger('PIL.PngImagePlugin').setLevel(logging.ERROR)
 
 
 def remove_slide_number_from_heading(header: str) -> str:
-    """
-    Remove the slide number from a given slide header.
+    """Remove the slide number from a given slide header.
 
     Args:
         header: The header of a slide.
@@ -76,7 +70,7 @@ def remove_slide_number_from_heading(header: str) -> str:
     """
     if SLIDE_NUMBER_REGEX.match(header):
         idx = header.find(':')
-        header = header[idx + 1:].strip()
+        header = header[idx + 1 :].strip()
 
     return header
 
@@ -89,7 +83,6 @@ def add_bulleted_items(text_frame: pptx.text.text.TextFrame, flat_items_list: li
             displayed.
         flat_items_list (list): The list of items to be displayed.
     """
-
     for idx, an_item in enumerate(flat_items_list):
         if idx == 0:
             paragraph = text_frame.paragraphs[0]  # First paragraph for title text
@@ -101,8 +94,7 @@ def add_bulleted_items(text_frame: pptx.text.text.TextFrame, flat_items_list: li
 
 
 def format_text(frame_paragraph, text: str):
-    """
-    Apply bold and italic formatting while preserving the original word order without duplication.
+    """Apply bold and italic formatting while preserving the original word order without duplication.
 
     Args:
         frame_paragraph: The paragraph to format.
@@ -140,12 +132,9 @@ def format_text(frame_paragraph, text: str):
 
 
 def generate_powerpoint_presentation(
-        parsed_data: dict,
-        slides_template: str,
-        output_file_path: pathlib.Path
+    parsed_data: dict, slides_template: str, output_file_path: pathlib.Path
 ) -> list:
-    """
-    Create and save a PowerPoint presentation from parsed JSON content.
+    """Create and save a PowerPoint presentation from parsed JSON content.
 
     Args:
         parsed_data (dict): The presentation content as parsed JSON data.
@@ -155,7 +144,6 @@ def generate_powerpoint_presentation(
     Returns:
         A list containing the presentation title and slide headers.
     """
-
     presentation = pptx.Presentation(GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file'])
     slide_width_inch, slide_height_inch = _get_slide_width_height_inches(presentation)
 
@@ -167,11 +155,14 @@ def generate_powerpoint_presentation(
     title.text = parsed_data['title']
     logger.info(
         'PPT title: %s | #slides: %d | template: %s',
-        title.text, len(parsed_data['slides']),
-        GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file']
+        title.text,
+        len(parsed_data['slides']),
+        GlobalConfig.PPTX_TEMPLATE_FILES[slides_template]['file'],
     )
     subtitle.text = 'by Myself and SlideDeck AI :)'
-    all_headers = [title.text, ]
+    all_headers = [
+        title.text,
+    ]
 
     # Add content in a loop
     for a_slide in parsed_data['slides']:
@@ -180,7 +171,7 @@ def generate_powerpoint_presentation(
                 presentation=presentation,
                 slide_json=a_slide,
                 slide_width_inch=slide_width_inch,
-                slide_height_inch=slide_height_inch
+                slide_height_inch=slide_height_inch,
             )
 
             if not is_processing_done:
@@ -188,7 +179,7 @@ def generate_powerpoint_presentation(
                     presentation=presentation,
                     slide_json=a_slide,
                     slide_width_inch=slide_width_inch,
-                    slide_height_inch=slide_height_inch
+                    slide_height_inch=slide_height_inch,
                 )
 
             if not is_processing_done:
@@ -196,7 +187,7 @@ def generate_powerpoint_presentation(
                     presentation=presentation,
                     slide_json=a_slide,
                     slide_width_inch=slide_width_inch,
-                    slide_height_inch=slide_height_inch
+                    slide_height_inch=slide_height_inch,
                 )
 
             if not is_processing_done:
@@ -204,7 +195,7 @@ def generate_powerpoint_presentation(
                     presentation=presentation,
                     slide_json=a_slide,
                     slide_width_inch=slide_width_inch,
-                    slide_height_inch=slide_height_inch
+                    slide_height_inch=slide_height_inch,
                 )
 
             if not is_processing_done:
@@ -212,14 +203,14 @@ def generate_powerpoint_presentation(
                     presentation=presentation,
                     slide_json=a_slide,
                     slide_width_inch=slide_width_inch,
-                    slide_height_inch=slide_height_inch
-            )
+                    slide_height_inch=slide_height_inch,
+                )
 
         except Exception:
             # In case of any unforeseen error, try to salvage what is available
             logger.error(
                 'An error occurred while processing a slide...continuing with the next one',
-                exc_info=True
+                exc_info=True,
             )
             continue
 
@@ -235,8 +226,7 @@ def generate_powerpoint_presentation(
 
 
 def get_flat_list_of_contents(items: list, level: int) -> list[tuple]:
-    """
-    Flatten a (hierarchical) list of bullet points to a single list containing each item and
+    """Flatten a (hierarchical) list of bullet points to a single list containing each item and
      its level.
 
     Args:
@@ -246,7 +236,6 @@ def get_flat_list_of_contents(items: list, level: int) -> list[tuple]:
     Returns:
         A list of (bullet item text, hierarchical level) tuples.
     """
-
     flat_list = []
 
     for item in items:
@@ -259,12 +248,9 @@ def get_flat_list_of_contents(items: list, level: int) -> list[tuple]:
 
 
 def get_slide_placeholders(
-        slide: pptx.slide.Slide,
-        layout_number: int,
-        is_debug: bool = False
+    slide: pptx.slide.Slide, layout_number: int, is_debug: bool = False
 ) -> list[tuple[int, str]]:
-    """
-    Return the index and name (lower case) of all placeholders present in a
+    """Return the index and name (lower case) of all placeholders present in a
     slide, except the title placeholder.
 
     A placeholder in a slide is a place to add content. Each placeholder has a
@@ -285,7 +271,6 @@ def get_slide_placeholders(
         list[tuple[int, str]]: A list of (index, name) tuples for placeholders
         present in the slide, excluding the title placeholder.
     """
-
     if is_debug:
         print(
             f'Slide layout #{layout_number}:'
@@ -304,13 +289,12 @@ def get_slide_placeholders(
 
 
 def _handle_default_display(
-        presentation: pptx.Presentation,
-        slide_json: dict,
-        slide_width_inch: float,
-        slide_height_inch: float
+    presentation: pptx.Presentation,
+    slide_json: dict,
+    slide_width_inch: float,
+    slide_height_inch: float,
 ):
-    """
-    Display a list of text in a slide.
+    """Display a list of text in a slide.
 
     Args:
         presentation: The presentation object.
@@ -318,24 +302,17 @@ def _handle_default_display(
         slide_width_inch: The width of the slide in inches.
         slide_height_inch: The height of the slide in inches.
     """
-
     status = False
 
     if 'img_keywords' in slide_json:
         if random.random() < IMAGE_DISPLAY_PROBABILITY:
             if random.random() < FOREGROUND_IMAGE_PROBABILITY:
                 status = _handle_display_image__in_foreground(
-                    presentation,
-                    slide_json,
-                    slide_width_inch,
-                    slide_height_inch
+                    presentation, slide_json, slide_width_inch, slide_height_inch
                 )
             else:
                 status = _handle_display_image__in_background(
-                    presentation,
-                    slide_json,
-                    slide_width_inch,
-                    slide_height_inch
+                    presentation, slide_json, slide_width_inch, slide_height_inch
                 )
 
     if status:
@@ -367,18 +344,17 @@ def _handle_default_display(
         the_slide=slide,
         slide_json=slide_json,
         slide_height_inch=slide_height_inch,
-        slide_width_inch=slide_width_inch
+        slide_width_inch=slide_width_inch,
     )
 
 
 def _handle_display_image__in_foreground(
-        presentation: pptx.Presentation,
-        slide_json: dict,
-        slide_width_inch: float,
-        slide_height_inch: float
+    presentation: pptx.Presentation,
+    slide_json: dict,
+    slide_width_inch: float,
+    slide_height_inch: float,
 ) -> bool:
-    """
-    Create a slide with text and image using a picture placeholder layout. If not image keyword is
+    """Create a slide with text and image using a picture placeholder layout. If not image keyword is
     available, it will add only text to the slide.
 
     Args:
@@ -390,7 +366,6 @@ def _handle_display_image__in_foreground(
     Returns:
         bool: True if the side has been processed.
     """
-
     img_keywords = slide_json['img_keywords'].strip()
     slide = presentation.slide_layouts[8]  # Picture with Caption
     slide = presentation.slides.add_slide(slide)
@@ -432,34 +407,28 @@ def _handle_display_image__in_foreground(
         )
 
         if photo_url:
-            pic_col.insert_picture(
-                ims.get_image_from_url(photo_url)
-            )
+            pic_col.insert_picture(ims.get_image_from_url(photo_url))
 
             _add_text_at_bottom(
                 slide=slide,
                 slide_width_inch=slide_width_inch,
                 slide_height_inch=slide_height_inch,
                 text='Photo provided by Pexels',
-                hyperlink=page_url
+                hyperlink=page_url,
             )
     except Exception as ex:
-        logger.error(
-            '*** Error occurred while running adding image to slide: %s',
-            str(ex)
-        )
+        logger.error('*** Error occurred while running adding image to slide: %s', str(ex))
 
     return True
 
 
 def _handle_display_image__in_background(
-        presentation: pptx.Presentation,
-        slide_json: dict,
-        slide_width_inch: float,
-        slide_height_inch: float
+    presentation: pptx.Presentation,
+    slide_json: dict,
+    slide_width_inch: float,
+    slide_height_inch: float,
 ) -> bool:
-    """
-    Add a slide with text and an image in the background. It works just like
+    """Add a slide with text and an image in the background. It works just like
     `_handle_default_display()` but with a background image added. If not image keyword is
     available, it will add only text to the slide.
 
@@ -472,7 +441,6 @@ def _handle_display_image__in_background(
     Returns:
         True if the slide has been processed.
     """
-
     img_keywords = slide_json['img_keywords'].strip()
 
     # Add a photo in the background, text in the foreground
@@ -536,8 +504,7 @@ def _handle_display_image__in_background(
 
             except Exception as ex:
                 logger.error(
-                    'Failed to apply transparency to the image: %s. Continuing without it.',
-                    str(ex)
+                    'Failed to apply transparency to the image: %s. Continuing without it.', str(ex)
                 )
 
             _add_text_at_bottom(
@@ -545,7 +512,7 @@ def _handle_display_image__in_background(
                 slide_width_inch=slide_width_inch,
                 slide_height_inch=slide_height_inch,
                 text='Photo provided by Pexels',
-                hyperlink=page_url
+                hyperlink=page_url,
             )
 
             # Move picture to background
@@ -555,29 +522,25 @@ def _handle_display_image__in_background(
             except Exception as ex:
                 logger.error(
                     'Failed to move image to background: %s. Image will remain in foreground.',
-                    str(ex)
+                    str(ex),
                 )
 
             return True
 
     except Exception as ex:
-        logger.error(
-            '*** Error occurred while adding image to the slide background: %s',
-            str(ex)
-        )
+        logger.error('*** Error occurred while adding image to the slide background: %s', str(ex))
         return True
 
     return True
 
 
 def _handle_icons_ideas(
-        presentation: pptx.Presentation,
-        slide_json: dict,
-        slide_width_inch: float,
-        slide_height_inch: float
+    presentation: pptx.Presentation,
+    slide_json: dict,
+    slide_width_inch: float,
+    slide_height_inch: float,
 ):
-    """
-    Add a slide with some icons and text.
+    """Add a slide with some icons and text.
     If no suitable icons are found, the step numbers are shown.
 
     Args:
@@ -589,7 +552,6 @@ def _handle_icons_ideas(
     Returns:
         True if the slide has been processed.
     """
-
     if 'bullet_points' in slide_json and slide_json['bullet_points']:
         items = slide_json['bullet_points']
 
@@ -611,9 +573,8 @@ def _handle_icons_ideas(
         top = INCHES_3
 
         icons_texts = [
-            (match.group(1), match.group(2)) for match in [
-                ICONS_REGEX.search(item) for item in items
-            ]
+            (match.group(1), match.group(2))
+            for match in [ICONS_REGEX.search(item) for item in items]
         ]
         fallback_icon_files = ice.find_icons([item[0] for item in icons_texts])
 
@@ -623,8 +584,7 @@ def _handle_icons_ideas(
 
             if not os.path.exists(icon_path):
                 logger.warning(
-                    'Icon not found: %s...using fallback icon: %s',
-                    icon, fallback_icon_files[idx]
+                    'Icon not found: %s...using fallback icon: %s', icon, fallback_icon_files[idx]
                 )
                 icon_path = f'{GlobalConfig.ICONS_DIR}/{fallback_icon_files[idx]}.png'
 
@@ -638,7 +598,8 @@ def _handle_icons_ideas(
                 MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE,
                 center - INCHES_0_5,
                 top - (ICON_BG_SIZE - ICON_SIZE) / 2,
-                INCHES_1, INCHES_1
+                INCHES_1,
+                INCHES_1,
             )
             shape.fill.solid()
             shape.shadow.inherit = False
@@ -654,7 +615,7 @@ def _handle_icons_ideas(
                 left=center - text_box_size / 2,  # Center the text box horizontally
                 top=top + ICON_SIZE + INCHES_0_2,
                 width=text_box_size,
-                height=text_box_size
+                height=text_box_size,
             )
             text_frame = text_box.text_frame
             text_frame.word_wrap = True
@@ -677,7 +638,7 @@ def _handle_icons_ideas(
                 slide_width_inch=slide_width_inch,
                 slide_height_inch=slide_height_inch,
                 text='More icons available in the SlideDeck AI repository',
-                hyperlink='https://github.com/barun-saha/slide-deck-ai/tree/main/icons/png128'
+                hyperlink='https://github.com/barun-saha/slide-deck-ai/tree/main/icons/png128',
             )
 
         return True
@@ -686,15 +647,14 @@ def _handle_icons_ideas(
 
 
 def _add_text_at_bottom(
-        slide: pptx.slide.Slide,
-        slide_width_inch: float,
-        slide_height_inch: float,
-        text: str,
-        hyperlink: Optional[str] = None,
-        target_height: Optional[float] = 0.5
+    slide: pptx.slide.Slide,
+    slide_width_inch: float,
+    slide_height_inch: float,
+    text: str,
+    hyperlink: str | None = None,
+    target_height: float | None = 0.5,
 ):
-    """
-    Add arbitrary text to a textbox positioned near the lower-left side of a slide.
+    """Add arbitrary text to a textbox positioned near the lower-left side of a slide.
 
     Args:
         slide: The slide.
@@ -704,12 +664,11 @@ def _add_text_at_bottom(
         hyperlink: Optional; the hyperlink to be added to the text.
         target_height: Optional[float]; the target height of the box in inches.
     """
-
     footer = slide.shapes.add_textbox(
         left=INCHES_1,
         top=pptx.util.Inches(slide_height_inch - target_height),
         width=pptx.util.Inches(slide_width_inch),
-        height=pptx.util.Inches(target_height)
+        height=pptx.util.Inches(target_height),
     )
 
     paragraph = footer.text_frame.paragraphs[0]
@@ -723,13 +682,12 @@ def _add_text_at_bottom(
 
 
 def _handle_double_col_layout(
-        presentation: pptx.Presentation,
-        slide_json: dict,
-        slide_width_inch: float,
-        slide_height_inch: float
+    presentation: pptx.Presentation,
+    slide_json: dict,
+    slide_width_inch: float,
+    slide_height_inch: float,
 ) -> bool:
-    """
-    Add a slide with a double column layout for comparison.
+    """Add a slide with a double column layout for comparison.
 
     Args:
         presentation (pptx.Presentation): The presentation object.
@@ -740,13 +698,15 @@ def _handle_double_col_layout(
     Returns:
         bool: True if double col layout has been added; False otherwise.
     """
-
     if 'bullet_points' in slide_json and slide_json['bullet_points']:
         double_col_content = slide_json['bullet_points']
 
-        if double_col_content and (
-                len(double_col_content) == 2
-        ) and isinstance(double_col_content[0], dict) and isinstance(double_col_content[1], dict):
+        if (
+            double_col_content
+            and (len(double_col_content) == 2)
+            and isinstance(double_col_content[0], dict)
+            and isinstance(double_col_content[1], dict)
+        ):
             slide = presentation.slide_layouts[4]
             slide = presentation.slides.add_slide(slide)
             placeholders = None
@@ -814,7 +774,7 @@ def _handle_double_col_layout(
                 the_slide=slide,
                 slide_json=slide_json,
                 slide_height_inch=slide_height_inch,
-                slide_width_inch=slide_width_inch
+                slide_width_inch=slide_width_inch,
             )
 
             return True
@@ -823,10 +783,10 @@ def _handle_double_col_layout(
 
 
 def _handle_step_by_step_process(
-        presentation: pptx.Presentation,
-        slide_json: dict,
-        slide_width_inch: float,
-        slide_height_inch: float
+    presentation: pptx.Presentation,
+    slide_json: dict,
+    slide_width_inch: float,
+    slide_height_inch: float,
 ) -> bool:
     """Add shapes to display a step-by-step process in the slide, if available.
 
@@ -839,7 +799,6 @@ def _handle_step_by_step_process(
     Returns:
         bool: True if this slide has a step-by-step process depiction added; False otherwise.
     """
-
     if 'bullet_points' in slide_json and slide_json['bullet_points']:
         steps = slide_json['bullet_points']
 
@@ -870,7 +829,7 @@ def _handle_step_by_step_process(
 
         slide_header = slide_json['heading'].lower()
         if (no_marker_count / n_steps > 0.25) and not (
-                ('step-by-step' in slide_header) or ('step by step' in slide_header)
+            ('step-by-step' in slide_header) or ('step by step' in slide_header)
         ):
             return False
 
@@ -911,12 +870,7 @@ def _handle_step_by_step_process(
             lengths = [len(step) for step in steps]
             font_size_20pt = pptx.util.Pt(20)
             widths = sorted(
-                [
-                    min(
-                        pptx.util.Inches(font_size_20pt.inches * a_len),
-                        width
-                    ) for a_len in lengths
-                ]
+                [min(pptx.util.Inches(font_size_20pt.inches * a_len), width) for a_len in lengths]
             )
             width = widths[len(widths) // 2]
 
@@ -934,13 +888,12 @@ def _handle_step_by_step_process(
 
 
 def _handle_table(
-        presentation: pptx.Presentation,
-        slide_json: dict,
-        slide_width_inch: float,
-        slide_height_inch: float
+    presentation: pptx.Presentation,
+    slide_json: dict,
+    slide_width_inch: float,
+    slide_height_inch: float,
 ) -> bool:
-    """
-    Add a table to a slide, if available.
+    """Add a table to a slide, if available.
 
     Args:
         presentation (pptx.Presentation): The presentation object.
@@ -951,7 +904,6 @@ def _handle_table(
     Returns:
         bool: True if a table was added to the slide; False otherwise.
     """
-
     if 'table' not in slide_json or not slide_json['table']:
         return False
 
@@ -976,8 +928,7 @@ def _handle_table(
     # Set headers
     for col_idx, header_text in enumerate(headers):
         table.cell(0, col_idx).text = header_text
-        table.cell(0, col_idx).text_frame.paragraphs[
-            0].font.bold = True  # Make header bold
+        table.cell(0, col_idx).text_frame.paragraphs[0].font.bold = True  # Make header bold
 
     # Fill in rows
     for row_idx, row_data in enumerate(rows, start=1):
@@ -988,42 +939,32 @@ def _handle_table(
 
 
 def _handle_key_message(
-        the_slide: pptx.slide.Slide,
-        slide_json: dict,
-        slide_width_inch: float,
-        slide_height_inch: float
+    the_slide: pptx.slide.Slide, slide_json: dict, slide_width_inch: float, slide_height_inch: float
 ):
+    """Add a shape to display the key message in the slide, if available.
+
+    Args:
+        the_slide (pptx.slide.Slide): The slide to be processed.
+        slide_json (dict): The content of the slide as JSON data.
+        slide_width_inch (float): The width of the slide in inches.
+        slide_height_inch (float): The height of the slide in inches.
+
+    Returns:
+        None
     """
-        Add a shape to display the key message in the slide, if available.
-
-        Args:
-            the_slide (pptx.slide.Slide): The slide to be processed.
-            slide_json (dict): The content of the slide as JSON data.
-            slide_width_inch (float): The width of the slide in inches.
-            slide_height_inch (float): The height of the slide in inches.
-
-        Returns:
-            None
-        """
-
     if 'key_message' in slide_json and slide_json['key_message']:
         height = pptx.util.Inches(1.6)
         width = pptx.util.Inches(slide_width_inch / 2.3)
         top = pptx.util.Inches(slide_height_inch - height.inches - 0.1)
         left = pptx.util.Inches((slide_width_inch - width.inches) / 2)
         shape = the_slide.shapes.add_shape(
-            MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE,
-            left=left,
-            top=top,
-            width=width,
-            height=height
+            MSO_AUTO_SHAPE_TYPE.ROUNDED_RECTANGLE, left=left, top=top, width=width, height=height
         )
         format_text(shape.text_frame.paragraphs[0], slide_json['key_message'])
 
 
 def _get_slide_width_height_inches(presentation: pptx.Presentation) -> tuple[float, float]:
-    """
-    Get the dimensions of a slide in inches.
+    """Get the dimensions of a slide in inches.
 
     Args:
         presentation: The presentation object.
@@ -1031,7 +972,6 @@ def _get_slide_width_height_inches(presentation: pptx.Presentation) -> tuple[flo
     Returns:
         The width and the height.
     """
-
     slide_width_inch = EMU_TO_INCH_SCALING_FACTOR * presentation.slide_width
     slide_height_inch = EMU_TO_INCH_SCALING_FACTOR * presentation.slide_height
 
@@ -1039,8 +979,7 @@ def _get_slide_width_height_inches(presentation: pptx.Presentation) -> tuple[flo
 
 
 def print_slide_layouts(slides_template: str) -> None:
-    """
-    Print all slide layouts and their placeholder indices/names.
+    """Print all slide layouts and their placeholder indices/names.
 
     Args:
         slides_template: The name of the slide template to be used.
@@ -1057,7 +996,7 @@ def print_slide_layouts(slides_template: str) -> None:
 
 
 if __name__ == '__main__':
-    _JSON_DATA = '''
+    _JSON_DATA = """
     {
   "title": "AI Applications: Transforming Industries",
   "slides": [
@@ -1175,7 +1114,7 @@ if __name__ == '__main__':
       "img_keywords": "AI transformation, ethical considerations, AI education, future of AI"
     }
   ]
-}'''
+}"""
 
     # temp = tempfile.NamedTemporaryFile(delete=False, suffix='.pptx')
     # path = pathlib.Path(temp.name)

@@ -37,3 +37,18 @@ slidedeckai = ["prompts/**/*.txt", "strings.json", "pptx_templates/*.pptx", "ico
 
 [project.scripts]
 slidedeckai = "slidedeckai.cli:main"
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "D"]
+# Blank line; punctuation; long line; non-top level import
+ignore = ["UP030", "D205", "D415", "E501", "E402"]
+
+[tool.ruff.format]
+quote-style = "single"
+docstring-code-format = true
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"

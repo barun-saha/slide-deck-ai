@@ -1,11 +1,10 @@
-"""
-Core functionality of SlideDeck AI.
-"""
+"""Core functionality of SlideDeck AI."""
+
 import logging
 import os
 import pathlib
 import tempfile
-from typing import Union, Any
+from typing import Any
 
 import json5
 from dotenv import load_dotenv
@@ -26,8 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 def _process_llm_chunk(chunk: Any) -> str:
-    """
-    Helper function to process LLM response chunks consistently.
+    """Helper function to process LLM response chunks consistently.
 
     Args:
         chunk: The chunk received from the LLM stream.
@@ -43,8 +41,7 @@ def _process_llm_chunk(chunk: Any) -> str:
 
 
 def _stream_llm_response(llm: Any, prompt: str, progress_callback=None) -> str:
-    """
-    Helper function to stream LLM responses with consistent handling.
+    """Helper function to stream LLM responses with consistent handling.
 
     Args:
         llm: The LLM instance to use for generating responses.
@@ -71,21 +68,18 @@ def _stream_llm_response(llm: Any, prompt: str, progress_callback=None) -> str:
 
 
 class SlideDeckAI:
-    """
-    The main class for generating slide decks.
-    """
+    """The main class for generating slide decks."""
 
     def __init__(
-            self,
-            model: str,
-            topic: str,
-            api_key: str = None,
-            pdf_path_or_stream=None,
-            pdf_page_range=None,
-            template_idx: int = 0
+        self,
+        model: str,
+        topic: str,
+        api_key: str = None,
+        pdf_path_or_stream=None,
+        pdf_page_range=None,
+        template_idx: int = 0,
     ):
-        """
-        Initialize the SlideDeckAI object.
+        """Initialize the SlideDeckAI object.
 
         Args:
             model: The name of the LLM model to use.
@@ -100,8 +94,7 @@ class SlideDeckAI:
         """
         if model not in GlobalConfig.VALID_MODELS:
             raise ValueError(
-                f'Invalid model name: {model}.'
-                f' Must be one of: {", ".join(VALID_MODEL_NAMES)}.'
+                f'Invalid model name: {model}. Must be one of: {", ".join(VALID_MODEL_NAMES)}.'
             )
 
         self.model: str = model
@@ -117,15 +110,13 @@ class SlideDeckAI:
         logger.info('Using model: %s', model)
 
     def _initialize_llm(self):
-        """
-        Initialize and return an LLM instance with the current configuration.
+        """Initialize and return an LLM instance with the current configuration.
 
         Returns:
             Configured LLM instance.
         """
         provider, llm_name = llm_helper.get_provider_model(
-            self.model,
-            use_ollama=RUN_IN_OFFLINE_MODE
+            self.model, use_ollama=RUN_IN_OFFLINE_MODE
         )
 
         return llm_helper.get_litellm_llm(
@@ -136,8 +127,7 @@ class SlideDeckAI:
         )
 
     def _get_prompt_template(self, is_refinement: bool) -> str:
-        """
-        Return a prompt template.
+        """Return a prompt template.
 
         Args:
             is_refinement: Whether this is the initial or refinement prompt.
@@ -146,16 +136,15 @@ class SlideDeckAI:
             The prompt template as f-string.
         """
         if is_refinement:
-            with open(GlobalConfig.REFINEMENT_PROMPT_TEMPLATE, 'r', encoding='utf-8') as in_file:
+            with open(GlobalConfig.REFINEMENT_PROMPT_TEMPLATE, encoding='utf-8') as in_file:
                 template = in_file.read()
         else:
-            with open(GlobalConfig.INITIAL_PROMPT_TEMPLATE, 'r', encoding='utf-8') as in_file:
+            with open(GlobalConfig.INITIAL_PROMPT_TEMPLATE, encoding='utf-8') as in_file:
                 template = in_file.read()
         return template
 
     def generate(self, progress_callback=None):
-        """
-        Generate the initial slide deck.
+        """Generate the initial slide deck.
 
         Args:
             progress_callback: Optional callback function to report progress.
@@ -170,8 +159,7 @@ class SlideDeckAI:
         self.chat_history.add_user_message(self.topic)
         prompt_template = self._get_prompt_template(is_refinement=False)
         formatted_template = prompt_template.format(
-            question=self.topic,
-            additional_info=additional_info
+            question=self.topic, additional_info=additional_info
         )
 
         llm = self._initialize_llm()
@@ -183,8 +171,7 @@ class SlideDeckAI:
         return self._generate_slide_deck(self.last_response)
 
     def revise(self, instructions: str, template_idx: int | None = None, progress_callback=None):
-        """
-        Revise the slide deck with new instructions.
+        """Revise the slide deck with new instructions.
 
         Args:
             instructions: The instructions for revising the slide deck.
@@ -212,7 +199,8 @@ class SlideDeckAI:
 
         list_of_msgs = [
             f'{idx + 1}. {msg.content}'
-            for idx, msg in enumerate(self.chat_history.messages) if msg.role == 'user'
+            for idx, msg in enumerate(self.chat_history.messages)
+            if msg.role == 'user'
         ]
 
         additional_info = ''
@@ -233,9 +221,8 @@ class SlideDeckAI:
 
         return self._generate_slide_deck(self.last_response)
 
-    def _generate_slide_deck(self, json_str: str) -> Union[pathlib.Path, None]:
-        """
-        Create a slide deck and return the file path.
+    def _generate_slide_deck(self, json_str: str) -> pathlib.Path | None:
+        """Create a slide deck and return the file path.
 
         Args:
             json_str: The content in valid JSON format.
@@ -261,7 +248,7 @@ class SlideDeckAI:
             pptx_helper.generate_powerpoint_presentation(
                 parsed_data,
                 slides_template=VALID_TEMPLATE_NAMES[self.template_idx],
-                output_file_path=path
+                output_file_path=path,
             )
         except Exception as ex:
             logger.error('Caught a generic exception: %s', str(ex))
@@ -270,8 +257,7 @@ class SlideDeckAI:
         return path
 
     def set_model(self, model_name: str, api_key: str | None = None):
-        """
-        Set the LLM model (and API key) to use.
+        """Set the LLM model (and API key) to use.
 
         Args:
             model_name: The name of the model to use.
@@ -282,8 +268,7 @@ class SlideDeckAI:
         """
         if model_name not in GlobalConfig.VALID_MODELS:
             raise ValueError(
-                f'Invalid model name: {model_name}.'
-                f' Must be one of: {", ".join(VALID_MODEL_NAMES)}.'
+                f'Invalid model name: {model_name}. Must be one of: {", ".join(VALID_MODEL_NAMES)}.'
             )
         self.model = model_name
         if api_key:
@@ -291,8 +276,7 @@ class SlideDeckAI:
         logger.debug('Model set to: %s', model_name)
 
     def set_template(self, idx):
-        """
-        Set the PowerPoint template to use.
+        """Set the PowerPoint template to use.
 
         Args:
             idx: The index of the template to use.
@@ -301,9 +285,7 @@ class SlideDeckAI:
         self.template_idx = idx if 0 <= idx < num_templates else 0
 
     def reset(self):
-        """
-        Reset the chat history and internal state.
-        """
+        """Reset the chat history and internal state."""
         self.chat_history = ChatMessageHistory()
         self.last_response = None
         self.template_idx = 0
