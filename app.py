@@ -100,8 +100,8 @@ def are_all_inputs_valid(
     provider: str,
     selected_model: str,
     user_key: str,
-    azure_deployment_url: str = '',
-    azure_endpoint_name: str = '',
+    azure_endpoint_url: str = '',
+    azure_deployment_name: str = '',
     azure_api_version: str = '',
 ) -> bool:
     """Validate user input and LLM selection.
@@ -111,8 +111,8 @@ def are_all_inputs_valid(
         provider: The LLM provider.
         selected_model: Name of the model.
         user_key: User-provided API key.
-        azure_deployment_url: Azure OpenAI deployment URL.
-        azure_endpoint_name: Azure OpenAI model endpoint.
+        azure_endpoint_url: Azure OpenAI endpoint URL.
+        azure_deployment_name: Azure OpenAI deployment name.
         azure_api_version: Azure OpenAI API version.
 
     Returns:
@@ -135,8 +135,8 @@ def are_all_inputs_valid(
         provider,
         selected_model,
         user_key,
-        azure_endpoint_name,
-        azure_deployment_url,
+        azure_endpoint_url,
+        azure_deployment_name,
         azure_api_version,
     ):
         handle_error(
@@ -277,15 +277,6 @@ with st.sidebar:
             disabled=bool(default_api_key),
         )
 
-        # If a model was updated in the sidebar, make sure to update it in the SlideDeckAI instance
-        if SLIDE_GENERATOR in st.session_state and llm_provider_to_use:
-            try:
-                st.session_state[SLIDE_GENERATOR].set_model(llm_provider_to_use, api_key_token)
-            except Exception as e:
-                logger.error('Failed to update model on existing SlideDeckAI: %s', e)
-                # If updating fails, drop the stored instance so a new one is created
-                st.session_state.pop(SLIDE_GENERATOR, None)
-
         # Additional configs for Azure OpenAI
         with st.expander('**Azure OpenAI-specific configurations**'):
             azure_endpoint = st.text_input(
@@ -306,6 +297,21 @@ with st.sidebar:
                 ),
                 value='2024-05-01-preview',
             )
+
+        # If a model was updated in the sidebar, make sure to update it in the SlideDeckAI instance
+        if SLIDE_GENERATOR in st.session_state and llm_provider_to_use:
+            try:
+                st.session_state[SLIDE_GENERATOR].set_model(
+                    llm_provider_to_use,
+                    api_key=api_key_token,
+                    azure_endpoint_url=azure_endpoint,
+                    azure_deployment_name=azure_deployment,
+                    azure_api_version=api_version,
+                )
+            except Exception as e:
+                logger.error('Failed to update model on existing SlideDeckAI: %s', e)
+                # If updating fails, drop the stored instance so a new one is created
+                st.session_state.pop(SLIDE_GENERATOR, None)
 
     # Make slider with initial values
     page_range_slider = st.slider(
@@ -419,6 +425,9 @@ def set_up_chat_ui():
                     st.session_state.get('start_page'),
                     st.session_state.get('end_page'),
                 ),
+                azure_endpoint_url=azure_endpoint,
+                azure_deployment_name=azure_deployment,
+                azure_api_version=api_version,
             )
             st.session_state[SLIDE_GENERATOR] = slide_generator
 

@@ -78,6 +78,9 @@ class SlideDeckAI:
         pdf_path_or_stream=None,
         pdf_page_range=None,
         template_idx: int = 0,
+        azure_endpoint_url: str = '',
+        azure_deployment_name: str = '',
+        azure_api_version: str = '',
     ):
         """Initialize the SlideDeckAI object.
 
@@ -88,6 +91,9 @@ class SlideDeckAI:
             pdf_path_or_stream: The path to a PDF file or a file-like object.
             pdf_page_range: A tuple representing the page range to use from the PDF file.
             template_idx: The index of the PowerPoint template to use.
+            azure_endpoint_url: Azure OpenAI endpoint URL (required when using Azure provider).
+            azure_deployment_name: Azure OpenAI deployment name (required when using Azure provider).
+            azure_api_version: Azure OpenAI API version (required when using Azure provider).
 
         Raises:
             ValueError: If the model name is not in VALID_MODELS.
@@ -105,6 +111,9 @@ class SlideDeckAI:
         # Validate template_idx is within valid range
         num_templates = len(GlobalConfig.PPTX_TEMPLATE_FILES)
         self.template_idx: int = template_idx if 0 <= template_idx < num_templates else 0
+        self.azure_endpoint_url: str = azure_endpoint_url
+        self.azure_deployment_name: str = azure_deployment_name
+        self.azure_api_version: str = azure_api_version
         self.chat_history = ChatMessageHistory()
         self.last_response = None
         logger.info('Using model: %s', model)
@@ -124,6 +133,9 @@ class SlideDeckAI:
             model=llm_name,
             max_new_tokens=gcfg.get_max_output_tokens(self.model),
             api_key=self.api_key,
+            azure_endpoint_url=self.azure_endpoint_url,
+            azure_deployment_name=self.azure_deployment_name,
+            azure_api_version=self.azure_api_version,
         )
 
     def _get_prompt_template(self, is_refinement: bool) -> str:
@@ -256,12 +268,22 @@ class SlideDeckAI:
 
         return path
 
-    def set_model(self, model_name: str, api_key: str | None = None):
-        """Set the LLM model (and API key) to use.
+    def set_model(
+        self,
+        model_name: str,
+        api_key: str | None = None,
+        azure_endpoint_url: str | None = None,
+        azure_deployment_name: str | None = None,
+        azure_api_version: str | None = None,
+    ):
+        """Set the LLM model (and optionally API key / Azure credentials) to use.
 
         Args:
             model_name: The name of the model to use.
             api_key: The API key for the LLM provider.
+            azure_endpoint_url: Azure OpenAI endpoint URL.
+            azure_deployment_name: Azure OpenAI deployment name.
+            azure_api_version: Azure OpenAI API version.
 
         Raises:
             ValueError: If the model name is not in VALID_MODELS.
@@ -271,8 +293,14 @@ class SlideDeckAI:
                 f'Invalid model name: {model_name}. Must be one of: {", ".join(VALID_MODEL_NAMES)}.'
             )
         self.model = model_name
-        if api_key:
+        if api_key is not None:
             self.api_key = api_key
+        if azure_endpoint_url is not None:
+            self.azure_endpoint_url = azure_endpoint_url
+        if azure_deployment_name is not None:
+            self.azure_deployment_name = azure_deployment_name
+        if azure_api_version is not None:
+            self.azure_api_version = azure_api_version
         logger.debug('Model set to: %s', model_name)
 
     def set_template(self, idx):

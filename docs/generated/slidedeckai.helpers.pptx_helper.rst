@@ -22,6 +22,8 @@
    
    get_slide_placeholders
    
+   print_slide_layouts
+   
    remove_slide_number_from_heading
    
 
