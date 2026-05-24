@@ -259,3 +259,60 @@ def test_stream_litellm_completion_message_format(mock_litellm):
 
     assert result == ['Alternative format']
     mock_litellm.completion.assert_called_once()
+
+
+def test_stream_litellm_completion_azure_missing_deployment():
+    """Test that stream_litellm_completion raises ValueError when Azure deployment name is empty.
+
+    This is the precise condition that caused the runtime error when Azure OpenAI was selected
+    but credentials were not propagated through SlideDeckAI._initialize_llm().
+    """
+    messages = [{'role': 'user', 'content': 'Test'}]
+    with pytest.raises(ValueError, match='Azure deployment name is required'):
+        list(
+            stream_litellm_completion(
+                provider=GlobalConfig.PROVIDER_AZURE_OPENAI,
+                model='gpt-4',
+                messages=messages,
+                max_tokens=100,
+                api_key='valid-key-12345',
+                azure_endpoint_url='https://test.openai.azure.com/',
+                azure_deployment_name='',  # Empty — the missing credential
+                azure_api_version='2024-05-01-preview',
+            )
+        )
+
+
+@patch('slidedeckai.helpers.llm_helper.stream_litellm_completion')
+def test_get_litellm_llm_azure_passes_credentials(mock_stream):
+    """Test that get_litellm_llm forwards Azure credentials to stream_litellm_completion.
+
+    Regression test: SlideDeckAI._initialize_llm() previously called get_litellm_llm()
+    without Azure params, so LiteLLMWrapper was created with empty strings and the
+    deployment-name check in stream_litellm_completion raised a ValueError at call time.
+    """
+    mock_stream.return_value = iter(['Azure response'])
+
+    llm = get_litellm_llm(
+        provider=GlobalConfig.PROVIDER_AZURE_OPENAI,
+        model='gpt-4',
+        max_new_tokens=100,
+        api_key='valid-key-12345',
+        azure_endpoint_url='https://test.openai.azure.com/',
+        azure_deployment_name='my-deployment',
+        azure_api_version='2024-05-01-preview',
+    )
+
+    result = list(llm.stream('Hello'))
+    assert result == ['Azure response']
+
+    mock_stream.assert_called_once_with(
+        provider=GlobalConfig.PROVIDER_AZURE_OPENAI,
+        model='gpt-4',
+        messages=[{'role': 'user', 'content': 'Hello'}],
+        max_tokens=100,
+        api_key='valid-key-12345',
+        azure_endpoint_url='https://test.openai.azure.com/',
+        azure_deployment_name='my-deployment',
+        azure_api_version='2024-05-01-preview',
+    )

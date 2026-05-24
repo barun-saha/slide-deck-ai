@@ -18,6 +18,8 @@ from .test_utils import (
 with patch('transformers.BertTokenizer', patch_bert_tokenizer()):
     from slidedeckai.core import SlideDeckAI, _process_llm_chunk, _stream_llm_response
 
+from slidedeckai.global_config import GlobalConfig
+
 
 @pytest.fixture
 def mock_env():
@@ -312,3 +314,110 @@ def test_topic_reset(slide_deck_ai):
     """Test that topic is retained after reset."""
     slide_deck_ai.reset()
     assert slide_deck_ai.topic == ''
+
+
+def test_slide_deck_ai_init_azure_credentials():
+    """Test that SlideDeckAI stores Azure credentials provided at init time.
+
+    Regression test: previously, SlideDeckAI had no Azure params, so credentials
+    collected in the UI sidebar were silently dropped and never reached LiteLLM.
+    """
+    sda = SlideDeckAI(
+        model='[az]azure/open-ai',
+        topic='AI',
+        api_key='valid-key-12345',
+        azure_endpoint_url='https://test.openai.azure.com/',
+        azure_deployment_name='my-deployment',
+        azure_api_version='2024-05-01-preview',
+    )
+    assert sda.azure_endpoint_url == 'https://test.openai.azure.com/'
+    assert sda.azure_deployment_name == 'my-deployment'
+    assert sda.azure_api_version == '2024-05-01-preview'
+
+
+@mock.patch('slidedeckai.core.llm_helper.get_provider_model')
+@mock.patch('slidedeckai.core.llm_helper.get_litellm_llm')
+def test_initialize_llm_azure_passes_credentials(mock_get_llm, mock_get_provider):
+    """Test that _initialize_llm() forwards Azure credentials to get_litellm_llm().
+
+    This is the core regression test: without the fix, _initialize_llm() called
+    get_litellm_llm() without azure_* params, causing a ValueError at stream time.
+    """
+    mock_get_provider.return_value = (GlobalConfig.PROVIDER_AZURE_OPENAI, 'azure/open-ai')
+    mock_get_llm.return_value = mock.Mock()
+
+    sda = SlideDeckAI(
+        model='[az]azure/open-ai',
+        topic='AI',
+        api_key='valid-key-12345',
+        azure_endpoint_url='https://test.openai.azure.com/',
+        azure_deployment_name='my-deployment',
+        azure_api_version='2024-05-01-preview',
+    )
+    sda._initialize_llm()
+
+    mock_get_llm.assert_called_once_with(
+        provider=GlobalConfig.PROVIDER_AZURE_OPENAI,
+        model='azure/open-ai',
+        max_new_tokens=mock.ANY,
+        api_key='valid-key-12345',
+        azure_endpoint_url='https://test.openai.azure.com/',
+        azure_deployment_name='my-deployment',
+        azure_api_version='2024-05-01-preview',
+    )
+
+
+@mock.patch.dict(
+    'slidedeckai.core.GlobalConfig.VALID_MODELS',
+    {
+        '[az]azure/open-ai': {'description': 'azure', 'max_new_tokens': 8192, 'paid': True},
+    },
+)
+def test_set_model_updates_azure_credentials():
+    """Test that set_model() updates Azure credentials when provided."""
+    sda = SlideDeckAI(
+        model='[az]azure/open-ai',
+        topic='AI',
+        api_key='old-key-12345',
+        azure_endpoint_url='https://old.openai.azure.com/',
+        azure_deployment_name='old-deployment',
+        azure_api_version='2024-02-01',
+    )
+
+    sda.set_model(
+        '[az]azure/open-ai',
+        api_key='new-key-12345',
+        azure_endpoint_url='https://new.openai.azure.com/',
+        azure_deployment_name='new-deployment',
+        azure_api_version='2024-05-01-preview',
+    )
+
+    assert sda.api_key == 'new-key-12345'
+    assert sda.azure_endpoint_url == 'https://new.openai.azure.com/'
+    assert sda.azure_deployment_name == 'new-deployment'
+    assert sda.azure_api_version == '2024-05-01-preview'
+
+
+@mock.patch.dict(
+    'slidedeckai.core.GlobalConfig.VALID_MODELS',
+    {
+        '[az]azure/open-ai': {'description': 'azure', 'max_new_tokens': 8192, 'paid': True},
+    },
+)
+def test_set_model_preserves_azure_credentials_when_not_provided():
+    """Test that set_model() keeps existing Azure credentials when None is passed."""
+    sda = SlideDeckAI(
+        model='[az]azure/open-ai',
+        topic='AI',
+        api_key='valid-key-12345',
+        azure_endpoint_url='https://test.openai.azure.com/',
+        azure_deployment_name='my-deployment',
+        azure_api_version='2024-05-01-preview',
+    )
+
+    # Call set_model without Azure params — existing values must be preserved
+    sda.set_model('[az]azure/open-ai')
+
+    assert sda.azure_endpoint_url == 'https://test.openai.azure.com/'
+    assert sda.azure_deployment_name == 'my-deployment'
+    assert sda.azure_api_version == '2024-05-01-preview'
