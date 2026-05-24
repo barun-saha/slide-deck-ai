@@ -1,12 +1,10 @@
-"""
-Utility functions to help with text processing.
-"""
+"""Utility functions to help with text processing."""
+
 import json_repair as jr
 
 
 def is_valid_prompt(prompt: str) -> bool:
-    """
-    Verify whether user input satisfies the concerned constraints.
+    """Verify whether user input satisfies the concerned constraints.
 
     Args:
         prompt: The user input text.
@@ -21,8 +19,7 @@ def is_valid_prompt(prompt: str) -> bool:
 
 
 def get_clean_json(json_str: str) -> str:
-    """
-    Attempt to clean a JSON response string from the LLM by removing ```json at the beginning and
+    """Attempt to clean a JSON response string from the LLM by removing ```json at the beginning and
     trailing ``` and any text beyond that.
     CAUTION: May not be always accurate.
 
@@ -56,8 +53,7 @@ def get_clean_json(json_str: str) -> str:
 
 
 def fix_malformed_json(json_str: str) -> str:
-    """
-    Try and fix the syntax error(s) in a JSON string.
+    """Try and fix the syntax error(s) in a JSON string.
 
     Args:
         json_str: The input JSON string.
@@ -69,19 +65,19 @@ def fix_malformed_json(json_str: str) -> str:
 
 
 if __name__ == '__main__':
-    JSON1 = '''{
+    JSON1 = """{
     "key": "value"
     }
-    '''
-    JSON2 = '''["Reason": "Regular updates help protect against known vulnerabilities."]'''
-    JSON3 = '''["Reason" Regular updates help protect against known vulnerabilities."]'''
-    JSON4 = '''
+    """
+    JSON2 = """["Reason": "Regular updates help protect against known vulnerabilities."]"""
+    JSON3 = """["Reason" Regular updates help protect against known vulnerabilities."]"""
+    JSON4 = """
     {"bullet_points": [
         ">> Write without stopping or editing",
         >> Set daily writing goals and stick to them,
         ">> Allow yourself to make mistakes"
     ],}
-    '''
+    """
 
     print(fix_malformed_json(JSON1))
     print(fix_malformed_json(JSON2))

@@ -1,6 +1,5 @@
-"""
-Unit tests text helper.
-"""
+"""Unit tests text helper."""
+
 import importlib
 
 # Now import the module under test
@@ -47,8 +46,7 @@ def test_get_clean_json_no_fences() -> None:
 
 
 def test_get_clean_json_irrelevant_fence() -> None:
-    """If fences are present but not enclosing JSON the original should be preserved.
-    """
+    """If fences are present but not enclosing JSON the original should be preserved."""
     inp = 'some text ```not json``` more text'
     out = text_helper.get_clean_json(inp)
     assert out == inp

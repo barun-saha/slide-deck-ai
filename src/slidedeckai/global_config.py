@@ -1,14 +1,12 @@
-"""
-A set of configurations used by the app.
-"""
+"""A set of configurations used by the app."""
+
 import logging
 import os
 import re
+from dataclasses import dataclass
 from pathlib import Path
 
-from dataclasses import dataclass
 from dotenv import load_dotenv
-
 
 load_dotenv()
 
@@ -17,9 +15,8 @@ _SRC_DIR = Path(__file__).resolve().parent
 
 @dataclass(frozen=True)
 class GlobalConfig:
-    """
-    A data class holding the configurations.
-    """
+    """A data class holding the configurations."""
+
     PROVIDER_ANTHROPIC = 'an'
     PROVIDER_AZURE_OPENAI = 'az'
     PROVIDER_COHERE = 'co'
@@ -149,7 +146,7 @@ class GlobalConfig:
             'description': 'faster, shorter',
             'max_new_tokens': 4096,
             'paid': True,
-        }
+        },
     }
     LLM_PROVIDER_HELP = (
         'LLM provider codes:\n\n'
@@ -185,19 +182,19 @@ class GlobalConfig:
     PPTX_TEMPLATE_FILES = {
         'Basic': {
             'file': _SRC_DIR / 'pptx_templates/Blank.pptx',
-            'caption': 'A good start (Uses [photos](https://unsplash.com/photos/AFZ-qBPEceA) by [cetteup](https://unsplash.com/@cetteup?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash) on [Unsplash](https://unsplash.com/photos/a-foggy-forest-filled-with-lots-of-trees-d3ci37Gcgxg?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)) 🟧'
+            'caption': 'A good start (Uses [photos](https://unsplash.com/photos/AFZ-qBPEceA) by [cetteup](https://unsplash.com/@cetteup?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash) on [Unsplash](https://unsplash.com/photos/a-foggy-forest-filled-with-lots-of-trees-d3ci37Gcgxg?utm_content=creditCopyText&utm_medium=referral&utm_source=unsplash)) 🟧',
         },
         'Ion Boardroom': {
             'file': _SRC_DIR / 'pptx_templates/Ion_Boardroom.pptx',
-            'caption': 'Make some bold decisions 🟥'
+            'caption': 'Make some bold decisions 🟥',
         },
         'Minimalist Sales Pitch': {
             'file': _SRC_DIR / 'pptx_templates/Minimalist_sales_pitch.pptx',
-            'caption': 'In high contrast ⬛'
+            'caption': 'In high contrast ⬛',
         },
         'Urban Monochrome': {
             'file': _SRC_DIR / 'pptx_templates/Urban_monochrome.pptx',
-            'caption': 'Marvel in a monochrome dream ⬜'
+            'caption': 'Marvel in a monochrome dream ⬜',
         },
     }
 
@@ -210,7 +207,7 @@ class GlobalConfig:
         '- Can you add a slide on GPUs?'
         '\n\n'
         ' You can also ask it to refine any particular slide, e.g.:\n'
-        '- Make the slide with title \'Examples of AI\' a bit more descriptive.'
+        "- Make the slide with title 'Examples of AI' a bit more descriptive."
         '\n\n'
         'Finally, click on the download button at the bottom to download the slide deck.'
         ' See this [demo video](https://youtu.be/QvAKzNKtk9k) for a brief walkthrough.\n\n'
@@ -261,7 +258,7 @@ LOGGERS_TO_SUPPRESS = [
 logging.basicConfig(
     level=GlobalConfig.LOG_LEVEL,
     format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
+    datefmt='%Y-%m-%d %H:%M:%S',
 )
 
 for _lg in LOGGERS_TO_SUPPRESS:
@@ -276,13 +273,11 @@ if hasattr(logging, 'captureWarnings'):
 
 
 def get_max_output_tokens(llm_name: str) -> int:
-    """
-    Get the max output tokens value configured for an LLM. Return a default value if not configured.
+    """Get the max output tokens value configured for an LLM. Return a default value if not configured.
 
     :param llm_name: The name of the LLM.
     :return: Max output tokens or a default count.
     """
-
     try:
         return GlobalConfig.VALID_MODELS[llm_name]['max_new_tokens']
     except KeyError:

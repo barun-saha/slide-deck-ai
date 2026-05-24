@@ -1,10 +1,9 @@
-"""
-Unit tests for the CLI of SlideDeck AI.
-"""
+"""Unit tests for the CLI of SlideDeck AI."""
+
 import argparse
 import sys
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -13,13 +12,13 @@ from .test_utils import patch_bert_tokenizer
 
 with patch('transformers.BertTokenizer', patch_bert_tokenizer()):
     from slidedeckai.cli import (
-        group_models_by_provider,
-        format_models_as_bullets,
         CustomArgumentParser,
         CustomHelpFormatter,
-        format_models_list,
         format_model_help,
-        main
+        format_models_as_bullets,
+        format_models_list,
+        group_models_by_provider,
+        main,
     )
     from slidedeckai.global_config import GlobalConfig
 
@@ -77,17 +76,13 @@ def test_custom_help_formatter_comprehensive():
         option_strings=['--model'],
         dest='model',
         nargs=None,
-        choices=GlobalConfig.VALID_MODELS.keys()
+        choices=GlobalConfig.VALID_MODELS.keys(),
     )
     result = formatter._format_action_invocation(action)
     assert result == '--model MODEL'
 
     # Test non-model argument
-    other_action = argparse.Action(
-        option_strings=['--topic'],
-        dest='topic',
-        nargs=None
-    )
+    other_action = argparse.Action(option_strings=['--topic'], dest='topic', nargs=None)
     other_result = formatter._format_action_invocation(other_action)
     assert 'MODEL' not in other_result
 
@@ -192,8 +187,10 @@ def test_main_generate_command(mock_move, mock_slidedeckai):
     test_args = [
         'script.py',
         'generate',
-        '--model', next(iter(GlobalConfig.VALID_MODELS.keys())),
-        '--topic', 'Test Topic'
+        '--model',
+        next(iter(GlobalConfig.VALID_MODELS.keys())),
+        '--topic',
+        'Test Topic',
     ]
 
     with patch.object(sys, 'argv', test_args):
@@ -217,11 +214,16 @@ def test_main_generate_with_all_options(mock_move, mock_slidedeckai):
     test_args = [
         'script.py',
         'generate',
-        '--model', next(iter(GlobalConfig.VALID_MODELS.keys())),
-        '--topic', 'Test Topic',
-        '--api-key', 'test-key',
-        '--template-id', '1',
-        '--output-path', 'output.pptx'
+        '--model',
+        next(iter(GlobalConfig.VALID_MODELS.keys())),
+        '--topic',
+        'Test Topic',
+        '--api-key',
+        'test-key',
+        '--template-id',
+        '1',
+        '--output-path',
+        'output.pptx',
     ]
 
     with patch.object(sys, 'argv', test_args):
@@ -232,7 +234,7 @@ def test_main_generate_with_all_options(mock_move, mock_slidedeckai):
         model=next(iter(GlobalConfig.VALID_MODELS.keys())),
         topic='Test Topic',
         api_key='test-key',
-        template_idx=1
+        template_idx=1,
     )
     mock_instance.generate.assert_called_once_with()
 
@@ -279,9 +281,12 @@ def test_main_generate_invalid_template_id(mock_slidedeckai):
     test_args = [
         'script.py',
         'generate',
-        '--model', next(iter(GlobalConfig.VALID_MODELS.keys())),
-        '--topic', 'Test Topic',
-        '--template-id', '-1'  # Invalid template ID
+        '--model',
+        next(iter(GlobalConfig.VALID_MODELS.keys())),
+        '--topic',
+        'Test Topic',
+        '--template-id',
+        '-1',  # Invalid template ID
     ]
 
     with patch.object(sys, 'argv', test_args):
@@ -292,6 +297,6 @@ def test_main_generate_invalid_template_id(mock_slidedeckai):
         model=next(iter(GlobalConfig.VALID_MODELS.keys())),
         topic='Test Topic',
         api_key=None,
-        template_idx=-1
+        template_idx=-1,
     )
     mock_instance.generate.assert_called_once_with()

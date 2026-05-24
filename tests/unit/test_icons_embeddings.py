@@ -1,6 +1,5 @@
-"""
-Unit tests for the icons embeddings module.
-"""
+"""Unit tests for the icons embeddings module."""
+
 import importlib
 import sys
 from pathlib import Path
@@ -11,8 +10,7 @@ import numpy as np
 
 
 def _reload_module_with_dummies(monkeypatch: Any, emb_dim: int = 4):
-    """
-    Reload the icons_embeddings module after monkeypatching the
+    """Reload the icons_embeddings module after monkeypatching the
     Transformers constructors to return lightweight dummy objects.
 
     This prevents network/download or heavy model initialization during
@@ -26,16 +24,17 @@ def _reload_module_with_dummies(monkeypatch: Any, emb_dim: int = 4):
     Returns:
         The reloaded module object.
     """
+
     class DummyTokenizer:
-        def __call__(self, texts, return_tensors=None, padding=None,
-                     max_length=None, truncation=None):
+        def __call__(
+            self, texts, return_tensors=None, padding=None, max_length=None, truncation=None
+        ):
             if isinstance(texts, str):
                 texts_list = [texts]
             else:
                 texts_list = list(texts)
 
             return {'texts': texts_list}
-
 
     class DummyTensor:
         def __init__(self, arr: np.ndarray) -> None:
@@ -50,7 +49,6 @@ def _reload_module_with_dummies(monkeypatch: Any, emb_dim: int = 4):
 
         def numpy(self) -> np.ndarray:
             return self.arr
-
 
     class DummyModel:
         def __call__(self, **inputs: Any) -> SimpleNamespace:
@@ -79,8 +77,7 @@ def _reload_module_with_dummies(monkeypatch: Any, emb_dim: int = 4):
 
 
 def test_get_icons_list(tmp_path: Path, monkeypatch: Any) -> None:
-    """
-    get_icons_list should return the stems of PNG files in the
+    """get_icons_list should return the stems of PNG files in the
     configured icons directory.
     """
     mod = _reload_module_with_dummies(monkeypatch)
@@ -99,8 +96,7 @@ def test_get_icons_list(tmp_path: Path, monkeypatch: Any) -> None:
 
 
 def test_get_embeddings_single_and_list(monkeypatch: Any) -> None:
-    """
-    get_embeddings must return numpy arrays with the expected shapes for
+    """get_embeddings must return numpy arrays with the expected shapes for
     single string and list inputs.
     """
     emb_dim = 5
@@ -123,8 +119,7 @@ def test_get_embeddings_single_and_list(monkeypatch: Any) -> None:
 
 
 def test_save_and_load_embeddings(tmp_path: Path, monkeypatch: Any) -> None:
-    """
-    save_icons_embeddings should write embeddings and file names to the
+    """save_icons_embeddings should write embeddings and file names to the
     configured paths and load_saved_embeddings should read them back.
     """
     emb_dim = 6
@@ -155,8 +150,7 @@ def test_save_and_load_embeddings(tmp_path: Path, monkeypatch: Any) -> None:
 
 
 def test_find_icons(monkeypatch: Any, tmp_path: Path) -> None:
-    """
-    find_icons should map keywords to the most similar icon filenames
+    """find_icons should map keywords to the most similar icon filenames
     based on cosine similarity against pre-saved embeddings.
     """
     # Reload module with dummy model but we will monkeypatch get_embeddings
@@ -192,8 +186,7 @@ def test_find_icons(monkeypatch: Any, tmp_path: Path) -> None:
 
 
 def test_main_calls_and_prints(monkeypatch: Any, capsys: Any) -> None:
-    """
-    main should call save_icons_embeddings and find_icons and print the
+    """Main should call save_icons_embeddings and find_icons and print the
     zipped results. We monkeypatch the heavy functions to keep it fast.
     """
     mod = _reload_module_with_dummies(monkeypatch)
@@ -202,11 +195,9 @@ def test_main_calls_and_prints(monkeypatch: Any, capsys: Any) -> None:
     def fake_save():
         called['saved'] = True
 
-
     def fake_find(keywords: list[str]) -> list[str]:
         called['found'] = True
         return ['x' for _ in keywords]
-
 
     monkeypatch.setattr(mod, 'save_icons_embeddings', fake_save)
     monkeypatch.setattr(mod, 'find_icons', fake_find)

@@ -1,6 +1,5 @@
-"""
-Unit tests for the file manager module.
-"""
+"""Unit tests for the file manager module."""
+
 import io
 from typing import Any
 
@@ -29,6 +28,7 @@ def _make_fake_pdf_reader(pages_text: list[str]) -> Any:
     implement extract_text(). This lets tests avoid creating real PDF
     binaries and keeps tests deterministic.
     """
+
     def _reader(_fileobj: Any) -> _FakePdf:
         return _FakePdf(pages_text)
 
@@ -40,16 +40,11 @@ def test_get_pdf_contents_single_page(monkeypatch: pytest.MonkeyPatch) -> None:
     page_range end is None.
     """
     fake_texts = ['Page one text']
-    monkeypatch.setattr(
-        file_manager, 'PdfReader', _make_fake_pdf_reader(fake_texts)
-    )
+    monkeypatch.setattr(file_manager, 'PdfReader', _make_fake_pdf_reader(fake_texts))
 
     # When start == end, validate_page_range returns (start, None) — emulate
     # that contract here and exercise get_pdf_contents handling of end=None.
-    result = file_manager.get_pdf_contents(
-        pdf_file=io.BytesIO(b'pdf'),
-        page_range=(1, None)
-    )
+    result = file_manager.get_pdf_contents(pdf_file=io.BytesIO(b'pdf'), page_range=(1, None))
     assert result == 'Page one text'
 
 
@@ -58,16 +53,11 @@ def test_get_pdf_contents_multi_page_range(monkeypatch: pytest.MonkeyPatch) -> N
     provided range.
     """
     fake_texts = ['First', 'Second', 'Third']
-    monkeypatch.setattr(
-        file_manager, 'PdfReader', _make_fake_pdf_reader(fake_texts)
-    )
+    monkeypatch.setattr(file_manager, 'PdfReader', _make_fake_pdf_reader(fake_texts))
 
     # Request pages 1..2 (inclusive). Internally the function iterates from
     # start-1 up to end (exclusive), so passing (1, 2) should return First + Second
-    result = file_manager.get_pdf_contents(
-        pdf_file=io.BytesIO(b'pdf'),
-        page_range=(1, 2)
-    )
+    result = file_manager.get_pdf_contents(pdf_file=io.BytesIO(b'pdf'), page_range=(1, 2))
     assert result == 'FirstSecond'
 
 
@@ -87,14 +77,8 @@ def test_validate_page_range_various(
     return (start, None) when the constrained range is a single page.
     """
     fake_texts = ['A', 'B', 'C']
-    monkeypatch.setattr(
-        file_manager, 'PdfReader', _make_fake_pdf_reader(fake_texts)
-    )
-    result = file_manager.validate_page_range(
-        pdf_file=io.BytesIO(b'pdf'),
-        start=start,
-        end=end
-    )
+    monkeypatch.setattr(file_manager, 'PdfReader', _make_fake_pdf_reader(fake_texts))
+    result = file_manager.validate_page_range(pdf_file=io.BytesIO(b'pdf'), start=start, end=end)
     assert result == expected
 
 
@@ -103,15 +87,9 @@ def test_validate_page_range_two_page_return(monkeypatch: pytest.MonkeyPatch) ->
     should return the clamped (start, end) pair with end not None.
     """
     fake_texts = ['A', 'B', 'C', 'D']
-    monkeypatch.setattr(
-        file_manager, 'PdfReader', _make_fake_pdf_reader(fake_texts)
-    )
+    monkeypatch.setattr(file_manager, 'PdfReader', _make_fake_pdf_reader(fake_texts))
     # start=2 end=3 should be unchanged and returned as (2, 3)
-    result = file_manager.validate_page_range(
-        pdf_file=io.BytesIO(b'pdf'),
-        start=2,
-        end=3
-    )
+    result = file_manager.validate_page_range(pdf_file=io.BytesIO(b'pdf'), start=2, end=3)
     assert result == (2, 3)
 
 
@@ -120,9 +98,7 @@ def test_get_pdf_contents_handles_empty_page_text(monkeypatch: pytest.MonkeyPatc
     them without failing.
     """
     fake_texts = ['', 'Line two', '']
-    monkeypatch.setattr(
-        file_manager, 'PdfReader', _make_fake_pdf_reader(fake_texts)
-    )
+    monkeypatch.setattr(file_manager, 'PdfReader', _make_fake_pdf_reader(fake_texts))
 
-    result = file_manager.get_pdf_contents(pdf_file=io.BytesIO(b"pdf"), page_range=(1, 3))
+    result = file_manager.get_pdf_contents(pdf_file=io.BytesIO(b'pdf'), page_range=(1, 3))
     assert result == 'Line two'

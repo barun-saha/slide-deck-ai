@@ -1,16 +1,17 @@
 """Unit tests for the PPTX helper module."""
-from unittest.mock import Mock, patch, MagicMock
+
+from unittest.mock import MagicMock, Mock, patch
 
 import pptx
 import pytest
 from pptx.enum.text import PP_ALIGN
 from pptx.presentation import Presentation
-from pptx.slide import Slide, Slides, SlideLayout, SlideLayouts
 from pptx.shapes.autoshape import Shape
+from pptx.slide import Slide, SlideLayout, SlideLayouts, Slides
 from pptx.text.text import _Paragraph, _Run
 
-from slidedeckai.helpers import pptx_helper as ph
 from slidedeckai.global_config import GlobalConfig
+from slidedeckai.helpers import pptx_helper as ph
 
 
 @pytest.fixture
@@ -30,7 +31,7 @@ def mock_pptx_presentation() -> Mock:
     mock_placeholder.text_frame.paragraphs = [Mock()]
     mock_placeholder.placeholder_format = Mock()
     mock_placeholder.placeholder_format.idx = 1
-    mock_placeholder.name = "Content Placeholder"
+    mock_placeholder.name = 'Content Placeholder'
     mock_placeholder.left = 123
     mock_placeholder.top = 456
     mock_placeholder.width = 789
@@ -42,7 +43,7 @@ def mock_pptx_presentation() -> Mock:
     mock_shapes.add_picture = Mock(return_value=mock_placeholder)
     mock_shapes.add_textbox = Mock(return_value=mock_placeholder)
     mock_shapes.title = Mock()
-    mock_shapes.title.text = "by Myself and SlideDeck AI :)"
+    mock_shapes.title.text = 'by Myself and SlideDeck AI :)'
     mock_shapes.placeholders = {1: mock_placeholder}
 
     # Configure mock slide
@@ -64,7 +65,7 @@ def mock_slide() -> Mock:
     mock_shape.text_frame.paragraphs[0].runs = []
     mock_shape.placeholder_format = Mock()
     mock_shape.placeholder_format.idx = 1
-    mock_shape.name = "Content Placeholder 1"
+    mock_shape.name = 'Content Placeholder 1'
 
     def mock_add_run():
         mock_run = Mock()
@@ -80,7 +81,7 @@ def mock_slide() -> Mock:
     mock_title.text = ''
     mock_title.placeholder_format = Mock()
     mock_title.placeholder_format.idx = 0
-    mock_title.name = "Title 1"
+    mock_title.name = 'Title 1'
 
     # Setup placeholder shapes
     mock_placeholders = [mock_title]
@@ -90,7 +91,7 @@ def mock_slide() -> Mock:
         placeholder.text_frame.paragraphs = [Mock()]
         placeholder.placeholder_format = Mock()
         placeholder.placeholder_format.idx = i
-        placeholder.name = f"Content Placeholder {i}"
+        placeholder.name = f'Content Placeholder {i}'
         mock_placeholders.append(placeholder)
 
     # Setup shapes collection
@@ -131,7 +132,7 @@ def mock_text_frame() -> Mock:
         return new_para
 
     mock.add_paragraph = Mock(side_effect=mock_add_paragraph)
-    mock.text = ""
+    mock.text = ''
     mock.clear = Mock()
     mock.word_wrap = True
     mock.vertical_anchor = Mock()
@@ -151,7 +152,7 @@ def mock_shape() -> Mock:
     def mock_add_run():
         mock_run = Mock(spec=_Run)
         mock_run.font = Mock()
-        mock_run.text = ""
+        mock_run.text = ''
         mock_para.runs.append(mock_run)
         return mock_run
 
@@ -166,7 +167,7 @@ def mock_shape() -> Mock:
     mock.insert_picture = Mock()
     mock.placeholder_format = Mock()
     mock.placeholder_format.idx = 1
-    mock.name = "Content Placeholder 1"
+    mock.name = 'Content Placeholder 1'
 
     return mock
 
@@ -177,7 +178,7 @@ def test_remove_slide_number_from_heading():
         ('Slide 1: Introduction', 'Introduction'),
         ('SLIDE 12: Test Case', 'Test Case'),
         ('Regular Heading', 'Regular Heading'),
-        ('slide 999: Long Title', 'Long Title')
+        ('slide 999: Long Title', 'Long Title'),
     ]
 
     for input_text, expected in test_cases:
@@ -229,7 +230,7 @@ def test_get_flat_list_of_contents():
         'First level item',
         ['Second level item 1', 'Second level item 2'],
         'Another first level',
-        ['Nested 1', ['Super nested']]
+        ['Nested 1', ['Super nested']],
     ]
 
     expected = [
@@ -238,7 +239,7 @@ def test_get_flat_list_of_contents():
         ('Second level item 2', 1),
         ('Another first level', 0),
         ('Nested 1', 1),
-        ('Super nested', 2)
+        ('Super nested', 2),
     ]
 
     result = ph.get_flat_list_of_contents(test_input, level=0)
@@ -276,8 +277,8 @@ def test_handle_table(mock_pptx_presentation: Mock):
         'heading': 'Test Table',
         'table': {
             'headers': ['Header 1', 'Header 2'],
-            'rows': [['Row 1, Col 1', 'Row 1, Col 2'], ['Row 2, Col 1', 'Row 2, Col 2']]
-        }
+            'rows': [['Row 1, Col 1', 'Row 1, Col 2'], ['Row 2, Col 1', 'Row 2, Col 2']],
+        },
     }
 
     # Setup mock table
@@ -285,8 +286,11 @@ def test_handle_table(mock_pptx_presentation: Mock):
 
     def cell_side_effect(row, col):
         cell_mock = MagicMock()
-        cell_mock.text = slide_json_with_table['table']['headers'][col] if row == 0 else \
-        slide_json_with_table['table']['rows'][row - 1][col]
+        cell_mock.text = (
+            slide_json_with_table['table']['headers'][col]
+            if row == 0
+            else slide_json_with_table['table']['rows'][row - 1][col]
+        )
         return cell_mock
 
     mock_table.cell.side_effect = cell_side_effect
@@ -312,7 +316,7 @@ def test_handle_table(mock_pptx_presentation: Mock):
         presentation=mock_pptx_presentation,
         slide_json=slide_json_with_table,
         slide_width_inch=10,
-        slide_height_inch=7.5
+        slide_height_inch=7.5,
     )
 
     assert result is True
@@ -322,11 +326,12 @@ def test_handle_table(mock_pptx_presentation: Mock):
 
     # Verify add_table was called with the placeholder's dimensions
     mock_slide.shapes.add_table.assert_called_once_with(
-        3, 2,  # len(rows) + 1, len(headers)
+        3,
+        2,  # len(rows) + 1, len(headers)
         mock_content_placeholder.left,
         mock_content_placeholder.top,
         mock_content_placeholder.width,
-        mock_content_placeholder.height
+        mock_content_placeholder.height,
     )
 
     # Verify headers
@@ -342,30 +347,26 @@ def test_handle_table(mock_pptx_presentation: Mock):
 
 def test_handle_table_no_table(mock_pptx_presentation: Mock):
     """Test handling slide with no table data."""
-    slide_json_no_table = {
-        'heading': 'No Table Slide',
-        'bullet_points': ['Point 1']
-    }
+    slide_json_no_table = {'heading': 'No Table Slide', 'bullet_points': ['Point 1']}
 
     result = ph._handle_table(
         presentation=mock_pptx_presentation,
         slide_json=slide_json_no_table,
         slide_width_inch=10,
-        slide_height_inch=7.5
+        slide_height_inch=7.5,
     )
 
     assert result is False
 
 
-@patch('slidedeckai.helpers.pptx_helper.ice.find_icons', return_value=['fallback_icon_1', 'fallback_icon_2'])
+@patch(
+    'slidedeckai.helpers.pptx_helper.ice.find_icons',
+    return_value=['fallback_icon_1', 'fallback_icon_2'],
+)
 @patch('slidedeckai.helpers.pptx_helper.os.path.exists')
 @patch('slidedeckai.helpers.pptx_helper._add_text_at_bottom')
 def test_handle_icons_ideas(
-    mock_add_text,
-    mock_exists,
-    mock_find_icons,
-    mock_pptx_presentation: Mock,
-    mock_shape: Mock
+    mock_add_text, mock_exists, mock_find_icons, mock_pptx_presentation: Mock, mock_shape: Mock
 ):
     """Test handling icons and ideas in slides."""
     slide_json = {
@@ -373,7 +374,7 @@ def test_handle_icons_ideas(
         'bullet_points': [
             '[[icon1]] Text 1',
             '[[icon2]] Text 2',
-        ]
+        ],
     }
     # Mock os.path.exists to return True for the first icon and False for the second
     mock_exists.side_effect = [True, False]
@@ -381,12 +382,15 @@ def test_handle_icons_ideas(
     mock_slide.shapes.add_shape.return_value = mock_shape
     mock_slide.shapes.add_picture.return_value = None  # No need to return a shape
 
-    with patch('slidedeckai.helpers.pptx_helper.random.choice', return_value=pptx.dml.color.RGBColor.from_string('800000')):
+    with patch(
+        'slidedeckai.helpers.pptx_helper.random.choice',
+        return_value=pptx.dml.color.RGBColor.from_string('800000'),
+    ):
         result = ph._handle_icons_ideas(
             presentation=mock_pptx_presentation,
             slide_json=slide_json,
             slide_width_inch=10,
-            slide_height_inch=7.5
+            slide_height_inch=7.5,
         )
 
         assert result is True
@@ -401,14 +405,14 @@ def test_handle_icons_ideas_invalid(mock_pptx_presentation: Mock):
     """Test handling invalid content for icons and ideas layout."""
     slide_json_invalid = {
         'heading': 'Invalid Icons Slide',
-        'bullet_points': ['This is not an icon item']
+        'bullet_points': ['This is not an icon item'],
     }
 
     result = ph._handle_icons_ideas(
         presentation=mock_pptx_presentation,
         slide_json=slide_json_invalid,
         slide_width_inch=10,
-        slide_height_inch=7.5
+        slide_height_inch=7.5,
     )
     assert result is False
 
@@ -425,7 +429,7 @@ def test_generate_powerpoint_presentation(
     mock_handle_double_col,
     mock_handle_table,
     mock_handle_icons,
-    mock_presentation
+    mock_presentation,
 ):
     """Test the main function for generating a PowerPoint presentation."""
     parsed_data = {
@@ -434,7 +438,7 @@ def test_generate_powerpoint_presentation(
             {'heading': 'Slide 1'},
             {'heading': 'Slide 2'},
             {'heading': 'Slide 3'},
-        ]
+        ],
     }
     # Simulate a realistic workflow
     mock_handle_icons.side_effect = [True, False, False]
@@ -450,9 +454,7 @@ def test_generate_powerpoint_presentation(
 
     with patch('slidedeckai.helpers.pptx_helper.pathlib.Path'):
         headers = ph.generate_powerpoint_presentation(
-            parsed_data=parsed_data,
-            slides_template='Basic',
-            output_file_path='dummy.pptx'
+            parsed_data=parsed_data, slides_template='Basic', output_file_path='dummy.pptx'
         )
 
         assert headers == ['Test Presentation']
@@ -476,15 +478,10 @@ def test_generate_powerpoint_presentation(
 @patch('slidedeckai.helpers.pptx_helper._handle_icons_ideas', side_effect=Exception('Test Error'))
 @patch('slidedeckai.helpers.pptx_helper.logger.error')
 def test_generate_powerpoint_presentation_error_handling(
-    mock_logger_error,
-    mock_handle_icons,
-    mock_presentation
+    mock_logger_error, mock_handle_icons, mock_presentation
 ):
     """Test error handling during slide processing."""
-    parsed_data = {
-        'title': 'Error Test',
-        'slides': [{'heading': 'Slide 1'}]
-    }
+    parsed_data = {'title': 'Error Test', 'slides': [{'heading': 'Slide 1'}]}
     mock_pres = MagicMock(spec=Presentation)
     mock_title_slide = MagicMock(spec=Slide)
     mock_thank_you_slide = MagicMock(spec=Slide)
@@ -493,34 +490,35 @@ def test_generate_powerpoint_presentation_error_handling(
 
     ph.generate_powerpoint_presentation(parsed_data, 'Basic', 'dummy.pptx')
     mock_logger_error.assert_called_once()
-    assert "An error occurred while processing a slide" in mock_logger_error.call_args[0][0]
+    assert 'An error occurred while processing a slide' in mock_logger_error.call_args[0][0]
 
 
-def test_handle_double_col_layout(
-    mock_pptx_presentation: Mock,
-    mock_slide: Mock
-):
+def test_handle_double_col_layout(mock_pptx_presentation: Mock, mock_slide: Mock):
     """Test handling double column layout in slides."""
     slide_json = {
         'heading': 'Double Column Slide',
         'bullet_points': [
             {'heading': 'Left Heading', 'bullet_points': ['Left Point 1']},
-            {'heading': 'Right Heading', 'bullet_points': ['Right Point 1']}
-        ]
+            {'heading': 'Right Heading', 'bullet_points': ['Right Point 1']},
+        ],
     }
     mock_pptx_presentation.slides.add_slide.return_value = mock_slide
 
-    with patch('slidedeckai.helpers.pptx_helper._handle_key_message') as mock_handle_key_message, \
-         patch('slidedeckai.helpers.pptx_helper.add_bulleted_items') as mock_add_bulleted_items:
+    with (
+        patch('slidedeckai.helpers.pptx_helper._handle_key_message') as mock_handle_key_message,
+        patch('slidedeckai.helpers.pptx_helper.add_bulleted_items') as mock_add_bulleted_items,
+    ):
         result = ph._handle_double_col_layout(
             presentation=mock_pptx_presentation,
             slide_json=slide_json,
             slide_width_inch=10,
-            slide_height_inch=7.5
+            slide_height_inch=7.5,
         )
 
         assert result is True
-        assert mock_slide.shapes.title.text == ph.remove_slide_number_from_heading(slide_json['heading'])
+        assert mock_slide.shapes.title.text == ph.remove_slide_number_from_heading(
+            slide_json['heading']
+        )
         assert mock_slide.shapes.placeholders[1].text == 'Left Heading'
         assert mock_slide.shapes.placeholders[3].text == 'Right Heading'
         assert mock_add_bulleted_items.call_count == 2
@@ -533,19 +531,22 @@ def test_handle_double_col_layout_invalid(mock_pptx_presentation: Mock):
         'heading': 'Invalid Content',
         'bullet_points': [
             'This is not a dict',
-            {'heading': 'Right Heading', 'bullet_points': ['Right Point 1']}
-        ]
+            {'heading': 'Right Heading', 'bullet_points': ['Right Point 1']},
+        ],
     }
     result = ph._handle_double_col_layout(
         presentation=mock_pptx_presentation,
         slide_json=slide_json_invalid,
         slide_width_inch=10,
-        slide_height_inch=7.5
+        slide_height_inch=7.5,
     )
     assert result is False
 
 
-@patch('slidedeckai.helpers.pptx_helper.ims.get_photo_url_from_api_response', return_value=('http://fake.url/image.jpg', 'http://fake.url/page'))
+@patch(
+    'slidedeckai.helpers.pptx_helper.ims.get_photo_url_from_api_response',
+    return_value=('http://fake.url/image.jpg', 'http://fake.url/page'),
+)
 @patch('slidedeckai.helpers.pptx_helper.ims.search_pexels')
 @patch('slidedeckai.helpers.pptx_helper.ims.get_image_from_url')
 @patch('slidedeckai.helpers.pptx_helper.add_bulleted_items')
@@ -558,19 +559,19 @@ def test_handle_display_image__in_foreground(
     mock_get_url,
     mock_pptx_presentation: Mock,
     mock_slide: Mock,
-    mock_shape: Mock
+    mock_shape: Mock,
 ):
     """Test handling foreground image display in slides."""
     slide_json = {
         'heading': 'Image Slide',
         'bullet_points': ['Point 1'],
-        'img_keywords': 'test image'
+        'img_keywords': 'test image',
     }
     mock_slide.shapes.placeholders = {
         1: mock_shape,
         2: mock_shape,
         'Picture Placeholder 1': mock_shape,
-        'Content Placeholder 2': mock_shape
+        'Content Placeholder 2': mock_shape,
     }
     mock_pptx_presentation.slides.add_slide.return_value = mock_slide
 
@@ -578,7 +579,7 @@ def test_handle_display_image__in_foreground(
         presentation=mock_pptx_presentation,
         slide_json=slide_json,
         slide_width_inch=10,
-        slide_height_inch=7.5
+        slide_height_inch=7.5,
     )
 
     assert result is True
@@ -589,17 +590,10 @@ def test_handle_display_image__in_foreground(
 
 @patch('slidedeckai.helpers.pptx_helper.add_bulleted_items')
 def test_handle_display_image__in_foreground_no_keywords(
-    mock_add_bulleted_items,
-    mock_pptx_presentation: Mock,
-    mock_slide: Mock,
-    mock_shape: Mock
+    mock_add_bulleted_items, mock_pptx_presentation: Mock, mock_slide: Mock, mock_shape: Mock
 ):
     """Test handling foreground image display with no image keywords."""
-    slide_json = {
-        'heading': 'No Image Slide',
-        'bullet_points': ['Point 1'],
-        'img_keywords': ''
-    }
+    slide_json = {'heading': 'No Image Slide', 'bullet_points': ['Point 1'], 'img_keywords': ''}
     mock_slide.shapes.placeholders = {1: mock_shape, 2: mock_shape}
     mock_pptx_presentation.slides.add_slide.return_value = mock_slide
 
@@ -607,17 +601,14 @@ def test_handle_display_image__in_foreground_no_keywords(
         presentation=mock_pptx_presentation,
         slide_json=slide_json,
         slide_width_inch=10,
-        slide_height_inch=7.5
+        slide_height_inch=7.5,
     )
 
     assert result is True
     mock_add_bulleted_items.assert_called_once()
 
 
-def test_handle_display_image__in_background(
-    mock_pptx_presentation: Mock,
-    mock_text_frame: Mock
-):
+def test_handle_display_image__in_background(mock_pptx_presentation: Mock, mock_text_frame: Mock):
     """Test handling background image display in slides."""
     # Setup mocks
     mock_shape = Mock()
@@ -638,20 +629,22 @@ def test_handle_display_image__in_background(
     slide_json = {
         'heading': 'Test Slide',
         'bullet_points': ['Point 1', 'Point 2'],
-        'img_keywords': 'test image'
+        'img_keywords': 'test image',
     }
 
-    with patch(
+    with (
+        patch(
             'slidedeckai.helpers.image_search.get_photo_url_from_api_response',
-              return_value=('http://fake.url/image.jpg', 'http://fake.url/page')
-    ), patch(
-        'slidedeckai.helpers.image_search.search_pexels'
-    ), patch('slidedeckai.helpers.image_search.get_image_from_url'):
+            return_value=('http://fake.url/image.jpg', 'http://fake.url/page'),
+        ),
+        patch('slidedeckai.helpers.image_search.search_pexels'),
+        patch('slidedeckai.helpers.image_search.get_image_from_url'),
+    ):
         result = ph._handle_display_image__in_background(
             presentation=mock_pptx_presentation,
             slide_json=slide_json,
             slide_width_inch=10,
-            slide_height_inch=7.5
+            slide_height_inch=7.5,
         )
 
     assert result is True
@@ -663,11 +656,7 @@ def test_handle_step_by_step_process(mock_pptx_presentation: Mock):
     # Test data for horizontal layout (3-4 steps)
     slide_json = {
         'heading': 'Test Process',
-        'bullet_points': [
-            '>> Step 1',
-            '>> Step 2',
-            '>> Step 3'
-        ]
+        'bullet_points': ['>> Step 1', '>> Step 2', '>> Step 3'],
     }
 
     # Setup mock shape
@@ -695,7 +684,7 @@ def test_handle_step_by_step_process(mock_pptx_presentation: Mock):
         presentation=mock_pptx_presentation,
         slide_json=slide_json,
         slide_width_inch=10,
-        slide_height_inch=7.5
+        slide_height_inch=7.5,
     )
 
     assert result is True
@@ -706,13 +695,7 @@ def test_handle_step_by_step_process_vertical(mock_pptx_presentation: Mock):
     """Test handling vertical step by step process (5-6 steps)."""
     slide_json = {
         'heading': 'Test Process',
-        'bullet_points': [
-            '>> Step 1',
-            '>> Step 2',
-            '>> Step 3',
-            '>> Step 4',
-            '>> Step 5'
-        ]
+        'bullet_points': ['>> Step 1', '>> Step 2', '>> Step 3', '>> Step 4', '>> Step 5'],
     }
 
     mock_shape = Mock(spec=Shape)
@@ -740,7 +723,7 @@ def test_handle_step_by_step_process_vertical(mock_pptx_presentation: Mock):
         presentation=mock_pptx_presentation,
         slide_json=slide_json,
         slide_width_inch=10,
-        slide_height_inch=7.5
+        slide_height_inch=7.5,
     )
 
     assert result is True
@@ -750,13 +733,7 @@ def test_handle_step_by_step_process_vertical(mock_pptx_presentation: Mock):
 def test_handle_step_by_step_process_invalid(mock_pptx_presentation: Mock):
     """Test handling invalid step by step process (too few/many steps)."""
     # Test with too few steps
-    slide_json_few = {
-        'heading': 'Test Process',
-        'bullet_points': [
-            '>> Step 1',
-            '>> Step 2'
-        ]
-    }
+    slide_json_few = {'heading': 'Test Process', 'bullet_points': ['>> Step 1', '>> Step 2']}
 
     # Test with too many steps
     slide_json_many = {
@@ -768,22 +745,22 @@ def test_handle_step_by_step_process_invalid(mock_pptx_presentation: Mock):
             '>> Step 4',
             '>> Step 5',
             '>> Step 6',
-            '>> Step 7'
-        ]
+            '>> Step 7',
+        ],
     }
 
     result_few = ph._handle_step_by_step_process(
         presentation=mock_pptx_presentation,
         slide_json=slide_json_few,
         slide_width_inch=10,
-        slide_height_inch=7.5
+        slide_height_inch=7.5,
     )
 
     result_many = ph._handle_step_by_step_process(
         presentation=mock_pptx_presentation,
         slide_json=slide_json_many,
         slide_width_inch=10,
-        slide_height_inch=7.5
+        slide_height_inch=7.5,
     )
 
     assert not result_few
@@ -793,9 +770,7 @@ def test_handle_step_by_step_process_invalid(mock_pptx_presentation: Mock):
 @patch('slidedeckai.helpers.pptx_helper._handle_display_image__in_foreground', return_value=True)
 @patch('slidedeckai.helpers.pptx_helper.random.random', side_effect=[0.1, 0.7])
 def test_handle_default_display_with_foreground_image(
-    mock_random,
-    mock_handle_foreground,
-    mock_pptx_presentation: Mock
+    mock_random, mock_handle_foreground, mock_pptx_presentation: Mock
 ):
     """Test default display with foreground image."""
     slide_json = {'img_keywords': 'test', 'heading': 'Test', 'bullet_points': []}
@@ -806,9 +781,7 @@ def test_handle_default_display_with_foreground_image(
 @patch('slidedeckai.helpers.pptx_helper._handle_display_image__in_background', return_value=True)
 @patch('slidedeckai.helpers.pptx_helper.random.random', side_effect=[0.1, 0.9])
 def test_handle_default_display_with_background_image(
-    mock_random,
-    mock_handle_background,
-    mock_pptx_presentation: Mock
+    mock_random, mock_handle_background, mock_pptx_presentation: Mock
 ):
     """Test default display with background image."""
     slide_json = {'img_keywords': 'test', 'heading': 'Test', 'bullet_points': []}
@@ -820,11 +793,7 @@ def test_handle_default_display(mock_pptx_presentation: Mock, mock_text_frame: M
     """Test handling default display."""
     slide_json = {
         'heading': 'Test Slide',
-        'bullet_points': [
-            'Point 1',
-            ['Nested Point 1', 'Nested Point 2'],
-            'Point 2'
-        ]
+        'bullet_points': ['Point 1', ['Nested Point 1', 'Nested Point 2'], 'Point 2'],
     }
 
     # Setup mock shape with the text frame
@@ -843,7 +812,7 @@ def test_handle_default_display(mock_pptx_presentation: Mock, mock_text_frame: M
         presentation=mock_pptx_presentation,
         slide_json=slide_json,
         slide_width_inch=10,
-        slide_height_inch=7.5
+        slide_height_inch=7.5,
     )
 
     mock_slide.shapes.title.text = slide_json['heading']
@@ -872,7 +841,7 @@ def test_add_text_at_bottom(mock_slide: Mock):
         slide_width_inch=10,
         slide_height_inch=7.5,
         text='Test footer',
-        hyperlink='http://fake.url'
+        hyperlink='http://fake.url',
     )
     mock_slide.shapes.add_textbox.assert_called_once()
 
@@ -880,10 +849,7 @@ def test_add_text_at_bottom(mock_slide: Mock):
 def test_add_text_at_bottom_no_hyperlink(mock_slide: Mock):
     """Test adding text at the bottom of a slide without a hyperlink."""
     ph._add_text_at_bottom(
-        slide=mock_slide,
-        slide_width_inch=10,
-        slide_height_inch=7.5,
-        text='Test footer no link'
+        slide=mock_slide, slide_width_inch=10, slide_height_inch=7.5, text='Test footer no link'
     )
     mock_slide.shapes.add_textbox.assert_called_once()
 
@@ -894,8 +860,8 @@ def test_handle_double_col_layout_key_error(mock_pptx_presentation: Mock):
         'heading': 'Double Column Slide',
         'bullet_points': [
             {'heading': 'Left', 'bullet_points': ['L1']},
-            {'heading': 'Right', 'bullet_points': ['R1']}
-        ]
+            {'heading': 'Right', 'bullet_points': ['R1']},
+        ],
     }
     mock_slide = MagicMock(spec=Slide)
     mock_slide.shapes.placeholders = {
@@ -906,28 +872,32 @@ def test_handle_double_col_layout_key_error(mock_pptx_presentation: Mock):
     }
     mock_pptx_presentation.slides.add_slide.return_value = mock_slide
 
-    with patch('slidedeckai.helpers.pptx_helper.get_slide_placeholders', return_value=[(10, 'text placeholder'), (11, 'content placeholder'), (12, 'text placeholder'), (13, 'content placeholder')]):
+    with patch(
+        'slidedeckai.helpers.pptx_helper.get_slide_placeholders',
+        return_value=[
+            (10, 'text placeholder'),
+            (11, 'content placeholder'),
+            (12, 'text placeholder'),
+            (13, 'content placeholder'),
+        ],
+    ):
         result = ph._handle_double_col_layout(
             presentation=mock_pptx_presentation,
             slide_json=slide_json,
             slide_width_inch=10,
-            slide_height_inch=7.5
+            slide_height_inch=7.5,
         )
         assert result is True
 
 
 def test_handle_display_image__in_background_no_keywords(mock_pptx_presentation: Mock):
     """Test background image display with no keywords."""
-    slide_json = {
-        'heading': 'No Image Slide',
-        'bullet_points': ['Point 1'],
-        'img_keywords': ''
-    }
+    slide_json = {'heading': 'No Image Slide', 'bullet_points': ['Point 1'], 'img_keywords': ''}
     result = ph._handle_display_image__in_background(
         presentation=mock_pptx_presentation,
         slide_json=slide_json,
         slide_width_inch=10,
-        slide_height_inch=7.5
+        slide_height_inch=7.5,
     )
     assert result is True
 
@@ -936,7 +906,7 @@ def test_handle_key_message(mock_pptx_presentation: Mock):
     """Test handling key message."""
     slide_json = {
         'heading': 'Test Slide',
-        'key_message': 'This is a *key message* with **formatting**'
+        'key_message': 'This is a *key message* with **formatting**',
     }
 
     mock_shape = Mock(spec=Shape)
@@ -957,10 +927,7 @@ def test_handle_key_message(mock_pptx_presentation: Mock):
     mock_slide.shapes.add_shape.return_value = mock_shape
 
     ph._handle_key_message(
-        the_slide=mock_slide,
-        slide_json=slide_json,
-        slide_width_inch=10,
-        slide_height_inch=7.5
+        the_slide=mock_slide, slide_json=slide_json, slide_width_inch=10, slide_height_inch=7.5
     )
 
     mock_slide.shapes.add_shape.assert_called_once()
@@ -980,28 +947,15 @@ def test_format_text_complex():
                 ('Text with ', False, False),
                 ('italic', False, True),
                 (' and ', False, False),
-                ('bold', True, False)
-            ]
+                ('bold', True, False),
+            ],
         ),
-        (
-            'Normal text',
-            [('Normal text', False, False)]
-        ),
-        (
-            '**Bold** and more text',
-            [
-                ('Bold', True, False),
-                (' and more text', False, False)
-            ]
-        ),
+        ('Normal text', [('Normal text', False, False)]),
+        ('**Bold** and more text', [('Bold', True, False), (' and more text', False, False)]),
         (
             '*Italic* and **bold**',
-            [
-                ('Italic', False, True),
-                (' and ', False, False),
-                ('bold', True, False)
-            ]
-        )
+            [('Italic', False, True), (' and ', False, False), ('bold', True, False)],
+        ),
     ]
 
     for text, expected_formatting in test_cases:
@@ -1045,9 +999,10 @@ def test_format_text_complex():
             )
 
 
-def test_print_slide_layouts(mock_pptx_presentation: Mock, capsys: pytest.CaptureFixture, monkeypatch: pytest.MonkeyPatch):
+def test_print_slide_layouts(
+    mock_pptx_presentation: Mock, capsys: pytest.CaptureFixture, monkeypatch: pytest.MonkeyPatch
+):
     """Test that slide layouts and placeholder details are printed correctly."""
-
     # Setup two mock layouts with placeholders
     mock_placeholder_1 = MagicMock()
     mock_placeholder_1.name = 'Title 1'
@@ -1070,16 +1025,14 @@ def test_print_slide_layouts(mock_pptx_presentation: Mock, capsys: pytest.Captur
     mock_pptx_presentation.slide_layouts = [mock_layout_1, mock_layout_2]
     monkeypatch.setattr(pptx, 'Presentation', lambda _: mock_pptx_presentation)
     monkeypatch.setitem(
-        GlobalConfig.PPTX_TEMPLATE_FILES,
-        'test_template',
-        {'file': 'fake_template.pptx'}
+        GlobalConfig.PPTX_TEMPLATE_FILES, 'test_template', {'file': 'fake_template.pptx'}
     )
 
     ph.print_slide_layouts('test_template')
 
     captured = capsys.readouterr()
-    assert "Layout 0: Title Slide" in captured.out
-    assert "idx=0 | name=Title 1 | type=TITLE (15)" in captured.out
-    assert "Layout 1: Title and Content" in captured.out
-    assert "idx=0 | name=Title 1 | type=TITLE (15)" in captured.out
-    assert "idx=1 | name=Content Placeholder 2 | type=BODY (2)" in captured.out
+    assert 'Layout 0: Title Slide' in captured.out
+    assert 'idx=0 | name=Title 1 | type=TITLE (15)' in captured.out
+    assert 'Layout 1: Title and Content' in captured.out
+    assert 'idx=0 | name=Title 1 | type=TITLE (15)' in captured.out
+    assert 'idx=1 | name=Content Placeholder 2 | type=BODY (2)' in captured.out

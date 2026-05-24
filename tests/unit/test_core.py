@@ -1,6 +1,5 @@
-"""
-Unit tests for the core module of SlideDeck AI.
-"""
+"""Unit tests for the core module of SlideDeck AI."""
+
 import os
 from pathlib import Path
 from unittest import mock
@@ -10,10 +9,10 @@ import pytest
 
 # Apply BertTokenizer patch before importing anything that might use it
 from .test_utils import (
+    MockStreamResponse,
     get_mock_llm,
     get_mock_llm_response,
-    MockStreamResponse,
-    patch_bert_tokenizer
+    patch_bert_tokenizer,
 )
 
 with patch('transformers.BertTokenizer', patch_bert_tokenizer()):
@@ -38,11 +37,7 @@ def mock_temp_file():
 @pytest.fixture
 def slide_deck_ai():
     """Fixture to create a SlideDeckAI instance."""
-    return SlideDeckAI(
-        model='[or]openai/gpt-3.5-turbo',
-        topic='Test Topic',
-        api_key='dummy-key'
-    )
+    return SlideDeckAI(model='[or]openai/gpt-3.5-turbo', topic='Test Topic', api_key='dummy-key')
 
 
 def test_process_llm_chunk_string():
@@ -97,8 +92,8 @@ def test_slide_deck_ai_init_valid(slide_deck_ai):
     'slidedeckai.core.GlobalConfig.VALID_MODELS',
     {
         '[or]openai/gpt-3.5-turbo': ('openai', 'gpt-3.5-turbo'),
-        'new-valid-model': ('openai', 'gpt-test')
-    }
+        'new-valid-model': ('openai', 'gpt-test'),
+    },
 )
 def test_set_model_valid_updates_model(slide_deck_ai) -> None:
     """Test that set_model updates the model name and keeps api_key when
@@ -119,8 +114,8 @@ def test_set_model_valid_updates_model(slide_deck_ai) -> None:
     'slidedeckai.core.GlobalConfig.VALID_MODELS',
     {
         '[or]openai/gpt-3.5-turbo': ('openai', 'gpt-3.5-turbo'),
-        'new-valid-model': ('openai', 'gpt-test')
-    }
+        'new-valid-model': ('openai', 'gpt-test'),
+    },
 )
 def test_set_model_valid_updates_api_key(slide_deck_ai) -> None:
     """Test that set_model updates both the model name and the api_key when
@@ -297,7 +292,7 @@ def test_stream_llm_response_error():
 
     with pytest.raises(RuntimeError) as exc_info:
         _stream_llm_response(mock_llm, 'test prompt')
-    assert "Failed to get response from LLM" in str(exc_info.value)
+    assert 'Failed to get response from LLM' in str(exc_info.value)
 
 
 @mock.patch('slidedeckai.core.llm_helper.get_provider_model')
