@@ -88,31 +88,29 @@ SlideDeck AI stands out by supporting a wide array of LLMs from several online p
 
 Most supported service providers also offer generous free usage tiers, meaning you can often start building without immediate billing concerns.
 
-Model names in SlideDeck AI are specified in the `[code]model-name` format. It begins with a two-character prefix code in square brackets to indicate the provider, for example, `[oa]` for OpenAI, `[gg]` for Google Gemini, and so on. Following the code, the model name is specified, for example, `gemini-2.0-flash` or `gpt-4o`. So, to use Google Gemini 2.0 Flash Lite, the model name would be `[gg]gemini-2.0-flash-lite`.
+Model names in SlideDeck AI are specified in the `[code]model-name` format. It begins with a two-character prefix code in square brackets to indicate the provider, for example, `[oa]` for OpenAI, `[gg]` for Google Gemini, and so on. Following the code, the model name is specified, for example, `gemini-2.5-flash` or `gpt-4o`. So, to use Google Gemini 2.0 Flash Lite, the model name would be `[gg]gemini-2.5-flash-lite`.
 
 Based on several experiments, SlideDeck AI generally recommends the use of Gemini Flash and GPT-4o to generate the best-quality slide decks.
 
 The supported LLMs offer different styles of content generation. Use one of the following LLMs along with relevant API keys/access tokens, as appropriate, to create the content of the slide deck:
 
-| LLM                                 | Provider (code)          | Requires API key                                                                                                         | Characteristics          |
-|:------------------------------------|:-------------------------|:-------------------------------------------------------------------------------------------------------------------------|:-------------------------|
-| Claude Haiku 4.5                    | Anthropic (`an`)         | Mandatory; [get here](https://platform.claude.com/settings/keys)                                                         | Faster, detailed         |
-| Gemini 2.0 Flash                    | Google Gemini API (`gg`) | Mandatory; [get here](https://aistudio.google.com/apikey)                                                                | Faster, longer content   |
-| Gemini 2.0 Flash Lite               | Google Gemini API (`gg`) | Mandatory; [get here](https://aistudio.google.com/apikey)                                                                | Fastest, longer content  |
-| Gemini 2.5 Flash                    | Google Gemini API (`gg`) | Mandatory; [get here](https://aistudio.google.com/apikey)                                                                | Faster, longer content   |
-| Gemini 2.5 Flash Lite               | Google Gemini API (`gg`) | Mandatory; [get here](https://aistudio.google.com/apikey)                                                                | Fastest, longer content  |
-| GPT-4.1-mini                        | OpenAI (`oa`)            | Mandatory; [get here](https://platform.openai.com/settings/organization/api-keys)                                        | Faster, medium content   |
-| GPT-4.1-nano                        | OpenAI (`oa`)            | Mandatory; [get here](https://platform.openai.com/settings/organization/api-keys)                                        | Faster, shorter content  |
-| GPT-5                               | OpenAI (`oa`)            | Mandatory; [get here](https://platform.openai.com/settings/organization/api-keys)                                        | Slow, shorter content    |
-| GPT                                 | Azure OpenAI (`az`)      | Mandatory; [get here](https://ai.azure.com/resource/playground)  NOTE: You need to have your subscription/billing set up | Faster, longer content   |
-| Command R+                          | Cohere (`co`)            | Mandatory; [get here](https://dashboard.cohere.com/api-keys)                                                             | Shorter, simpler content |
-| Gemini-2.0-flash-001                | OpenRouter (`or`)        | Mandatory; [get here](https://openrouter.ai/settings/keys)                                                               | Faster, longer content   |
-| GPT-3.5 Turbo                       | OpenRouter (`or`)        | Mandatory; [get here](https://openrouter.ai/settings/keys)                                                               | Faster, longer content   |
-| DeepSeek-V3.1                       | SambaNova (`sn`)         | Mandatory; [get here](https://cloud.sambanova.ai/apis)                                                                   | Fast, detailed content   |
-| Meta-Llama-3.3-70B-Instruct         | SambaNova (`sn`)         | Mandatory; [get here](https://cloud.sambanova.ai/apis)                                                                   | Fast, shorter            |
-| DeepSeek V3-0324                    | Together AI (`to`)       | Mandatory; [get here](https://api.together.ai/settings/api-keys)                                                         | Slower, medium-length    |
-| Llama 3.3 70B Instruct Turbo        | Together AI (`to`)       | Mandatory; [get here](https://api.together.ai/settings/api-keys)                                                         | Slower, detailed         |
-| Llama 3.1 8B Instruct Turbo 128K    | Together AI (`to`)       | Mandatory; [get here](https://api.together.ai/settings/api-keys)                                                         | Faster, shorter          |
+| LLM                              | Provider (code)          | Requires API key                                                                                                         | Characteristics          |
+|:---------------------------------|:-------------------------|:-------------------------------------------------------------------------------------------------------------------------|:-------------------------|
+| Claude Haiku 4.5                 | Anthropic (`an`)         | Mandatory; [get here](https://platform.claude.com/settings/keys)                                                         | Faster, detailed         |
+| Gemini 3.1 Flash Lite            | Google Gemini API (`gg`) | Mandatory; [get here](https://aistudio.google.com/apikey)                                                                | Fastest, longer content  |
+| Gemini 3.5 Flash                 | Google Gemini API (`gg`) | Mandatory; [get here](https://aistudio.google.com/apikey)                                                                | Faster, longer content   |
+| Gemini 2.5 Flash Lite            | Google Gemini API (`gg`) | Mandatory; [get here](https://aistudio.google.com/apikey)                                                                | Fastest, longer content  |
+| GPT-4.1-mini                     | OpenAI (`oa`)            | Mandatory; [get here](https://platform.openai.com/settings/organization/api-keys)                                        | Faster, medium content   |
+| GPT-4.1-nano                     | OpenAI (`oa`)            | Mandatory; [get here](https://platform.openai.com/settings/organization/api-keys)                                        | Faster, shorter content  |
+| GPT-5                            | OpenAI (`oa`)            | Mandatory; [get here](https://platform.openai.com/settings/organization/api-keys)                                        | Slow, shorter content    |
+| GPT                              | Azure OpenAI (`az`)      | Mandatory; [get here](https://ai.azure.com/resource/playground)  NOTE: You need to have your subscription/billing set up | Faster, longer content   |
+| Command R+                       | Cohere (`co`)            | Mandatory; [get here](https://dashboard.cohere.com/api-keys)                                                             | Shorter, simpler content |
+| GPT-3.5 Turbo                    | OpenRouter (`or`)        | Mandatory; [get here](https://openrouter.ai/settings/keys)                                                               | Faster, longer content   |
+| DeepSeek-V3.1                    | SambaNova (`sn`)         | Mandatory; [get here](https://cloud.sambanova.ai/apis)                                                                   | Fast, detailed content   |
+| Meta-Llama-3.3-70B-Instruct      | SambaNova (`sn`)         | Mandatory; [get here](https://cloud.sambanova.ai/apis)                                                                   | Fast, shorter            |
+| DeepSeek V3-0324                 | Together AI (`to`)       | Mandatory; [get here](https://api.together.ai/settings/api-keys)                                                         | Slower, medium-length    |
+| Llama 3.3 70B Instruct Turbo     | Together AI (`to`)       | Mandatory; [get here](https://api.together.ai/settings/api-keys)                                                         | Slower, detailed         |
+| Llama 3.1 8B Instruct Turbo 128K | Together AI (`to`)       | Mandatory; [get here](https://api.together.ai/settings/api-keys)                                                         | Faster, shorter          |
 
 > **🔒 IMPORTANT: Your Privacy and Security are Paramount**
 > 

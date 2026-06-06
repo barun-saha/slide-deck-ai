@@ -77,23 +77,18 @@ class GlobalConfig:
             'max_new_tokens': 4096,
             'paid': True,
         },
-        '[gg]gemini-2.0-flash': {
-            'description': 'fast, detailed',
-            'max_new_tokens': 8192,
-            'paid': True,
-        },
-        '[gg]gemini-2.0-flash-lite': {
-            'description': 'fastest, detailed',
-            'max_new_tokens': 8192,
-            'paid': True,
-        },
-        '[gg]gemini-2.5-flash': {
-            'description': 'fast, detailed',
-            'max_new_tokens': 8192,
-            'paid': True,
-        },
         '[gg]gemini-2.5-flash-lite': {
             'description': 'fastest, detailed',
+            'max_new_tokens': 8192,
+            'paid': True,
+        },
+        '[gg]gemini-3.1-flash-lite': {
+            'description': 'fastest, detailed',
+            'max_new_tokens': 8192,
+            'paid': True,
+        },
+        '[gg]gemini-3.5-flash': {
+            'description': 'fast, detailed',
             'max_new_tokens': 8192,
             'paid': True,
         },
@@ -109,11 +104,6 @@ class GlobalConfig:
         },
         '[oa]gpt-5-nano': {
             'description': 'slow, shorter',
-            'max_new_tokens': 8192,
-            'paid': True,
-        },
-        '[or]google/gemini-2.0-flash-001': {
-            'description': 'Google Gemini-2.0-flash-001 (via OpenRouter)',
             'max_new_tokens': 8192,
             'paid': True,
         },
