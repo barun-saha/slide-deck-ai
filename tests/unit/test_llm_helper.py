@@ -9,6 +9,7 @@ from slidedeckai.helpers.llm_helper import (
     get_litellm_llm,
     get_litellm_model_name,
     get_provider_model,
+    is_valid_azure_endpoint_url,
     is_valid_llm_provider_model,
     stream_litellm_completion,
 )
@@ -65,10 +66,28 @@ def test_get_provider_model(provider_model, use_ollama, expected):
             GlobalConfig.PROVIDER_AZURE_OPENAI,
             'gpt-4',
             'valid-key-12345',
+            'https://test.services.ai.azure.com/openai/v1',
+            'deployment1',
+            '2024-02-01',
+            True,
+        ),
+        (
+            GlobalConfig.PROVIDER_AZURE_OPENAI,
+            'gpt-4',
+            'valid-key-12345',
             'https://invalid-url',
             'deployment1',
             '2024-02-01',
-            True,  # URL validation is not done
+            False,
+        ),
+        (
+            GlobalConfig.PROVIDER_AZURE_OPENAI,
+            'gpt-4',
+            'valid-key-12345',
+            'http://127.0.0.1:9999/v1',
+            'deployment1',
+            '2024-02-01',
+            False,
         ),
         (
             GlobalConfig.PROVIDER_AZURE_OPENAI,
@@ -100,6 +119,31 @@ def test_is_valid_llm_provider_model(
         azure_api_version,
     )
     assert result == expected
+
+
+@pytest.mark.parametrize(
+    'azure_endpoint_url, expected',
+    [
+        ('https://example.openai.azure.com/', True),
+        ('https://example.services.ai.azure.com/openai/v1', True),
+        ('https://example.cognitiveservices.azure.com/openai/v1', True),
+        ('https://valid.azure.com', True),
+        ('https://azure.com', True),
+        ('http://example.openai.azure.com/', False),
+        ('https://example.openai.azure.com.evil.test/', False),
+        ('https://127.0.0.1:9999/v1', False),
+        ('https://10.0.0.4/v1', False),
+        ('https://169.254.169.254/latest/meta-data/', False),
+        ('https://[::1]/v1', False),
+        ('https://localhost/v1', False),
+        ('https://user@example.openai.azure.com/', False),
+        ('not-a-url', False),
+        ('', False),
+    ],
+)
+def test_is_valid_azure_endpoint_url(azure_endpoint_url, expected):
+    """Test Azure endpoint URL validation blocks non-Azure destinations."""
+    assert is_valid_azure_endpoint_url(azure_endpoint_url) is expected
 
 
 @pytest.mark.parametrize(
@@ -173,6 +217,35 @@ def test_stream_litellm_completion_azure(mock_litellm):
 
     assert result == ['Response']
     mock_litellm.completion.assert_called_once()
+    assert mock_litellm.completion.call_args.kwargs['api_base'] == 'https://test.azure.com'
+
+
+@pytest.mark.parametrize(
+    'azure_endpoint_url',
+    [
+        'http://127.0.0.1:9999/v1',
+        'https://example.openai.azure.com.evil.test',
+        'https://localhost/v1',
+    ],
+)
+def test_stream_litellm_completion_rejects_invalid_azure_endpoint(azure_endpoint_url):
+    """Test Azure calls reject endpoints that should not receive API keys."""
+    messages = [{'role': 'user', 'content': 'Test'}]
+    with pytest.raises(
+        ValueError, match=r'Azure endpoint URL must be an HTTPS azure\.com endpoint'
+    ):
+        list(
+            stream_litellm_completion(
+                provider=GlobalConfig.PROVIDER_AZURE_OPENAI,
+                model='gpt-4',
+                messages=messages,
+                max_tokens=100,
+                api_key='valid-key-12345',
+                azure_endpoint_url=azure_endpoint_url,
+                azure_deployment_name='deployment1',
+                azure_api_version='2024-02-01',
+            )
+        )
 
 
 @patch('slidedeckai.helpers.llm_helper.litellm')

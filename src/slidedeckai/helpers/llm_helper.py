@@ -5,6 +5,7 @@ import re
 from collections.abc import Iterator
 
 import urllib3
+from urllib3.exceptions import LocationParseError
 
 from ..global_config import GlobalConfig
 
@@ -30,9 +31,31 @@ LLM_PROVIDER_MODEL_REGEX = re.compile(r'\[(.*?)\](.*)')
 OLLAMA_MODEL_REGEX = re.compile(r'[a-zA-Z0-9._:-]+$')
 # 200 characters long, only containing alphanumeric characters, hyphens, and underscores
 API_KEY_REGEX = re.compile(r'^[a-zA-Z0-9_-]{6,200}$')
+AZURE_HOSTNAME = 'azure.com'
+AZURE_HOSTNAME_SUFFIX = f'.{AZURE_HOSTNAME}'
 
 
 logger = logging.getLogger(__name__)
+
+
+def is_valid_azure_endpoint_url(azure_endpoint_url: str) -> bool:
+    """Return whether an Azure endpoint URL is safe enough to receive an API key.
+
+    The host allow-list is the security boundary: only HTTPS URLs whose host is
+    `azure.com` or a `.azure.com` subdomain are accepted. Loopback, private and
+    metadata hosts such as `127.0.0.1`, `::1`, `localhost` and `169.254.169.254`
+    are rejected because they cannot match that suffix.
+    """
+    try:
+        parsed_url = urllib3.util.parse_url(azure_endpoint_url)
+    except LocationParseError:
+        return False
+
+    if parsed_url.scheme != 'https' or parsed_url.auth or not parsed_url.host:
+        return False
+
+    host = parsed_url.host.rstrip('.').lower()
+    return host == AZURE_HOSTNAME or host.endswith(AZURE_HOSTNAME_SUFFIX)
 
 
 def get_provider_model(provider_model: str, use_ollama: bool) -> tuple[str, str]:
@@ -109,8 +132,13 @@ def is_valid_llm_provider_model(
             return False
 
     if provider == GlobalConfig.PROVIDER_AZURE_OPENAI:
-        valid_url = urllib3.util.parse_url(azure_endpoint_url)
-        all_status = all([azure_api_version, azure_deployment_name, str(valid_url)])
+        all_status = all(
+            [
+                azure_api_version,
+                azure_deployment_name,
+                is_valid_azure_endpoint_url(azure_endpoint_url),
+            ]
+        )
         return all_status
 
     return True
@@ -164,6 +192,8 @@ def stream_litellm_completion(
         # This is consistent with Azure OpenAI's requirement to use deployment names
         if not azure_deployment_name:
             raise ValueError('Azure deployment name is required for Azure OpenAI provider')
+        if not is_valid_azure_endpoint_url(azure_endpoint_url):
+            raise ValueError('Azure endpoint URL must be an HTTPS azure.com endpoint')
         litellm_model = f'azure/{azure_deployment_name}'
     else:
         litellm_model = get_litellm_model_name(provider, model)
