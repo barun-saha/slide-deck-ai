@@ -30,7 +30,7 @@ We all spend countless hours **creating** slides and meticulously organizing our
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=barun-saha/slide-deck-ai&type=Date)](https://star-history.com/#barun-saha/slide-deck-ai&Date)
+[![Star History Chart](https://star-history.dera.page/svg?repos=barun-saha/slide-deck-ai&type=Date)](https://star-history.dera.page/#barun-saha/slide-deck-ai&Date)
 
 
 ## How It Works: The Automated Deck Generation Process
