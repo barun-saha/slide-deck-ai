@@ -1,5 +1,5 @@
 aiohttp~=3.14.3
-python-dotenv[cli]~=1.2.2  # Downgraded because of LiteLLM 1.83.2 compatibility issues
+python-dotenv[cli]~=1.2.4
 gitpython~=3.1.62
 json-repair>=0.60.1
 idna~=3.15
@@ -10,7 +10,7 @@ pydantic~=2.12.5
 litellm~=1.103.2
 #google-generativeai  # ~=0.8.3
 google-genai
-streamlit==1.55.0
+streamlit==1.65.0
 protobuf~=6.33.5
 
 python-pptx~=1.0.2
@@ -18,7 +18,7 @@ json5~=0.14.0
 requests~=2.33.1
 pypdf>=6.19.0
 
-sentence-transformers~=5.3.0
+sentence-transformers~=5.6.0
 transformers~=5.15.0
 torch~=2.14.1
 torchvision~=0.29.0
@@ -29,7 +29,7 @@ numpy
 scikit-learn~=1.7.2
 
 certifi==2026.4.22
-urllib3~=2.7.0
+urllib3~=2.8.0
 
 anyio>=4.14.2
 
